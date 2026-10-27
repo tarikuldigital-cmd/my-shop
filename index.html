@@ -16,12 +16,12 @@
 <style>
 /* Layout idea: international marketplace — utility bar, search-first header, category rail, dense image-led grid; operations-style admin with left rail */
 :root{
-  --brand-base:#0b6b52;
-  --bg:#f5f6f7; --surface:#ffffff; --surface2:#eef0f2; --ink:#14181b; --muted:#5e6870; --line:#e1e5e8;
-  --brand:var(--brand-base); --brand-ink:#ffffff; --brand-soft:color-mix(in srgb,var(--brand) 11%,var(--surface)); --accent:#e8590c;
+  --brand-base:#f85606;
+  --bg:#f4f4f6; --surface:#ffffff; --surface2:#f6f6f8; --ink:#212121; --muted:#6b7280; --line:#e8e8ec;
+  --brand:var(--brand-base); --brand-ink:#ffffff; --brand-soft:color-mix(in srgb,var(--brand) 10%,var(--surface)); --accent:#e11d48;
   --good:#1d7a3e; --warn:#a86300; --bad:#c92a2a; --info:#1f5fa8; --hold:#7a4fb0; --star:#f59f00;
   --font-body:'Manrope','Hind Siliguri','Noto Sans Bengali',system-ui,sans-serif;
-  --r:12px; --shadow:0 1px 2px rgba(16,24,32,.05),0 10px 30px rgba(16,24,32,.08);
+  --r:12px; --shadow:0 1px 2px rgba(16,24,32,.04),0 8px 24px rgba(16,24,32,.07);
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){
@@ -95,23 +95,23 @@ textarea.inp{resize:vertical;min-height:76px}
 .stars .off{color:var(--line)}
 
 /* ===== storefront ===== */
-.utilbar{background:var(--ink);color:color-mix(in srgb,var(--bg) 85%,transparent);font-size:13px}
+.utilbar{background:color-mix(in srgb,var(--brand) 9%,var(--surface));color:var(--ink);font-size:13px;border-bottom:1px solid var(--line)}
 .utilbar .wrap{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:36px;flex-wrap:wrap}
 .utilbar a,.utilbar button{color:inherit;text-decoration:none;border:0;background:none;padding:4px 8px;border-radius:6px;font-size:13px}
-.utilbar a:hover,.utilbar button:hover{color:var(--bg);background:rgba(255,255,255,.08)}
+.utilbar a:hover,.utilbar button:hover{color:var(--brand);background:var(--surface)}
 .utilbar .r{display:flex;gap:2px;align-items:center;flex-wrap:wrap}
-.langsw{display:inline-flex;border:1px solid rgba(255,255,255,.25);border-radius:7px;overflow:hidden;margin-left:4px}
+.langsw{display:inline-flex;border:1px solid var(--line);background:var(--surface);border-radius:7px;overflow:hidden;margin-left:4px}
 .langsw button{padding:3px 9px;border-radius:0}
-.langsw button.on{background:var(--bg);color:var(--ink)}
-.langsw button.on:hover{background:var(--bg);color:var(--ink)}
-header.shop{background:var(--surface);position:sticky;top:0;z-index:20;box-shadow:0 1px 0 var(--line)}
+.langsw button.on{background:var(--brand);color:var(--brand-ink)}
+.langsw button.on:hover{background:var(--brand);color:var(--brand-ink)}
+header.shop{background:var(--surface);position:sticky;top:0;z-index:20;box-shadow:0 1px 0 var(--line),0 4px 14px rgba(0,0,0,.04)}
 .hmain{display:flex;align-items:center;gap:22px;padding-top:14px;padding-bottom:14px}
 .logo{font-size:22px;font-weight:800;color:var(--ink);text-decoration:none;display:flex;align-items:center;gap:10px;white-space:nowrap;letter-spacing:-.02em}
 .logo .mark{width:36px;height:36px;border-radius:10px;background:var(--brand);color:var(--brand-ink);display:flex;align-items:center;justify-content:center}
 .logo small{display:block;font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
 .logo img{height:40px;width:auto}
 .searchbox{flex:1;position:relative;max-width:680px}
-.search{display:flex;border:1.5px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg)}
+.search{display:flex;border:1.5px solid var(--brand);border-radius:12px;overflow:hidden;background:var(--surface)}
 .search:focus-within{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft);background:var(--surface)}
 .search input{border:0;background:transparent;padding:11px 16px;flex:1;min-width:0}
 .search input:focus{outline:none}
@@ -176,13 +176,13 @@ header.shop{background:var(--surface);position:sticky;top:0;z-index:20;box-shado
 .cat .ci{width:58px;height:58px;border-radius:50%}
 .cat span{font-size:12px;color:var(--muted);font-weight:500}
 /* flash sale */
-.flashbar{background:linear-gradient(100deg,var(--accent),color-mix(in srgb,var(--accent) 70%,#c2255c));color:#fff;border-radius:16px;padding:18px 22px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.flashbar{background:linear-gradient(100deg,#ff7a1a,var(--brand) 55%,var(--accent));color:#fff;border-radius:16px;padding:18px 22px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px}
 .flashbar h2{font-size:22px;font-weight:800;color:#fff}
 .flashbar p{margin:0;opacity:.9;font-size:14px}
 .countdown{display:flex;gap:6px;margin-left:auto}
 .countdown span{background:rgba(0,0,0,.22);border-radius:9px;padding:6px 10px;text-align:center;min-width:52px;font-weight:800;font-size:20px;font-variant-numeric:tabular-nums;line-height:1.1}
 .countdown small{display:block;font-size:10.5px;font-weight:600;opacity:.85}
-.promo{border-radius:16px;padding:24px 28px;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--ink);color:var(--bg)}
+.promo{border-radius:16px;padding:24px 28px;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:linear-gradient(100deg,color-mix(in srgb,var(--brand) 14%,var(--surface)),color-mix(in srgb,#ffd43b 22%,var(--surface)));color:var(--ink);border:1px solid color-mix(in srgb,var(--brand) 22%,var(--line))}
 .promo h3{font-size:22px;font-weight:800}
 .promo p{margin:2px 0 0;opacity:.8}
 /* product grid & card */
@@ -191,6 +191,7 @@ header.shop{background:var(--surface);position:sticky;top:0;z-index:20;box-shado
 .pcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;position:relative;transition:box-shadow .2s,transform .2s}
 .pcard:hover{box-shadow:var(--shadow);transform:translateY(-2px)}
 .pcard .pimg{display:block;position:relative;aspect-ratio:1;width:100%;overflow:hidden;background:var(--surface2)}
+.ph.broken{opacity:.9}
 .pcard .pimg>.ph,.pcard .pimg>img{width:100%;height:100%;object-fit:cover;transition:opacity .3s,transform .4s}
 .pcard .pimg>img.alt{position:absolute;inset:0;opacity:0}
 .pcard:hover .pimg>img.alt{opacity:1}
@@ -467,8 +468,8 @@ table.t .inp{padding:6px 8px}
    আসল অনলাইন অর্ডার নিতে শুধু এই DB অবজেক্টটা Firebase/Supabase দিয়ে বদলাতে হবে।
    ========================================================= */
 const DB={
-  key:'scg_store_v3',
-  load(){try{const r=localStorage.getItem(this.key);if(r){const d=JSON.parse(r);if(d&&d.v===3)return d}}catch(e){}return null},
+  key:'scg_store_v4',
+  load(){try{const r=localStorage.getItem(this.key);if(r){const d=JSON.parse(r);if(d&&d.v===4)return d}}catch(e){}return null},
   save(state){try{localStorage.setItem(this.key,JSON.stringify(state));return true}catch(e){return false}}
 };
 
@@ -583,8 +584,20 @@ function seed(){
     P('p15','বেবি ডায়াপার প্যান্ট','Baby Diaper Pants','c6','f','১২ ঘণ্টা শুকনো রাখে, নরম ইলাস্টিক কোমর।','Keeps baby dry for 12 hours with a soft elastic waist.',10,[O('সাইজ',['M (৪২ পিস)','L (৩৬ পিস)','XL (৩২ পিস)'])],(v,i)=>[[1150,1250],[1150,1250],[1190,1290]][i]),
     P('p16','চিনিগুঁড়া চাল','Chinigura Aromatic Rice','c7','','দিনাজপুরের সুগন্ধি চাল, পোলাও ও পায়েসের জন্য।','Fragrant rice from Dinajpur, ideal for pulao and payesh.',22,[O('ওজন',['১ কেজি','৫ কেজি'])],(v,i)=>[[165,0],[790,825]][i]),
     P('p17','সুন্দরবনের খাঁটি মধু','Pure Sundarbans Honey','c7','fn','চাক ভাঙা প্রাকৃতিক মধু, কোনো চিনি বা প্রিজারভেটিভ নেই।','Raw comb honey with no added sugar or preservatives.',2,[O('ওজন',['৫০০ গ্রাম','১ কেজি'])],(v,i)=>[[650,0],[1250,1300]][i]),
+    P('p19','পোর্টেবল ব্লুটুথ স্পিকার','Portable Bluetooth Speaker','c1','fn','১০ ওয়াট সাউন্ড, IPX5 ওয়াটারপ্রুফ, এক চার্জে ১২ ঘণ্টা।','10W sound, IPX5 water resistant, 12 hours per charge.',4,[O('রঙ',['কালো','লাল','নীল'])],()=>[1490,1890]),
+    P('p20','ওয়াটারপ্রুফ ল্যাপটপ ব্যাকপ্যাক','Water-Resistant Laptop Backpack','c2','','১৫.৬ ইঞ্চি ল্যাপটপ পকেট, ইউএসবি চার্জিং পোর্ট, ৩০ লিটার।','Fits a 15.6-inch laptop, built-in USB charging port, 30 L.',12,[O('রঙ',['কালো','ধূসর'])],()=>[1650,1990]),
+    P('p21','পোলারাইজড সানগ্লাস','Polarized Sunglasses','c2','n','UV400 সুরক্ষা, হালকা ফ্রেম, কেস ও ক্লিনিং কাপড়সহ।','UV400 protection, lightweight frame, case and cloth included.',3,[O('ফ্রেম',['কালো','গোল্ড','টরটয়েজ'])],()=>[850,1150]),
+    P('p22','ইলেকট্রিক কেটলি ১.৮ লিটার','Electric Kettle 1.8 L','c3','f','১৫০০ ওয়াট, ৫ মিনিটে পানি ফোটে, অটো শাট-অফ।','1500W, boils in about 5 minutes, automatic shut-off.',18,[O('বডি',['স্টেইনলেস স্টিল','গ্লাস'])],(v,i)=>[[1250,1450],[1490,1690]][i]),
     P('p18','কিচেন কম্বো: ফ্রাইপ্যান + বোতল','Kitchen Combo: Pan + Bottle','c3','c','২৬ সেমি ফ্রাইপ্যান আর ১ লিটার বোতল একসাথে, আলাদা কেনার চেয়ে ২৫০ টাকা কম।','A 26 cm pan and a 1 L bottle together, ৳250 less than buying separately.',1,[],()=>[1390,1640,14])
   ];
+  // Realistic sample photos from Pexels (free to use: https://www.pexels.com/license/). Replace with your own product photos.
+  const px=id=>`https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=600`;
+  const IMG={p1:[3973980,17810098,16872630,14401717],p2:[267394,5081922,8899536,1682821],p3:[19495448,37475677,3921705],p4:[3675622],
+    p5:[28494850,10769408,27385944],p6:[20702676],p7:[10726876,12628400,9660927,18212364],p8:[8055165,8629104,5593697],p9:[7879974,3737799],
+    p10:[34939709,30229017,8140898],p11:[14656188,33794923,17511746],p12:[1084199,5978608,4207783],p13:[8936387,2123482,9004904,8061943],
+    p15:[5889959],p16:[8108170,1311771,7421198],p17:[11032901,4480158,17023410],p18:[12292644,6245,8055165],
+    p19:[3779780,31683433,880874],p20:[3731256,18999333,1591244],p21:[1499477,6253849,16577200],p22:[15206538,33521165]};
+  products.forEach(p=>{p.images=(IMG[p.id]||[]).map(px)});
   const staff=['রিয়া','সাকিব','মিম','নাঈম'];
   const names=['নুসরাত জাহান','ফারজানা আক্তার','তানিয়া সুলতানা','রুমানা ইসলাম','সাবরিনা হক','মরিয়ম বেগম','আয়েশা সিদ্দিকা','ইশরাত জাহান','রাকিবুল হাসান','মাহমুদুল হক','তানভীর আহমেদ','সুমাইয়া রহমান','জান্নাতুল ফেরদৌস','আরিফ হোসেন','নাদিয়া আফরিন','শাহরিয়ার কবির','মৌসুমী দাস','সাদিয়া ইসলাম','ফাহিম মুনতাসির','কামরুন নাহার','ইমরান খান','রেজাউল করিম'];
   const dhakaAreas=['ধানমন্ডি','মিরপুর ১০','উত্তরা সেক্টর ৭','মোহাম্মদপুর','বসুন্ধরা আ/এ','রামপুরা','বনশ্রী','খিলগাঁও'];
@@ -627,12 +640,12 @@ function seed(){
   const reviews=[];let rid=1;
   products.forEach(p=>{const n=Math.floor(rnd()*5);for(let k=0;k<n;k++){const r=pick(rv);reviews.push({id:'r'+(rid++),pid:p.id,name:pick(names),rating:r[1],text:r[0],at:now-Math.floor(rnd()*40)*DAY-Math.floor(rnd()*20)*HOUR,approved:true,verified:rnd()<.7})}});
   reviews.push({id:'r'+(rid++),pid:'p2',name:'তানভীর আহমেদ',rating:4,text:'ব্যাটারি ব্যাকআপ ভালো। ব্লুটুথ কল পরিষ্কার শোনা যায়।',at:now-3*HOUR,approved:false,verified:true});
-  return {v:3,
+  return {v:4,
     settings:{name:'Smart Chaina Gallery',nameBn:'স্মার্ট চায়না গ্যালারি',logo:'',tagline:'দরকারি সব প্রোডাক্ট এক জায়গায়। সারা দেশে হোম ডেলিভারি, ক্যাশ অন ডেলিভারি।',taglineEn:'Everything you need, in one place. Nationwide delivery with cash on delivery.',
       phone:'+880 1338-325365',whatsapp:'8801338325365',email:'',address:'নিউ পল্টন, ঢাকা',addressEn:'New Paltan, Dhaka',facebook:'',
-      inside:60,outside:120,freeShipMin:3000,brandColor:'#0b6b52',bkash:'',nagad:'',pixelId:'',ga4Id:'',
+      inside:60,outside:120,freeShipMin:3000,brandColor:'#f85606',bkash:'',nagad:'',pixelId:'',ga4Id:'',
       announce:'৩০০০ টাকার বেশি অর্ডারে ফ্রি ডেলিভারি · সারা দেশে ক্যাশ অন ডেলিভারি',announceEn:'Free delivery on orders over ৳3,000 · Cash on delivery nationwide',
-      flash:{on:true,title:'ফ্ল্যাশ সেল',titleEn:'Flash Sale',endsAt:now+30*HOUR,pids:['p1','p3','p8','p10','p14']},
+      flash:{on:true,title:'ফ্ল্যাশ সেল',titleEn:'Flash Sale',endsAt:now+30*HOUR,pids:['p1','p3','p8','p19','p21']},
       banners:[
         {title:'নতুন গ্যাজেট, সাশ্রয়ী দামে',titleEn:'New gadgets, honest prices',sub:'ইয়ারবাড, স্মার্ট ওয়াচ আর পাওয়ার ব্যাংকে ২৫% পর্যন্ত ছাড়।',subEn:'Up to 25% off earbuds, smart watches and power banks.',cta:'গ্যাজেট দেখুন',ctaEn:'Shop gadgets',cat:'c1',tint:'#2b62a8'},
         {title:'ঘর সাজান সবুজ গাছে',titleEn:'Bring your home to life',sub:'টবসহ ইনডোর গাছ, যত্নের গাইড ফ্রি।',subEn:'Indoor plants delivered in pots, with a free care guide.',cta:'গাছ দেখুন',ctaEn:'Shop plants',cat:'c5',tint:'#2e7d4f'},
@@ -649,7 +662,7 @@ function seed(){
         refund:'You can request a return or replacement within 3 days of delivery for damaged, wrong or wrongly sized items. Refunds are sent via bKash or Nagad within 3–5 working days. If you refuse a parcel at delivery, the delivery charge applies.'}},
     categories,products,orders,reviews,staff,me:0,nextInv:inv,messages:[{id:'m1',name:'আরিফ হোসেন',phone:'01712000000',msg:'স্মার্ট ওয়াচ কি আইফোনের সাথে কানেক্ট হবে?',at:now-3*HOUR,read:false}],subscribers:[],
     coupons:[{code:'WELCOME10',type:'percent',value:10,min:1000,active:true,used:7},{code:'SAVE200',type:'flat',value:200,min:2500,active:true,used:3},{code:'EID300',type:'flat',value:300,min:3000,active:false,used:12}],
-    cart:[],wish:[],recent:[],user:null,prefs:{lang:'bn',theme:'auto'},lastSeen:now-6*HOUR,incomplete:seedIncomplete(products,now)};
+    cart:[],wish:[],recent:[],user:null,prefs:{lang:'bn',theme:'light'},lastSeen:now-6*HOUR,incomplete:seedIncomplete(products,now)};
 }
 function seedIncomplete(products,now){
   const R=mulberry32(9917),rnd=()=>R(),pick=a=>a[Math.floor(rnd()*a.length)];
@@ -673,9 +686,10 @@ const meName=()=>S.staff[S.me]||'অ্যাডমিন';
 function pimg(p,cls='',i=0){
   if(!p)return `<span class="ph ${cls}" style="--t:#889">${sv(CAT_ICONS.tag)}</span>`;
   const im=(p.images||[])[i];
-  if(im)return `<img class="${cls}" src="${im}" alt="${esc(p.name)}" loading="lazy">`;
-  const c=catOf(p.cat);return `<span class="ph ${cls}" style="--t:${c.tint}" role="img" aria-label="${esc(p.name)}">${sv(CAT_ICONS[c.icon]||CAT_ICONS.tag)}</span>`;
+  const c=catOf(p.cat);
+  if(im)return `<img class="${cls}" src="${im}" alt="${esc(p.name)}" loading="lazy" referrerpolicy="no-referrer" data-t="${c.tint}" data-ic="${c.icon}" onerror="imgFail(this)">`;return `<span class="ph ${cls}" style="--t:${c.tint}" role="img" aria-label="${esc(p.name)}">${sv(CAT_ICONS[c.icon]||CAT_ICONS.tag)}</span>`;
 }
+function imgFail(el){if(el.classList.contains('alt')){el.remove();return}const s=document.createElement('span');s.className='ph broken '+el.className;s.style.setProperty('--t',el.dataset.t||'#889');s.setAttribute('role','img');s.setAttribute('aria-label',el.alt||'');s.innerHTML=sv(CAT_ICONS[el.dataset.ic]||CAT_ICONS.tag);el.replaceWith(s)}
 const catIcon=(c,w=20)=>`<span class="ci" style="--t:${c.tint}">${sv(CAT_ICONS[c.icon]||CAT_ICONS.tag,w)}</span>`;
 function soldQty(pid){let n=0;for(const o of S.orders)if(!['cancelled','returned'].includes(o.status))for(const it of o.items)if(it.pid===pid)n+=it.qty;return n}
 const pillSt=s=>`<span class="pill ${STATUS[s].c}">${STATUS[s].t}</span>`;
@@ -1000,7 +1014,7 @@ function selKeyC(ctx){const b=BX[ctx],p=prod(b.pid);if(!p)return null;if(!hasOpt
 function galleryHtml(ctx,p){
   const n=Math.max(1,(p.images||[]).length),b=BX[ctx];
   return `<div class="gallery"><div class="gmain" id="${ctx}Main">${pimg(p,'',Math.min(b.img,n-1))}<span class="tags">${inFlash(p)?`<span class="tag flash">⚡ ${t('tagFlash')}</span>`:''}${pctOff(p)?`<span class="tag">-${pctOff(p)}%</span>`:''}</span></div>
-  ${n>1?`<div class="gthumbs">${p.images.map((im,i)=>`<button class="${i===b.img?'on':''}" data-act="gimg" data-ctx="${ctx}" data-i="${i}" aria-label="Image ${i+1}"><img src="${im}" alt=""></button>`).join('')}</div>`:''}</div>`;
+  ${n>1?`<div class="gthumbs">${p.images.map((im,i)=>`<button class="${i===b.img?'on':''}" data-act="gimg" data-ctx="${ctx}" data-i="${i}" aria-label="Image ${i+1}"><img src="${im}" alt="" referrerpolicy="no-referrer" onerror="this.style.visibility='hidden'"></button>`).join('')}</div>`:''}</div>`;
 }
 function buyBox(ctx,p){
   const b=BX[ctx];
