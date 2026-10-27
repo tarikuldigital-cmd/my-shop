@@ -539,9 +539,20 @@ function seed(){
         refund:'পণ্য হাতে পাওয়ার ৩ দিনের মধ্যে ক্ষতিগ্রস্ত, ভুল পণ্য বা ভুল সাইজের জন্য রিটার্ন বা রিপ্লেসমেন্ট নেওয়া যাবে। রিফান্ড বিকাশ বা নগদে ৩-৫ কর্মদিবসের মধ্যে দেওয়া হয়। ডেলিভারির সময় পণ্য না নিলে ডেলিভারি চার্জ দিতে হবে।'}},
     categories,products,orders,staff,me:0,nextInv:inv,messages:[{id:'m1',name:'আরিফ হোসেন',phone:'01712000000',msg:'স্মার্ট ওয়াচ কি আইফোনের সাথে কানেক্ট হবে?',at:now-3*HOUR,read:false}],
     coupons:[{code:'WELCOME10',type:'percent',value:10,min:1000,active:true,used:7},{code:'SAVE200',type:'flat',value:200,min:2500,active:true,used:3},{code:'EID300',type:'flat',value:300,min:3000,active:false,used:12}],
-    cart:[],wish:[],user:null,lastSeen:now-6*HOUR};
+    cart:[],wish:[],user:null,lastSeen:now-6*HOUR,incomplete:seedIncomplete(products,now)};
+}
+function seedIncomplete(products,now){
+  const R=mulberry32(9917),rnd=()=>R(),pick=a=>a[Math.floor(rnd()*a.length)];
+  const nm=['সাবিনা ইয়াসমিন','রাশেদ খান','মিতু আক্তার','জুবায়ের হোসেন','নাজমা বেগম','তাসলিমা নাসরিন','ফয়সাল আহমেদ','রুবিনা খাতুন','সজীব হাসান'];
+  const st=['new','new','new','new','contacted','contacted','converted','converted','dropped'];
+  return st.map((status,i)=>{const p=pick(products),v=pick(p.variants),qty=rnd()<.8?1:2;const hasAddr=rnd()<.6;const d=rnd()<.5?'ঢাকা':pick(['চট্টগ্রাম','সিলেট','খুলনা','রাজশাহী','গাজীপুর']);
+    const at=now-(i*7+rnd()*6)*HOUR;
+    return {id:'d'+i,name:rnd()<.85?nm[i]:'',phone:'01'+pick(['3','7','8','9','5','6'])+String(Math.floor(rnd()*1e8)).padStart(8,'0'),address:hasAddr?'বাড়ি '+(10+i)+', রোড '+(2+i):'',district:hasAddr?d:'',
+      items:[{pid:p.id,vkey:v.key,name:p.name,price:v.price,qty}],sub:v.price*qty,at,updated:at+4*6e4,status,
+      log:status==='new'?[]:[{t:status==='dropped'?'বাদ দেওয়া হয়েছে':status==='converted'?'অর্ডারে রূপান্তর':'ফোন করা হয়েছে',by:'রিয়া',at:at+2*HOUR}],orderInv:status==='converted'?'INV-'+(20090-i):''}});
 }
 let S=DB.load()||seed();
+if(!S.incomplete){S.incomplete=seedIncomplete(S.products,Date.now());}
 let storageWarned=false;
 function save(){if(!DB.save(S)&&!storageWarned){storageWarned=true;toast('ব্রাউজারে ডেটা সেভ হচ্ছে না, রিফ্রেশ করলে পরিবর্তন মুছে যাবে')}}
 
@@ -854,7 +865,16 @@ function showCheckout(){
   const sub=items.reduce((s,x)=>s+x.v.price*x.qty,0);
   const sum=()=>{const d=$('#coDist').value,del=d?deliveryFor(d):0,cc=couponCalc(coupon,sub);
     $('#coSum').innerHTML=`<div class="sumrow small"><span>সাবটোটাল</span><span class="num">${tk(sub)}</span></div><div class="sumrow small"><span>ডেলিভারি চার্জ ${d?(d==='ঢাকা'?'(ঢাকার ভেতরে)':'(ঢাকার বাইরে)'):''}</span><span class="num">${d?tk(del):'জেলা বাছাই করুন'}</span></div>${cc.d?`<div class="sumrow small" style="color:var(--good)"><span>কুপন ছাড় (${esc(cc.c.code)})</span><span class="num">−${tk(cc.d)}</span></div>`:''}<div class="sumrow total"><span>সর্বমোট</span><span class="num">${tk(sub+del-cc.d)}</span></div>`};
-  sum();$('#coDist').onchange=sum;
+  sum();$('#coDist').onchange=()=>{sum();saveDraft()};
+  // ইনকমপ্লিট অর্ডার: সঠিক মোবাইল নম্বর লিখলেই তথ্য জমা হয়, অর্ডার না দিলেও
+  const draftId='d'+Date.now();let dT=null;
+  const saveDraft=()=>{const phone=$('#coPhone').value;if(!validPhone(phone))return;
+    const its=items.map(x=>({pid:x.pid,vkey:x.vkey,name:x.p.name,price:x.v.price,qty:x.qty}));
+    let d=S.incomplete.find(x=>x.id===draftId);
+    if(!d){d={id:draftId,at:Date.now(),status:'new',log:[],orderInv:''};S.incomplete.unshift(d)}
+    Object.assign(d,{name:$('#coName').value.trim(),phone:normPhone(phone),address:$('#coAddr').value.trim(),district:$('#coDist').value,items:its,sub,updated:Date.now()});save()};
+  ['coName','coPhone','coAddr','coNote'].forEach(id=>{const el=$('#'+id);el.addEventListener('input',()=>{clearTimeout(dT);dT=setTimeout(saveDraft,700)});el.addEventListener('blur',saveDraft)});
+  if(validPhone($('#coPhone').value))saveDraft();
   $('#coApply').onclick=()=>{const c=$('#coCoupon').value,r=couponCalc(c,sub);if(r.err){coupon='';$('#coCErr').textContent=r.err}else{coupon=c;$('#coCErr').innerHTML=`<span style="color:var(--good)">কুপন যোগ হয়েছে, ${tk(r.d)} ছাড়</span>`}sum()};
   $('#coForm').onsubmit=e=>{e.preventDefault();
     const name=$('#coName').value.trim(),phone=$('#coPhone').value.trim(),address=$('#coAddr').value.trim(),district=$('#coDist').value;
@@ -862,6 +882,7 @@ function showCheckout(){
     const short=items.find(x=>x.qty>x.v.stock);if(!err&&short)err=`"${short.p.name}" এখন স্টকে ${short.v.stock}টি আছে, কার্ট ঠিক করুন`;
     if(err){$('#coErr').textContent=err;return}
     const o=createOrder({name,phone,address,district,items:items.map(x=>({pid:x.pid,vkey:x.vkey,name:x.p.name,price:x.v.price,qty:x.qty})),coupon,note:$('#coNote').value.trim(),source:'ওয়েবসাইট'});
+    S.incomplete=S.incomplete.filter(x=>x.id!==draftId);S.incomplete.forEach(x=>{if(x.phone===o.phone&&['new','contacted'].includes(x.status)&&Date.now()-x.at<3*DAY){x.status='converted';x.orderInv=o.inv;x.log.push({t:'কাস্টমার নিজে অর্ডার করেছে ('+o.inv+')',by:'সিস্টেম',at:Date.now()})}});
     S.cart=[];if(!S.user)S.user={name,phone:normPhone(phone)};save();updateCartBadges();
     openModal('অর্ডার সফল হয়েছে',`<div style="text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center">
       <div style="width:56px;height:56px;border-radius:50%;background:var(--brand-soft);color:var(--brand);display:flex;align-items:center;justify-content:center;font-size:28px">✓</div>
@@ -877,7 +898,7 @@ function showMore(){openModal('আরও',`<div class="morelist"><a href="#track
    ========================================================= */
 let adm={range:'30',status:'all',courier:'',q:'',sel:new Set(),pq:'',pcat:'',notif:false,cq:''};
 let authed=false;try{authed=sessionStorage.getItem('sg_admin')==='1'}catch(e){}
-const PAGES={overview:'ওভারভিউ',orders:'অর্ডার ম্যানেজমেন্ট',returns:'রিটার্ন ড্যাশবোর্ড',customers:'কাস্টমার',messages:'কাস্টমার মেসেজ',products:'প্রোডাক্ট ও ভেরিয়েশন',categories:'ক্যাটাগরি',coupons:'কুপন',settings:'স্টোর সেটিংস'};
+const PAGES={overview:'ওভারভিউ',orders:'অর্ডার ম্যানেজমেন্ট',returns:'রিটার্ন ড্যাশবোর্ড',incomplete:'অসম্পূর্ণ অর্ডার',customers:'কাস্টমার',messages:'কাস্টমার মেসেজ',products:'প্রোডাক্ট ও ভেরিয়েশন',categories:'ক্যাটাগরি',coupons:'কুপন',settings:'স্টোর সেটিংস'};
 const RANGES=[['today','আজ'],['yesterday','গতকাল'],['7','৭ দিন'],['30','৩০ দিন'],['all','সব সময়']];
 function rangeBounds(r){const t0=startOfDay(Date.now());if(r==='today')return [t0,Infinity];if(r==='yesterday')return [t0-DAY,t0];if(r==='all')return [0,Infinity];return [t0-(+r-1)*DAY,Infinity]}
 function inRange(o,r=adm.range){const [a,b]=rangeBounds(r);return o.createdAt>=a&&o.createdAt<b}
@@ -897,7 +918,7 @@ function adminShell(page,inner){
   const nav=(k,t,b)=>`<a class="nav ${page===k?'on':''}" href="#admin${k==='overview'?'':'-'+k}">${t}${b?`<span class="badge">${b}</span>`:''}</a>`;
   return `<div class="admin"><aside class="aside" aria-label="অ্যাডমিন মেনু">
     <a class="logo" href="#admin">${logoHtml()}</a>
-    <div class="grp">অর্ডার</div>${nav('overview','ওভারভিউ')}${nav('orders','অর্ডার',pend)}${nav('returns','রিটার্ন')}
+    <div class="grp">অর্ডার</div>${nav('overview','ওভারভিউ')}${nav('orders','অর্ডার',pend)}${nav('incomplete','অসম্পূর্ণ অর্ডার',S.incomplete.filter(x=>x.status==='new').length)}${nav('returns','রিটার্ন')}
     <div class="grp">কাস্টমার</div>${nav('customers','কাস্টমার')}${nav('messages','মেসেজ',msgs)}
     <div class="grp">ক্যাটালগ</div>${nav('products','প্রোডাক্ট')}${nav('categories','ক্যাটাগরি')}${nav('coupons','কুপন')}
     <div class="grp">স্টোর</div>${nav('settings','সেটিংস')}<a class="nav" href="#home">স্টোর দেখুন ↗</a>
@@ -953,6 +974,7 @@ function pageOverview(){
   const topCR=Object.entries(cr).sort((a,b)=>b[1]-a[1])[0];if(topCR)ins.push(['warn',`ক্যানসেলের সবচেয়ে বড় কারণ "${esc(topCR[0])}" (${topCR[1]}টি)।`]);
   const best=cour.filter(c=>c.d+c.r>=3).sort((a,b)=>b.rate-a.rate)[0];if(best)ins.push(['ok',`এই সময়ে ${COURIERS[best.c].t}-এর ডেলিভারি সফলতা সবচেয়ে বেশি, ${best.rate}%।`]);
   if(lowV.length)ins.push(['warn',`${lowV.length}টি ভেরিয়েশনের স্টক ৩টি বা তার কম, যেমন ${lowV.slice(0,2).map(x=>esc(x.p.name)+(x.v.key?' ('+esc(x.v.key)+')':'')).join(', ')}।`]);
+  {const ni=S.incomplete.filter(x=>x.status==='new');if(ni.length)ins.unshift(['warn',`${ni.length}টি অসম্পূর্ণ অর্ডার ফলো-আপের অপেক্ষায়, সম্ভাব্য বিক্রি ${tk(ni.reduce((s,x)=>s+x.sub,0))}। <a href="#admin-incomplete">এখনই কল করুন</a>`])}
   if(topCat[0])ins.push(['ok',`সবচেয়ে বেশি বিক্রি "${esc(topCat[0][0])}" ক্যাটাগরিতে, ${tk(topCat[0][1])}।`]);
   return `<div class="kpis">${kpis.map(k=>`<div class="kpi" style="--k:${k[3]}"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="s">${k[2]}</div></div>`).join('')}</div>
   <div class="panels">
@@ -1061,6 +1083,44 @@ function newOrderForm(){
     const o=createOrder({name,phone,address,district:$('#noDist').value,items,source:$('#noSrc').value,by:meName(),status:$('#noConf').checked?'confirmed':'pending'});
     closeModal();toast(`${o.inv} তৈরি হয়েছে`);adm.status='all';refreshAdmin();
   };
+}
+const INC_ST={new:{t:'নতুন, ফলো-আপ বাকি',c:'warn'},contacted:{t:'যোগাযোগ করা হয়েছে',c:'info'},converted:{t:'অর্ডারে রূপান্তরিত',c:'good'},dropped:{t:'বাদ দেওয়া',c:''}};
+let incFilter='new';
+function pageIncomplete(){
+  const L=S.incomplete,cnt=k=>k==='all'?L.length:L.filter(x=>x.status===k).length;
+  const open=L.filter(x=>['new','contacted'].includes(x.status)),conv=cnt('converted'),closed=conv+cnt('dropped');
+  const list=L.filter(x=>incFilter==='all'||x.status===incFilter).sort((a,b)=>b.updated-a.updated);
+  return `<div class="demo-note" style="font-size:14px">কাস্টমার চেকআউট ফর্মে সঠিক মোবাইল নম্বর লিখে অর্ডার না দিয়ে চলে গেলে তার নাম, ফোন, ঠিকানা আর কার্টের প্রোডাক্ট এখানে জমা হয়। ফোন বা হোয়াটসঅ্যাপে যোগাযোগ করে অর্ডারটা ফিরিয়ে আনুন।</div>
+  <div class="kpis" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr))">
+    <div class="kpi" style="--k:var(--warn)"><div class="l">ফলো-আপ বাকি</div><div class="v">${cnt('new')}</div><div class="s">${cnt('contacted')}টিতে যোগাযোগ হয়েছে</div></div>
+    <div class="kpi" style="--k:var(--accent)"><div class="l">সম্ভাব্য বিক্রি</div><div class="v">${tk(open.reduce((s,x)=>s+x.sub,0))}</div><div class="s">খোলা ${open.length}টির কার্ট মূল্য</div></div>
+    <div class="kpi" style="--k:var(--good)"><div class="l">রিকভার হয়েছে</div><div class="v">${conv}</div><div class="s">${tk(L.filter(x=>x.status==='converted').reduce((s,x)=>s+x.sub,0))} বিক্রি</div></div>
+    <div class="kpi" style="--k:var(--info)"><div class="l">রিকভারি রেট</div><div class="v">${closed?Math.round(conv/closed*100):0}%</div><div class="s">বন্ধ হওয়াগুলোর মধ্যে</div></div></div>
+  <div class="chips">${[['new','নতুন'],['contacted','যোগাযোগ হয়েছে'],['converted','রূপান্তরিত'],['dropped','বাদ'],['all','সব']].map(([k,t])=>`<button class="chip ${incFilter===k?'on':''}" data-act="incf" data-id="${k}">${t}<span class="c">${cnt(k)}</span></button>`).join('')}</div>
+  <div class="tbl-wrap"><table class="t"><thead><tr><th>সময়</th><th>কাস্টমার</th><th>ফোন</th><th>ঠিকানা</th><th>কার্টে ছিল</th><th>টাকা</th><th>অবস্থা</th><th></th></tr></thead><tbody>
+  ${list.map(x=>{const same=S.orders.filter(o=>o.phone===x.phone).length;return `<tr><td class="small" style="white-space:nowrap">${ago(x.updated)}<div class="muted">${fdate(x.at)}</div></td>
+    <td>${x.name?esc(x.name):'<span class="muted">নাম দেয়নি</span>'}${same?`<div class="small muted">আগে ${same}টি অর্ডার</div>`:''}</td><td class="num">${x.phone}</td>
+    <td class="small" style="max-width:200px">${x.address?esc(x.address)+(x.district?', '+esc(x.district):''):'<span class="muted">দেয়নি</span>'}</td>
+    <td class="small" style="max-width:220px">${x.items.map(i=>itemLabel(i)+' ×'+i.qty).join('<br>')}</td><td class="num"><b>${tk(x.sub)}</b></td>
+    <td><span class="pill ${INC_ST[x.status].c}">${INC_ST[x.status].t}</span>${x.orderInv?`<div class="small num muted">${x.orderInv}</div>`:''}${x.log.length?`<div class="small muted">${esc(x.log[x.log.length-1].t)} · ${esc(x.log[x.log.length-1].by)}</div>`:''}</td>
+    <td><div class="row" style="flex-wrap:nowrap">${['new','contacted'].includes(x.status)?`<button class="btn sm" data-act="incconv" data-id="${x.id}">অর্ডার বানান</button><button class="btn sm plain" data-act="incmsg" data-id="${x.id}">মেসেজ কপি</button>${x.status==='new'?`<button class="btn sm plain" data-act="incst" data-id="${x.id}" data-s="contacted">যোগাযোগ করেছি</button>`:''}<button class="btn sm plain" data-act="incst" data-id="${x.id}" data-s="dropped" style="color:var(--bad)">বাদ দিন</button>`:x.status==='dropped'?`<button class="btn sm plain" data-act="incst" data-id="${x.id}" data-s="new">আবার খুলুন</button>`:''}</div></td></tr>`}).join('')||'<tr><td colspan="8"><div class="empty" style="border:0">এই তালিকায় কিছু নেই</div></td></tr>'}
+  </tbody></table></div>`;
+}
+function incConvert(id){
+  const x=S.incomplete.find(d=>d.id===id);if(!x)return;
+  for(const it of x.items){const p=prod(it.pid),v=p&&variant(p,it.vkey);if(!v||v.stock<it.qty){toast(`"${itemText(it)}" এখন যথেষ্ট স্টকে নেই`);return}}
+  openModal('অসম্পূর্ণ অর্ডার থেকে অর্ডার বানান',`<form id="icf" style="display:flex;flex-direction:column;gap:12px" novalidate>
+    <p class="small muted" style="margin:0">কাস্টমারের সাথে কথা বলে বাকি তথ্য ঠিক করে নিন।</p>
+    <div class="grid2"><div class="field"><label for="icName">নাম *</label><input class="inp" id="icName" value="${esc(x.name)}"></div><div class="field"><label for="icPhone">ফোন *</label><input class="inp" id="icPhone" value="${esc(x.phone)}"></div></div>
+    <div class="field"><label for="icAddr">ঠিকানা *</label><input class="inp" id="icAddr" value="${esc(x.address)}"></div>
+    <div class="field"><label for="icDist">জেলা *</label><select class="inp" id="icDist"><option value="">জেলা বাছাই করুন</option>${DISTRICTS.map(d=>`<option ${d===x.district?'selected':''}>${d}</option>`).join('')}</select></div>
+    <div class="card" style="padding:10px 12px">${x.items.map(i=>`<div class="sumrow small"><span>${itemLabel(i)} × ${i.qty}</span><span class="num">${tk(i.price*i.qty)}</span></div>`).join('')}</div>
+    <label class="opt"><input type="checkbox" id="icConf" checked>কাস্টমার ফোনে কনফার্ম করেছে</label>
+    <span class="err" id="icErr"></span><button class="btn">অর্ডার তৈরি করুন</button></form>`);
+  $('#icf').onsubmit=e=>{e.preventDefault();const name=$('#icName').value.trim(),phone=$('#icPhone').value.trim(),address=$('#icAddr').value.trim(),district=$('#icDist').value;
+    if(!name||!validPhone(phone)||!address||!district){$('#icErr').textContent='নাম, সঠিক ফোন, ঠিকানা আর জেলা দিন';return}
+    const o=createOrder({name,phone,address,district,items:x.items.map(i=>({...i})),source:'অসম্পূর্ণ থেকে রিকভার',by:meName(),status:$('#icConf').checked?'confirmed':'pending'});
+    x.status='converted';x.orderInv=o.inv;x.log.push({t:'অর্ডারে রূপান্তর ('+o.inv+')',by:meName(),at:Date.now()});save();closeModal();toast(`${o.inv} তৈরি হয়েছে`);refreshAdmin()};
 }
 function pageReturns(){
   const R=S.orders.filter(o=>o.status==='returned'||o.ret),dl=S.orders.filter(o=>['delivered','returned'].includes(o.status)).length,ref=R.filter(o=>o.ret&&o.ret.type==='refund');
@@ -1179,7 +1239,7 @@ let curAdminPage='overview';
 function renderAdmin(page){
   curAdminPage=page;clearInterval(slideTimer);
   if(!authed){$('#app').innerHTML=loginView();$('#lf').onsubmit=e=>{e.preventDefault();if($('#lEmail').value.trim()==='admin@demo.com'&&$('#lPass').value==='123456'){authed=true;try{sessionStorage.setItem('sg_admin','1')}catch(e){}renderAdmin(page)}else $('#lErr').textContent='ইমেইল বা পাসওয়ার্ড ভুল'};return}
-  const inner={overview:pageOverview,orders:pageOrders,returns:pageReturns,customers:pageCustomers,messages:pageMessages,products:pageProducts,categories:pageCategories,coupons:pageCoupons,settings:pageSettings}[page]();
+  const inner={overview:pageOverview,orders:pageOrders,returns:pageReturns,incomplete:pageIncomplete,customers:pageCustomers,messages:pageMessages,products:pageProducts,categories:pageCategories,coupons:pageCoupons,settings:pageSettings}[page]();
   $('#app').innerHTML=adminShell(page,inner);
   $('#meSel').onchange=e=>{S.me=+e.target.value;save();toast(`এখন ${meName()} হিসেবে কাজ করছেন`)};
   if(page==='orders'){renderOrdersTable();$('#oq').oninput=e=>{adm.q=e.target.value;renderOrdersTable()}}
@@ -1249,6 +1309,10 @@ const A={
   copymsg:t=>{try{navigator.clipboard.writeText(t.dataset.msg).then(()=>toast('মেসেজ কপি হয়েছে'),()=>toast('কপি করা যায়নি'))}catch(e){toast('কপি করা যায়নি')}},
   addnote:t=>{const v=$('#noteIn').value.trim();if(!v)return;const o=S.orders.find(x=>x.id===t.dataset.id);o.history.push({s:'note',by:meName(),at:Date.now(),note:v});save();orderDrawer(o.id)},
   retst:t=>{const o=S.orders.find(x=>x.id===t.dataset.id);if(!o.ret)o.ret={type:'return',reason:'—',st:'requested',at:Date.now()};o.ret.st=t.dataset.s;o.history.push({s:'note',by:meName(),at:Date.now(),note:RET_ST[t.dataset.s]});save();toast(RET_ST[t.dataset.s]);refreshAdmin()},
+  incf:t=>{incFilter=t.dataset.id;refreshAdmin()},
+  incconv:t=>incConvert(t.dataset.id),
+  incst:t=>{const x=S.incomplete.find(d=>d.id===t.dataset.id);if(!x)return;x.status=t.dataset.s;x.log.push({t:{contacted:'ফোন করা হয়েছে',dropped:'বাদ দেওয়া হয়েছে',new:'আবার খোলা হয়েছে'}[t.dataset.s],by:meName(),at:Date.now()});x.updated=Date.now();save();refreshAdmin()},
+  incmsg:t=>{const x=S.incomplete.find(d=>d.id===t.dataset.id);const m=`আসসালামু আলাইকুম${x.name?' '+x.name:''}, ${S.settings.name} থেকে বলছি। আপনি আমাদের সাইটে ${x.items.map(itemText).join(', ')} অর্ডার করতে চেয়েছিলেন, কিন্তু অর্ডারটি সম্পূর্ণ হয়নি। কোনো সমস্যা হয়ে থাকলে জানান, আমরা এখনই অর্ডারটি নিয়ে নিতে পারি। ক্যাশ অন ডেলিভারি।`;try{navigator.clipboard.writeText(m).then(()=>toast('মেসেজ কপি হয়েছে, হোয়াটসঅ্যাপে পেস্ট করুন'),()=>toast('কপি করা যায়নি'))}catch(e){toast('কপি করা যায়নি')}},
   msgread:t=>{const m=S.messages.find(x=>x.id===t.dataset.id);if(m)m.read=true;save();refreshAdmin()},
   pedit:t=>productForm(t.dataset.id),
   pdel:t=>{const p=prod(t.dataset.id);askConfirm(`"${esc(p.name)}" মুছে ফেলবেন? আগের অর্ডারে নামটা থেকে যাবে।`,()=>{S.products=S.products.filter(x=>x!==p);S.cart=S.cart.filter(x=>x.pid!==p.id);S.wish=S.wish.filter(x=>x!==p.id);save();refreshAdmin();toast('প্রোডাক্ট মুছে ফেলা হয়েছে')},'মুছে ফেলুন')},
