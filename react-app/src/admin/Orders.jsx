@@ -2,7 +2,7 @@ import {useState} from 'react';
 import {S,STATUS,ST_KEYS,COURIERS,PAY,PAY_ST,RET_TYPES,RET_ST,CANCEL_REASONS,RETURN_REASONS,AREAS,SOURCES,tk,fdate,startOfDay,prod,variant,totalStock,
   itemText,validPhone,createOrder,setStatus,sendToCourier,save,toast,openModal,closeModal,meName} from '../lib/core.js';
 import {Icon,Pill,ItemLabel} from '../components/ui.jsx';
-import {adm,setAdm,useAdm,ordersBase,ordersFiltered,OTABS,OPP,trackUrl,waNum,riskOf,isLive,exportCSV,frPhone,frBusy,fraudCheck,frCls} from './logic.js';
+import {adm,setAdm,useAdm,ordersBase,ordersFiltered,OTABS,OPP,trackUrl,waNum,riskOf,isLive,exportCSV,frPhone,frBusy,fraudCheck,frCls,getDirectKey,setDirectKey} from './logic.js';
 import {copyText} from '../shop/views.jsx';
 
 /* ---------- fraud check UI ---------- */
@@ -13,8 +13,15 @@ export function FraudBadge({phone}){
   if(!c.sum.total)return <button className="fr-b new" onClick={click} title="No previous parcels with any courier">New customer</button>;
   return <button className={'fr-b '+frCls(c.sum.ratio)} onClick={click} title={`Total ${c.sum.total} · Delivered ${c.sum.ok} · Cancelled ${c.sum.cancel}`}>{Math.round(c.sum.ratio)}% · {c.sum.ok}/{c.sum.total}</button>;
 }
+function KeyBox({onDone}){
+  const [k,setK]=useState('');
+  return <div style={{display:'flex',flexDirection:'column',gap:8}}><span className="small muted">Paste your BD Courier API key once (from app.bdcourier.com → API). It is saved only in this browser.</span>
+    <div className="row" style={{flexWrap:'nowrap'}}><input className="inp" type="password" autoComplete="off" placeholder="BD Courier API key" value={k} onChange={e=>setK(e.target.value)} aria-label="BD Courier API key"/>
+      <button className="btn sm" onClick={()=>{if(k.trim().length<10){toast('Paste the full API key');return}setDirectKey(k.trim());toast('API key saved');onDone()}}>Save & check</button></div></div>;
+}
 function FraudDetail({phone}){
-  const p=frPhone(phone),c=S.fraud[p];
+  const p=frPhone(phone),c=S.fraud[p];const [,re]=useState(0);
+  if(!c&&!getDirectKey()&&!S.settings.fraudSecret)return <KeyBox onDone={()=>{re(x=>x+1);fraudCheck(p,true)}}/>;
   if(frBusy.has(p))return <div className="muted small">Fetching history from BD Courier…</div>;
   if(!c)return <div className="row"><span className="small muted">Courier history for this number has not been checked yet.</span><button className="btn sm" onClick={()=>fraudCheck(p,true)}>Check courier history</button></div>;
   const s=c.sum;
