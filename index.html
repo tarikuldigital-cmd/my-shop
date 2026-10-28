@@ -469,7 +469,7 @@ table.t .inp{padding:6px 8px}
    ========================================================= */
 const DB={
   key:'scg_store_v4',
-  load(){try{const r=localStorage.getItem(this.key);if(r){const d=JSON.parse(r);if(d&&d.v===4)return d}}catch(e){}return null},
+  load(){try{const r=localStorage.getItem(this.key);if(r){const d=JSON.parse(r);if(d&&d.v===4){if(d.settings&&/Chaina/.test(d.settings.name||''))d.settings.name=d.settings.name.replace('Chaina','China');return d}}}catch(e){}return null},
   save(state){try{localStorage.setItem(this.key,JSON.stringify(state));return true}catch(e){return false}}
 };
 
