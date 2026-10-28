@@ -212,7 +212,7 @@ const toLocal=ts=>{const d=new Date(ts);return `${d.getFullYear()}-${pad(d.getMo
 export function Settings(){
   const s=S.settings;
   const [f,setF]=useState(()=>({...s,flash:{...s.flash,pids:[...s.flash.pids],end:toLocal(s.flash.endsAt)},banners:s.banners.map(b=>({...b})),pages:{...s.pages},pagesEn:{...(s.pagesEn||{})}}));
-  const [apiKey,setApiKey]=useState(getDirectKey);
+  const [apiKey,setApiKey]=useState(getDirectKey),[plan,setPlan]=useState(null);
   const up=k=>e=>setF({...f,[k]:e.target.value});
   const F=(k,l,type='text',ph='')=><div className="field"><label htmlFor={'st_'+k}>{l}</label><input className="inp" type={type} id={'st_'+k} value={f[k]??''} placeholder={ph} onChange={up(k)}/></div>;
   const fl=f.flash,setFl=p=>setF({...f,flash:{...fl,...p}}),setBn=(i,k,v)=>setF({...f,banners:f.banners.map((b,j)=>j===i?{...b,[k]:v}:b)});
@@ -224,7 +224,7 @@ export function Settings(){
     if(st.ga4Id&&!/^G-[A-Z0-9]{4,20}$/.test(st.ga4Id))toast('GA4 ID should look like G-XXXXXXX');
     st.flash={on:fl.on,title:fl.title.trim()||'Flash Sale',titleEn:fl.title.trim(),endsAt:new Date(fl.end).getTime()||Date.now()+DAY,pids:fl.pids};
     setDirectKey(apiKey.trim());st.banners=f.banners.map(b=>({...b,titleEn:b.title,subEn:b.sub,ctaEn:b.cta}));st.pages=f.pages;st.pagesEn={...f.pages};save();applyTheme();toast('Settings saved')};
-  const test=async()=>{setDirectKey(apiKey.trim());S.settings.fraudUrl=(f.fraudUrl||'').trim()||'courier-check.php';S.settings.fraudSecret=(f.fraudSecret||'').trim();save();try{await frCall({action:'ping'});toast('BD Courier connection OK ✓')}catch(e){toast(e.message)}};
+  const test=async()=>{setDirectKey(apiKey.trim());S.settings.fraudUrl=(f.fraudUrl||'').trim()||'courier-check.php';S.settings.fraudSecret=(f.fraudSecret||'').trim();save();try{await frCall({action:'ping'});toast('BD Courier connection OK ✓');if(getDirectKey()){const r=await frCall({action:'plan'});setPlan(r&&r.data||null)}}catch(e){toast(e.message)}};
   const logo=async e=>{const fl=e.target.files[0];if(!fl)return;S.settings.logo=await resizeImage(fl,120,'h');save();toast('Logo saved')};
   return <><form className="panels" onSubmit={submit}>
     <div className="panel w6" style={{display:'flex',flexDirection:'column',gap:12}}><h3>Store details</h3><div className="grid2">{F('name','Store name')}{F('phone','Hotline number')}</div>
@@ -251,7 +251,9 @@ export function Settings(){
       <div className="field"><label htmlFor="st_bdkey">BD Courier API key (option 1: works anywhere, saved only in this browser)</label><input className="inp" id="st_bdkey" type="password" autoComplete="off" value={apiKey} onChange={e=>setApiKey(e.target.value)} placeholder="Paste the key from app.bdcourier.com → API"/></div>
       <p className="small muted" style={{margin:0}}>Option 2 for your own hosting: keep the key in courier-check.php and enter its secret word below.</p>
       <div className="grid2">{F('fraudUrl','PHP file path','text','courier-check.php')}{F('fraudSecret','Secret word (same as in the PHP file)','password')}</div>
-      <div className="row"><button type="button" className="btn sm plain" onClick={test}>Test connection</button><span className="small muted">The key is never saved to GitHub or shared with customers.</span></div></div>
+      <div className="row"><button type="button" className="btn sm plain" onClick={test}>Test connection</button><span className="small muted">The key is never saved to GitHub or shared with customers.</span></div>
+      {plan&&<div className="card" style={{padding:'10px 12px'}}><b>BD Courier plan: {plan.plan_name||'—'}</b> <span className={'pill nodot '+(plan.status==='active'?'good':'warn')}>{plan.status||(plan.has_subscription?'active':'no subscription')}</span>
+        <div className="small" style={{marginTop:6,lineHeight:1.8}}>Checks left: <b>{(+plan.remaining_free_calls||0)+(+plan.remaining_paid_calls||0)}</b> (free {plan.remaining_free_calls??0}, paid {plan.remaining_paid_calls??0}){plan.expires_at?<><br/>Expires: {String(plan.expires_at).slice(0,10)}{plan.days_remaining!=null?` (${plan.days_remaining} days left)`:''}</>:null}</div></div>}</div>
     <div className="panel w12" style={{display:'flex',flexDirection:'column',gap:12}}><h3>Homepage banner slider</h3><div className="panels">
       {f.banners.map((b,i)=><div className="panel" key={i} style={{display:'flex',flexDirection:'column',gap:8,background:'var(--bg)'}}><b className="small">Banner {i+1}</b>
         <input className="inp" value={b.title} onChange={e=>setBn(i,'title',e.target.value)} placeholder="Title" aria-label="Title"/>

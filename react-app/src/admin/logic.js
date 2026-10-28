@@ -65,7 +65,7 @@ const KEY_LS='scg_bdc_key';
 export const getDirectKey=()=>{try{return localStorage.getItem(KEY_LS)||''}catch(e){return ''}};
 export const setDirectKey=k=>{try{k?localStorage.setItem(KEY_LS,k):localStorage.removeItem(KEY_LS)}catch(e){}};
 async function directCall(body,key){
-  const ping=body.action==='ping',url='https://api.bdcourier.com/'+(ping?'check-connection':'courier-check?phone='+body.phone);
+  const ping=body.action==='ping'||body.action==='plan',url='https://api.bdcourier.com/'+(body.action==='plan'?'my-plan':body.action==='ping'?'check-connection':'courier-check?phone='+body.phone);
   let r;try{r=await fetch(url,{method:ping?'GET':'POST',headers:{'Authorization':'Bearer '+key,'Accept':'application/json',...(ping?{}:{'Content-Type':'application/json'})},body:ping?undefined:JSON.stringify({phone:body.phone})})}
   catch(e){throw new Error('BD Courier blocked the request from the browser. Use courier-check.php on your own hosting instead.')}
   let j;try{j=await r.json()}catch(e){throw new Error('BD Courier sent an unreadable reply (HTTP '+r.status+')')}
