@@ -1,73 +1,53 @@
-# Smart China Gallery: ই-কমার্স ওয়েবসাইট
+# Smart China Gallery
 
-যেকোনো ধরনের প্রোডাক্টের জন্য একটা অনলাইন শপ। প্রতিটা প্রোডাক্টে সাইজ, রঙ বা ওজনের মতো ভেরিয়েশন রাখা যায়, প্রতিটার দাম আর স্টক আলাদা। সাথে আছে অর্ডার ম্যানেজমেন্টের অ্যাডমিন প্যানেল।
+Online store for Smart China Gallery (New Paltan, Dhaka · WhatsApp +880 1338-325365), built with **React + Vite**.
+Everything is in English: storefront, checkout and admin panel.
 
-পুরো সাইট একটাই ফাইলে: `index.html`। কোনো বিল্ড বা ইনস্টল লাগে না।
+- **Live demo:** https://tarikuldigital-cmd.github.io/my-shop/
+- **Admin:** add `#admin` to the address. Demo login: `admin@demo.com` / `123456`
 
-## GitHub Pages-এ লাইভ করার নিয়ম
+## Features
 
-1. github.com-এ লগইন করুন। উপরে ডানে **+** চেপে **New repository** বাছুন।
-2. রিপোর নাম দিন (যেমন `my-shop`), **Public** রাখুন, তারপর **Create repository** চাপুন।
-3. নতুন রিপোর পেজে **uploading an existing file** লিংকে চাপুন। এই ফোল্ডারের ৩টা ফাইল টেনে ছেড়ে দিন: `index.html`, `README.md`, `.nojekyll`। তারপর **Commit changes** চাপুন।
-   - `.nojekyll` ফাইলটা লুকানো থাকতে পারে। না দেখা গেলে বাদ দিন, সাইট তাও চলবে।
-4. রিপোর **Settings** থেকে বাঁ দিকের **Pages** মেনুতে যান।
-5. **Source**-এ **Deploy from a branch** রাখুন। **Branch**-এ `main` আর ফোল্ডার `/ (root)` বেছে **Save** চাপুন।
-6. ১-২ মিনিট অপেক্ষা করে পেজটা রিফ্রেশ করুন। উপরে লিংক দেখাবে, যেমন `https://আপনার-ইউজারনেম.github.io/my-shop/`
+**Storefront:** Daraz-style light theme, image categories, flash sale with countdown, every category's products on the home page, search with suggestions, filters and sorting, product variants (colour, size…), reviews, wishlist, cart, order tracking, customer account, WhatsApp ordering, Meta Pixel and GA4 events, SEO tags.
 
-পরে কিছু বদলাতে চাইলে নতুন `index.html` আবার আপলোড করে Commit করুন, ১-২ মিনিটে লাইভ সাইট আপডেট হয়ে যাবে।
+**Checkout:** name, mobile number, one full-address box and an Inside/Outside Dhaka choice (sets the delivery charge). Cash on delivery, bKash and Nagad, coupons and free-delivery threshold. Abandoned checkouts are saved as *incomplete orders*.
 
-## প্রধান ফিচার
+**Admin:** overview dashboard with insights, order management portal (status tabs, date/status/courier filters, today's snapshot, bulk actions, pagination, WhatsApp button, courier tracking links, DUE/PAID), BD Courier fraud checker, incomplete orders, returns, customers, messages, reviews, products with variants, categories, coupons and store settings.
 
-- বাংলা/English ভাষা সুইচ, ডার্ক মোড, মোবাইল-ফার্স্ট ডিজাইন
-- প্রোডাক্টে একাধিক ছবি, রঙ/সাইজ/ওজন ভেরিয়েশন (আলাদা দাম, স্টক, ক্রয়মূল্য, SKU)
-- লাইভ সার্চ সাজেশন, কুইক ভিউ, রিভিউ ও রেটিং, সম্প্রতি দেখা প্রোডাক্ট
-- ফ্ল্যাশ সেল কাউন্টডাউন, ফ্রি ডেলিভারি প্রগ্রেস বার, কুপন
-- পেমেন্ট: ক্যাশ অন ডেলিভারি, bKash, Nagad (TrxID দিয়ে, অ্যাডমিন যাচাই করে)
-- SEO (প্রতিটা প্রোডাক্টের আলাদা টাইটেল ও স্ট্রাকচার্ড ডেটা), Meta Pixel ও GA4 ইভেন্ট
-- অ্যাডমিন: অর্ডার, অসম্পূর্ণ অর্ডার, রিটার্ন, কাস্টমার, রিভিউ মডারেশন, লাভের হিসাব, CSV এক্সপোর্ট
-- Daraz-স্টাইলের হালকা কমলা থিম, ডিফল্ট ভাষা English, নিজস্ব লোগো (`brand/` ফোল্ডারে লোগো ফাইল)
-- ১২টা ক্যাটাগরি, প্রতিটায় ছবি (আইকন নেই); অ্যাডমিন থেকে ক্যাটাগরির ছবির লিংক বদলানো যায়
-- হোমপেজে প্রতিটা ক্যাটাগরির নিচে সেই ক্যাটাগরির সব প্রোডাক্ট
-- ৪৬টা নমুনা প্রোডাক্ট (বাংলাদেশে ট্রেন্ডিং চায়না গ্যাজেট, শীতের কালেকশনসহ); ছবি Pexels থেকে (ফ্রি লাইসেন্স), বিক্রির আগে নিজের ছবি দিয়ে বদলে নিন
+## Folder layout
 
-## নিজের ডোমেইনে (cPanel হোস্টিং, যেমন Hostnin)
+| Path | What it is |
+|---|---|
+| `react-app/` | React source code (edit here) |
+| `index.html`, `assets/` | Production build served by GitHub Pages (generated, do not edit) |
+| `courier-check.php` | Server-side helper for the BD Courier fraud check |
+| `brand/` | Logo files |
+| `legacy/` | The old single-file version, kept for reference |
 
-cPanel → File Manager → `public_html` ফোল্ডারে `index.html` আপলোড করুন (পুরনো index ফাইল থাকলে নাম বদলে রাখুন)। তারপর SSL/TLS Status থেকে AutoSSL চালু করুন।
+## Develop
 
-## অসম্পূর্ণ অর্ডার ট্র্যাকিং
+```bash
+cd react-app
+npm install
+npm run dev            # local dev server
+npm run publish-site   # build and copy the build to the repo root, then commit and push
+```
 
-কাস্টমার চেকআউট ফর্মে সঠিক মোবাইল নম্বর লিখে অর্ডার না দিলে তার তথ্য অ্যাডমিনের **অসম্পূর্ণ অর্ডার** পেজে জমা হয়। সেখান থেকে ফলো-আপ মেসেজ কপি করা, ‘যোগাযোগ করেছি’ বা ‘বাদ দিন’ চিহ্ন দেওয়া, আর এক ক্লিকে আসল অর্ডার বানানো যায়।
+## Put it on your own domain (Hostnin / cPanel)
 
-## লিংকগুলো
+1. In `react-app`, run `npm run build` (or download `index.html`, the `assets` folder and `courier-check.php` from this repo).
+2. cPanel → File Manager → `public_html`: upload `index.html`, the `assets` folder and `courier-check.php`.
+3. Turn on SSL in cPanel (SSL/TLS Status → AutoSSL).
 
-- স্টোর: `.../my-shop/`
-- অ্যাডমিন প্যানেল: `.../my-shop/#admin`
-- ডেমো লগইন: `admin@demo.com` / `123456`
+The site uses `#` links (e.g. `#product-p5`), so it works on any host without extra server rules.
 
-## জরুরি: এখনো যা নেই
+## BD Courier fraud checker
 
-এই ভার্শনে সব ডেটা (অর্ডার, প্রোডাক্ট, সেটিংস) যে ব্রাউজারে সাইট খোলা হয়েছে সেই ব্রাউজারেই সেভ থাকে (localStorage)।
+1. Edit `courier-check.php` on your hosting: put your BD Courier API key in `$BDC_API_KEY` and choose a secret word for `$ADMIN_SECRET`.
+2. Admin → Settings → Fraud checker: enter the same secret word, press **Test connection**, then **Save settings**.
 
-- কাস্টমার নিজের ফোন থেকে অর্ডার দিলে সেটা **আপনার অ্যাডমিন প্যানেলে আসবে না**।
-- অ্যাডমিনে প্রোডাক্ট বদলালে সেটা শুধু আপনার ব্রাউজারে দেখাবে, কাস্টমাররা দেখবে না।
-- অ্যাডমিন লগইন শুধু দেখানোর জন্য, এটা আসল নিরাপত্তা না।
+Never put the real API key in GitHub or in the React code. The fraud check does not run on GitHub Pages because PHP is not available there.
 
-আসল দোকান চালাতে একটা অনলাইন ডেটাবেস যুক্ত করতে হবে, যেমন Firebase বা Supabase (দুটোরই ফ্রি প্ল্যান আছে)। কোডে `DB` নামের একটা অংশ আছে, শুধু ওই অংশটা বদলালেই ডেটা অনলাইনে সেভ হবে।
+## Important
 
-পরের ধাপে যুক্ত করার মতো জিনিস:
-
-- অনলাইন ডেটাবেস ও নিরাপদ অ্যাডমিন লগইন
-- কুরিয়ার API: Steadfast, Pathao, RedX
-- SMS: OTP আর অর্ডার কনফার্মেশন
-- পেমেন্ট: bKash বা SSLCommerz
-- Facebook Pixel ও Conversion API
-
-## ফ্রড চেকার (BD Courier কুরিয়ার হিস্টোরি)
-
-অর্ডার পেজে প্রতিটা কাস্টমারের পাশে "Courier History" কলাম আছে। Check চাপলে BD Courier থেকে ওই নম্বরের সব কুরিয়ারের মোট অর্ডার, ডেলিভারড, ক্যানসেল আর সাফল্যের হার দেখাবে। অর্ডারে ক্লিক করলে কুরিয়ার-ভিত্তিক বিস্তারিত আর ফ্রড রিপোর্ট দেখা যাবে। এটা শুধু নিজের হোস্টিংয়ে (PHP সহ) কাজ করবে, GitHub Pages-এ না।
-
-1. `server/courier-check.php` ফাইলটা হোস্টিংয়ের `public_html`-এ `index.html`-এর পাশে আপলোড করুন।
-2. cPanel File Manager-এ ফাইলটা এডিট করে `$BDC_API_KEY`-এ আপনার BD Courier API Key আর `$ADMIN_SECRET`-এ একটা গোপন শব্দ দিন।
-3. অ্যাডমিন → সেটিংস → "ফ্রড চেকার"-এ সেই গোপন শব্দটা দিয়ে "কানেকশন টেস্ট" চাপুন, তারপর সেভ করুন।
-
-আসল API Key কখনো GitHub-এ বা `index.html`-এ দেবেন না।
+Data is currently stored in the visitor's browser (localStorage). Before taking real orders, connect a server database (PHP + MySQL on Hostnin works) so orders from every customer reach the admin panel, and replace the demo admin login with a real one. All data access goes through `react-app/src/lib/core.js` (the `DB` object), which is the place to connect an API.
