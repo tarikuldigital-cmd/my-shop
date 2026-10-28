@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -469,7 +469,7 @@ table.t .inp{padding:6px 8px}
    ========================================================= */
 const DB={
   key:'scg_store_v4',
-  load(){try{const r=localStorage.getItem(this.key);if(r){const d=JSON.parse(r);if(d&&d.v===4){if(d.settings&&/Chaina/.test(d.settings.name||''))d.settings.name=d.settings.name.replace('Chaina','China');return d}}}catch(e){}return null},
+  load(){try{const r=localStorage.getItem(this.key);if(r){const d=JSON.parse(r);if(d&&d.v===4){if(!d.enDefault){d.prefs=d.prefs||{};d.prefs.lang='en';d.enDefault=1}if(d.settings&&/Chaina/.test(d.settings.name||''))d.settings.name=d.settings.name.replace('Chaina','China');return d}}}catch(e){}return null},
   save(state){try{localStorage.setItem(this.key,JSON.stringify(state));return true}catch(e){return false}}
 };
 
@@ -662,7 +662,7 @@ function seed(){
         refund:'You can request a return or replacement within 3 days of delivery for damaged, wrong or wrongly sized items. Refunds are sent via bKash or Nagad within 3–5 working days. If you refuse a parcel at delivery, the delivery charge applies.'}},
     categories,products,orders,reviews,staff,me:0,nextInv:inv,messages:[{id:'m1',name:'আরিফ হোসেন',phone:'01712000000',msg:'স্মার্ট ওয়াচ কি আইফোনের সাথে কানেক্ট হবে?',at:now-3*HOUR,read:false}],subscribers:[],
     coupons:[{code:'WELCOME10',type:'percent',value:10,min:1000,active:true,used:7},{code:'SAVE200',type:'flat',value:200,min:2500,active:true,used:3},{code:'EID300',type:'flat',value:300,min:3000,active:false,used:12}],
-    cart:[],wish:[],recent:[],user:null,prefs:{lang:'bn',theme:'light'},lastSeen:now-6*HOUR,incomplete:seedIncomplete(products,now)};
+    cart:[],wish:[],recent:[],user:null,prefs:{lang:'en',theme:'light'},enDefault:1,lastSeen:now-6*HOUR,incomplete:seedIncomplete(products,now)};
 }
 function seedIncomplete(products,now){
   const R=mulberry32(9917),rnd=()=>R(),pick=a=>a[Math.floor(rnd()*a.length)];
