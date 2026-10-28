@@ -436,6 +436,31 @@ table.t .inp{padding:6px 8px}
 .chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:13.5px;display:inline-flex;gap:6px;align-items:center}
 .chip.on{border-color:var(--brand);background:var(--brand-soft);color:var(--brand);font-weight:700}
 .chip .c{font-variant-numeric:tabular-nums;color:var(--muted);font-size:12px}
+.om-top{display:grid;grid-template-columns:1fr 300px;gap:14px;align-items:stretch}
+.om-filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center;align-content:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.om-filters select{width:auto}.om-filters .grow{min-width:200px}
+.om-date{display:flex;align-items:center;gap:6px}.om-date .inp{width:auto}
+.btn.dark{background:#111827;color:#fff;border-color:#111827}.btn.good{background:var(--good);color:#fff;border-color:var(--good)}
+.om-snap{background:linear-gradient(135deg,#1e5bd8,#1440a8);color:#fff;border-radius:16px;padding:16px 18px;box-shadow:0 8px 22px rgba(20,64,168,.25)}
+.om-snap .l{font-size:12px;letter-spacing:.12em;font-weight:700;opacity:.85}.om-snap .v{font-size:40px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+.om-snap .s{font-size:12.5px;opacity:.8}.om-snap .g{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px;background:rgba(255,255,255,.12);border-radius:10px;padding:8px}
+.om-snap .g div{text-align:center}.om-snap .g span{display:block;font-size:12px;opacity:.85}.om-snap .g b{font-size:18px}
+.om-snap .g div:nth-child(1) b{color:#ffb4a8}.om-snap .g div:nth-child(3) b{color:#9ff0b8}
+.om-tabs{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 10px;scrollbar-width:thin}
+.om-tabs button{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-weight:600;font-size:14px;display:inline-flex;gap:8px;align-items:center;color:var(--ink)}
+.om-tabs button .c{background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:12.5px;font-variant-numeric:tabular-nums}
+.om-tabs button.dot::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--bad)}
+.om-tabs button.on{background:#111827;color:#fff;border-color:#111827}.om-tabs button.on .c{background:rgba(255,255,255,.15);border-color:transparent;color:#fff}
+.om-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.om-bar select{width:auto;min-width:200px}.om-all{display:inline-flex;gap:8px;align-items:center;font-weight:600}
+.om-all .c{background:color-mix(in srgb,var(--info) 14%,transparent);color:var(--info);border-radius:6px;padding:2px 8px;font-size:13px}
+.om-pg{display:inline-flex;gap:8px;align-items:center;font-weight:600;font-size:14px}
+.om-wa{display:inline-grid;place-items:center;width:26px;height:22px;border-radius:999px;background:#25d366;color:#fff;vertical-align:middle;margin-left:4px}.om-wa svg{width:14px;height:14px}
+.om-trk{color:var(--info);font-weight:600;text-decoration:none}.om-trk:hover{text-decoration:underline}
+.om-pay{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;letter-spacing:.04em}.om-pay::before{content:"";width:9px;height:9px;border-radius:50%}
+.om-pay.due{color:var(--bad)}.om-pay.due::before{background:var(--bad)}.om-pay.paid{color:var(--good)}.om-pay.paid::before{background:var(--good)}
+.om-t th{text-transform:uppercase;font-size:12px;letter-spacing:.05em}
+@media(max-width:900px){.om-top{grid-template-columns:1fr}.om-bar select{min-width:0}}
 .bulkbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--brand-soft);border:1px solid color-mix(in srgb,var(--brand) 35%,transparent);border-radius:var(--r);padding:10px 12px}
 .bulkbar select{width:auto}
 .thumb{width:44px;height:44px;border-radius:7px;object-fit:cover;flex:none}
@@ -535,7 +560,7 @@ const ICON={
 const STATUS={
   pending:{t:'পেন্ডিং',c:'warn'},confirmed:{t:'কনফার্মড',c:'info'},hold:{t:'হোল্ড',c:'hold'},
   ready:{t:'শিপের জন্য প্রস্তুত',c:'info2'},transit:{t:'ট্রানজিটে',c:'transit'},
-  delivered:{t:'ডেলিভারড',c:'good'},cancelled:{t:'ক্যানসেলড',c:'bad'},returned:{t:'রিটার্নড',c:'bad2'}
+  delivered:{t:'ডেলিভারড',c:'good'},cancelled:{t:'ক্যানসেলড',c:'bad'},partial:{t:'পার্শিয়াল রিটার্ন',c:'bad2'},returned:{t:'রিটার্নড',c:'bad2'}
 };
 const ST_KEYS=Object.keys(STATUS);
 const COURIERS={steadfast:{t:'Steadfast',p:'SF'},pathao:{t:'Pathao',p:'PT'},redx:{t:'RedX',p:'RX'}};
@@ -820,7 +845,7 @@ bn:{home:'হোম',allProducts:'সব প্রোডাক্ট',allCats:'�
  thanksT:'ধন্যবাদ, {0}! অর্ডার সফল হয়েছে',thanksS:'অর্ডার নম্বর {0}। শীঘ্রই আমাদের প্রতিনিধি ফোন করে কনফার্ম করবেন।',payCodNote:'ডেলিভারির সময় {0} পরিশোধ করবেন।',payPendNote:'আপনার {0} পেমেন্ট (TrxID: {1}) যাচাই করা হচ্ছে।',trackOrder:'অর্ডার ট্র্যাক করুন',continueShop:'কেনাকাটা চালিয়ে যান',seeInAdmin:'অ্যাডমিনে দেখুন',whatNext:'এরপর কী হবে',next1:'আমাদের প্রতিনিধি ফোনে অর্ডার কনফার্ম করবেন',next2:'২৪ ঘণ্টার মধ্যে পার্সেল কুরিয়ারে দেওয়া হবে',next3:'ট্র্যাকিং আইডি দিয়ে অর্ডার ট্র্যাক করতে পারবেন',
  trackT:'অর্ডার ট্র্যাক করুন',trackS:'ইনভয়েস নম্বর (যেমন INV-30150) অথবা যে মোবাইল নম্বরে অর্ডার করেছেন সেটা লিখুন।',trackPh:'INV-30150 বা 01XXXXXXXXX',trackNone:'এই নম্বরে কোনো অর্ডার পাওয়া যায়নি।',cancelledMsg:'অর্ডারটি বাতিল হয়েছে। প্রশ্ন থাকলে হটলাইনে কল করুন।',courier:'কুরিয়ার',trackingId:'ট্র্যাকিং আইডি',
  j0:'অর্ডার গ্রহণ',j1:'কনফার্মড',j2:'কুরিয়ারে দেওয়া',j3:'পথে আছে',j4:'ডেলিভারড',
- st_pending:'পেন্ডিং',st_confirmed:'কনফার্মড',st_hold:'হোল্ড',st_ready:'শিপের জন্য প্রস্তুত',st_transit:'ট্রানজিটে',st_delivered:'ডেলিভারড',st_cancelled:'ক্যানসেলড',st_returned:'রিটার্নড',
+ st_pending:'পেন্ডিং',st_confirmed:'কনফার্মড',st_hold:'হোল্ড',st_ready:'শিপের জন্য প্রস্তুত',st_transit:'ট্রানজিটে',st_delivered:'ডেলিভারড',st_cancelled:'ক্যানসেলড',st_returned:'রিটার্নড',st_partial:'আংশিক রিটার্ন',
  signInT:'সাইন ইন',signInS:'মোবাইল নম্বর দিয়ে ঢুকলে আপনার সব অর্ডার এক জায়গায় দেখবেন, আর চেকআউটে তথ্য আগে থেকে বসানো থাকবে।',signInBtn:'সাইন ইন করুন',signInDemo:'ডেমোতে OTP নেই। লাইভ সাইটে SMS OTP যুক্ত করা হবে।',signInErr:'নাম আর সঠিক ১১ ডিজিটের মোবাইল নম্বর দিন',signedIn:'সাইন ইন হয়েছে',signOut:'সাইন আউট',myOrders:'আমার অর্ডার ({0})',noOrders:'এখনো কোনো অর্ডার নেই।',
  contactT:'যোগাযোগ',whatsapp:'হোয়াটসঅ্যাপ',email:'ইমেইল',addressL:'ঠিকানা',hours:'সময়',hoursV:'প্রতিদিন সকাল ১০টা – রাত ১০টা',sendMsg:'মেসেজ পাঠান',message:'মেসেজ',send:'পাঠান',msgErr:'নাম আর মেসেজ লিখুন',msgOk:'মেসেজ পাঠানো হয়েছে। শীঘ্রই যোগাযোগ করা হবে।',
  about:'আমাদের সম্পর্কে',privacy:'প্রাইভেসি পলিসি',terms:'শর্তাবলি',refund:'রিফান্ড ও রিটার্ন পলিসি',quickLinks:'কুইক লিংক',service:'কাস্টমার সেবা',policies:'নীতিমালা',newsletter:'নিউজলেটার',newsS:'নতুন প্রোডাক্ট আর অফারের খবর পেতে মোবাইল নম্বর দিন।',subscribe:'সাবস্ক্রাইব',subOk:'ধন্যবাদ! অফারের খবর পাঠানো হবে।',rights:'সর্বস্বত্ব সংরক্ষিত।',weAccept:'আমরা গ্রহণ করি',
@@ -846,7 +871,7 @@ en:{home:'Home',allProducts:'All products',allCats:'All categories',track:'Track
  thanksT:'Thank you, {0}! Your order is placed',thanksS:'Order number {0}. Our team will call shortly to confirm.',payCodNote:'Please pay {0} on delivery.',payPendNote:'We are verifying your {0} payment (TrxID: {1}).',trackOrder:'Track order',continueShop:'Continue shopping',seeInAdmin:'View in admin',whatNext:'What happens next',next1:'We call you to confirm the order',next2:'Your parcel is handed to the courier within 24 hours',next3:'Track it anytime with your tracking ID',
  trackT:'Track your order',trackS:'Enter your invoice number (e.g. INV-30150) or the mobile number you ordered with.',trackPh:'INV-30150 or 01XXXXXXXXX',trackNone:'No orders found for this number.',cancelledMsg:'This order was cancelled. Call our hotline if you have questions.',courier:'Courier',trackingId:'Tracking ID',
  j0:'Placed',j1:'Confirmed',j2:'With courier',j3:'On the way',j4:'Delivered',
- st_pending:'Pending',st_confirmed:'Confirmed',st_hold:'On hold',st_ready:'Ready to ship',st_transit:'In transit',st_delivered:'Delivered',st_cancelled:'Cancelled',st_returned:'Returned',
+ st_pending:'Pending',st_confirmed:'Confirmed',st_hold:'On hold',st_ready:'Ready to ship',st_transit:'In transit',st_delivered:'Delivered',st_cancelled:'Cancelled',st_returned:'Returned',st_partial:'Partial return',
  signInT:'Sign in',signInS:'Sign in with your mobile number to see all your orders and check out faster.',signInBtn:'Sign in',signInDemo:'No OTP in the demo. SMS OTP will be added on the live site.',signInErr:'Enter your name and a valid 11-digit mobile number',signedIn:'Signed in',signOut:'Sign out',myOrders:'My orders ({0})',noOrders:'No orders yet.',
  contactT:'Contact us',whatsapp:'WhatsApp',email:'Email',addressL:'Address',hours:'Hours',hoursV:'Every day, 10 am – 10 pm',sendMsg:'Send a message',message:'Message',send:'Send',msgErr:'Please enter your name and message',msgOk:'Message sent. We\'ll get back to you soon.',
  about:'About us',privacy:'Privacy policy',terms:'Terms & conditions',refund:'Refund & return policy',quickLinks:'Quick links',service:'Customer care',policies:'Policies',newsletter:'Newsletter',newsS:'Get new arrivals and offers — enter your mobile number.',subscribe:'Subscribe',subOk:'Thanks! We\'ll send you our offers.',rights:'All rights reserved.',weAccept:'We accept',
@@ -1267,7 +1292,7 @@ function showMore(){openModal(t('more'),`<div class="morelist"><a href="#track" 
 /* =========================================================
    ADMIN
    ========================================================= */
-let adm={range:'30',status:'all',courier:'',q:'',sel:new Set(),pq:'',pcat:'',notif:false,cq:''};
+let adm={range:'30',status:'all',courier:'',q:'',from:'',to:'',pg:1,sel:new Set(),pq:'',pcat:'',notif:false,cq:''};
 let authed=false;try{authed=sessionStorage.getItem('sg_admin')==='1'}catch(e){}
 const PAGES={overview:'ওভারভিউ',orders:'অর্ডার ম্যানেজমেন্ট',returns:'রিটার্ন ড্যাশবোর্ড',incomplete:'অসম্পূর্ণ অর্ডার',customers:'কাস্টমার',messages:'কাস্টমার মেসেজ',reviews:'রিভিউ ও রেটিং',products:'প্রোডাক্ট ও ভেরিয়েশন',categories:'ক্যাটাগরি',coupons:'কুপন',settings:'স্টোর সেটিংস'};
 const RANGES=[['today','আজ'],['yesterday','গতকাল'],['7','৭ দিন'],['30','৩০ দিন'],['all','সব সময়']];
@@ -1295,7 +1320,7 @@ function adminShell(page,inner){
     <div class="grp">স্টোর</div>${nav('settings','সেটিংস')}<a class="nav" href="#home">স্টোর দেখুন ↗</a>
     <div class="me"><div class="field"><label for="meSel">আপনি কাজ করছেন</label><select class="inp" id="meSel">${S.staff.map((s,i)=>`<option value="${i}" ${i===S.me?'selected':''}>${esc(s)}</option>`).join('')}</select></div><button class="btn sm plain" data-act="logout">লগআউট</button></div>
   </aside><div class="amain"><div class="atop"><h1>${PAGES[page]}</h1>
-    ${['overview','orders'].includes(page)?`<div class="seg" role="group" aria-label="সময়">${RANGES.map(([k,t])=>`<button class="${adm.range===k?'on':''}" data-act="range" data-id="${k}">${t}</button>`).join('')}</div>`:''}
+    ${['overview'].includes(page)?`<div class="seg" role="group" aria-label="সময়">${RANGES.map(([k,t])=>`<button class="${adm.range===k?'on':''}" data-act="range" data-id="${k}">${t}</button>`).join('')}</div>`:''}
     <button class="iconbtn" data-act="notif" aria-label="নোটিফিকেশন" style="position:relative">${ICON.bell}${unread?`<span class="badge" style="position:absolute;top:0;right:-2px;height:16px;min-width:16px;font-size:10px">${unread>9?'9+':unread}</span>`:''}</button>
     ${adm.notif?notifPanel():''}
   </div><div class="acontent">${inner}</div></div></div>`;
@@ -1373,38 +1398,56 @@ function pageOverview(){
   </div>`;
 }
 
-function ordersFiltered(){const q=adm.q.trim().toLowerCase();return S.orders.filter(o=>inRange(o)&&(adm.status==='all'||o.status===adm.status)&&(!adm.courier||o.courier===adm.courier)&&(!q||(o.inv+' '+o.name+' '+o.phone+' '+o.district).toLowerCase().includes(q)))}
+const OPP=20;
+function inODates(o){const a=adm.from?new Date(adm.from+'T00:00').getTime():0,b=adm.to?new Date(adm.to+'T00:00').getTime()+DAY:Infinity;return o.createdAt>=a&&o.createdAt<b}
+function ordersBase(){return S.orders.filter(o=>inODates(o)&&(!adm.courier||o.courier===adm.courier))}
+function ordersFiltered(){const q=adm.q.trim().toLowerCase();return ordersBase().filter(o=>(adm.status==='all'||o.status===adm.status)&&(!q||(o.inv+' '+o.name+' '+o.phone+' '+o.district+' '+(o.tracking||'')).toLowerCase().includes(q)))}
+const OTABS=[['all','All Orders'],['pending','Pending'],['incomplete','Incomplete'],['confirmed','Confirmed'],['hold','On Hold'],['ready','Ready'],['transit','Transit'],['delivered','Delivered'],['cancelled','Cancelled'],['partial','Partial Return'],['returned','Returned']];
+const trackUrl=o=>!o.tracking?'':o.courier==='steadfast'?`https://steadfast.com.bd/t/${o.tracking}`:o.courier==='redx'?`https://redx.com.bd/track-parcel/?trackingId=${o.tracking}`:o.courier==='pathao'?`https://merchant.pathao.com/tracking?consignment_id=${o.tracking}&phone=${o.phone}`:'';
+const waNum=p=>{p=String(p).replace(/\D/g,'');return p.startsWith('880')?p:p.startsWith('0')?'88'+p:'880'+p};
 function pageOrders(){
-  const base=S.orders.filter(o=>inRange(o)),cnt=k=>k==='all'?base.length:base.filter(o=>o.status===k).length;
-  return `<div class="row"><input class="inp grow" id="oq" type="search" placeholder="ইনভয়েস, নাম, ফোন বা জেলা দিয়ে খুঁজুন" value="${esc(adm.q)}" style="max-width:420px" aria-label="অর্ডার খুঁজুন">
-    <select class="inp" style="width:auto" data-ch="ocourier" aria-label="কুরিয়ার"><option value="">সব কুরিয়ার</option>${Object.entries(COURIERS).map(([k,c])=>`<option value="${k}" ${adm.courier===k?'selected':''}>${c.t}</option>`).join('')}</select>
-    <span class="grow"></span><button class="btn plain" data-act="csv">CSV এক্সপোর্ট</button><button class="btn" data-act="newOrder">+ নতুন অর্ডার</button></div>
-  <div class="chips">${['all',...ST_KEYS].map(k=>`<button class="chip ${adm.status===k?'on':''}" data-act="ostatus" data-id="${k}">${k==='all'?'সব':STATUS[k].t}<span class="c">${cnt(k)}</span></button>`).join('')}</div>
-  <div id="bulk"></div>
-  <div class="tbl-wrap"><table class="t"><thead><tr><th><input type="checkbox" data-act="selall" aria-label="সব বাছুন"></th><th>ইনভয়েস</th><th>তারিখ</th><th>কাস্টমার</th><th>ফোন</th><th>প্রোডাক্ট</th><th>স্ট্যাটাস</th><th>টাকা</th><th>পেমেন্ট</th><th>কুরিয়ার</th><th>ট্র্যাকিং</th></tr></thead><tbody id="otbody"></tbody></table></div>`;
+  const base=ordersBase(),cnt=k=>k==='all'?base.length:k==='incomplete'?S.incomplete.filter(x=>['new','contacted'].includes(x.status)).length:base.filter(o=>o.status===k).length;
+  const t0=startOfDay(Date.now()),td=S.orders.filter(o=>o.createdAt>=t0),evToday=k=>S.orders.filter(o=>o.history.some(h=>h.s===k&&h.at>=t0)).length;
+  return `<div class="om-top"><div class="om-filters">
+    <div class="om-date"><input class="inp" type="date" id="ofrom" value="${adm.from}" aria-label="শুরুর তারিখ"><span>–</span><input class="inp" type="date" id="oto" value="${adm.to}" aria-label="শেষ তারিখ"></div>
+    <select class="inp" data-ch="ostatusSel" aria-label="স্ট্যাটাস"><option value="all">Status: All</option>${ST_KEYS.map(k=>`<option value="${k}" ${adm.status===k?'selected':''}>${STATUS[k].t}</option>`).join('')}</select>
+    <select class="inp" data-ch="ocourier" aria-label="কুরিয়ার"><option value="">Courier: All</option>${Object.entries(COURIERS).map(([k,c])=>`<option value="${k}" ${adm.courier===k?'selected':''}>${c.t}</option>`).join('')}</select>
+    <input class="inp grow" id="oq" type="search" placeholder="Search invoice / phone / name…" value="${esc(adm.q)}" aria-label="অর্ডার খুঁজুন">
+    <button class="btn dark" data-act="oreload">⟳ Reload</button>${adm.from||adm.to||adm.courier||adm.q||adm.status!=='all'?`<button class="btn sm plain" data-act="oclear">ফিল্টার মুছুন</button>`:''}</div>
+    <div class="om-snap"><div class="l">TODAY'S SNAPSHOT</div><div class="v">${td.length}</div><div class="s">আজকের নতুন অর্ডার · মোট ${S.orders.length}</div>
+      <div class="g"><div><span>Pend</span><b>${td.filter(o=>o.status==='pending').length}</b></div><div><span>Ship</span><b>${evToday('transit')}</b></div><div><span>Del</span><b>${evToday('delivered')}</b></div></div></div></div>
+  <div class="om-tabs" role="tablist">${OTABS.map(([k,t])=>`<button role="tab" class="${adm.status===k?'on':''} ${['incomplete','partial'].includes(k)?'dot':''}" data-act="${k==='incomplete'?'goinc':'ostatus'}" data-id="${k}">${t}<span class="c">${cnt(k)}</span></button>`).join('')}</div>
+  <div class="om-bar"><label class="om-all"><input type="checkbox" data-act="selall"> Select All <span class="c" id="ocount">0</span></label>
+    <select class="inp" id="bulkAct" aria-label="বাল্ক অ্যাকশন"><option value="">Bulk Action…</option>
+      <optgroup label="স্ট্যাটাস বদলান">${ST_KEYS.filter(k=>k!=='returned').map(k=>`<option value="st:${k}">${STATUS[k].t}</option>`).join('')}</optgroup>
+      <optgroup label="কুরিয়ারে পাঠান">${Object.entries(COURIERS).map(([k,c])=>`<option value="c:${k}">${c.t}</option>`).join('')}</optgroup>
+      <optgroup label="অন্যান্য"><option value="inv">ইনভয়েস প্রিন্ট</option><option value="csv">CSV এক্সপোর্ট</option></optgroup></select>
+    <button class="btn good" data-act="bulkApply">✓ Apply</button>
+    <span class="grow"></span><div class="om-pg" id="opg"></div><button class="btn" data-act="newOrder">+ New Order</button></div>
+  <div class="tbl-wrap"><table class="t om-t"><thead><tr><th></th><th>#</th><th>Invoice</th><th>Customer</th><th>Phone</th><th>Status</th><th>Amount</th><th>Courier</th><th>Tracking link</th><th>Payment</th></tr></thead><tbody id="otbody"></tbody></table></div>`;
 }
 const payPill=o=>{const p=o.payment||{method:'cod',status:'unpaid'};return `<span class="pill ${PAY_ST[p.status].c} nodot">${p.method==='cod'?'COD':PAY[p.method]}${p.status==='pending'?' · যাচাই বাকি':p.status==='paid'&&p.method!=='cod'?' ✓':''}</span>`};
 function renderOrdersTable(){
-  const list=ordersFiltered(),tb=$('#otbody');if(!tb)return;
-  tb.innerHTML=list.length?list.map(o=>{const r=['pending','confirmed','hold'].includes(o.status)?riskOf(o):[],sel=adm.sel.has(o.id);
+  const all=ordersFiltered(),tb=$('#otbody');if(!tb)return;
+  const pages=Math.max(1,Math.ceil(all.length/OPP));if(adm.pg>pages)adm.pg=pages;const off=(adm.pg-1)*OPP,list=all.slice(off,off+OPP);
+  tb.innerHTML=list.length?list.map((o,i)=>{const r=['pending','confirmed','hold'].includes(o.status)?riskOf(o):[],sel=adm.sel.has(o.id),p=o.payment||{method:'cod',status:'unpaid'},paid=p.status==='paid',u=trackUrl(o);
     return `<tr class="click ${sel?'sel':''}" data-act="openOrder" data-id="${o.id}"><td><input type="checkbox" data-act="sel" data-id="${o.id}" ${sel?'checked':''} aria-label="${o.inv} বাছুন"></td>
-    <td><b class="num">${o.inv}</b>${r.length?` <span class="pill bad nodot" title="${esc(r.join('; '))}">ঝুঁকি</span>`:''}<div class="small muted">${esc(o.source)}</div></td>
-    <td class="small num" style="white-space:nowrap">${fdate(o.createdAt)}</td><td>${esc(o.name)}<div class="small muted">${esc(o.district)}</div></td><td class="num">${o.phone}</td>
-    <td class="small" style="max-width:240px">${o.items.map(i=>itemLabel(i)+' ×'+i.qty).join('<br>')}</td><td>${pillSt(o.status)}</td><td class="num"><b>${tk(o.total)}</b></td><td>${payPill(o)}</td>
-    <td>${o.courier?COURIERS[o.courier].t:'<span class="muted">—</span>'}</td><td class="num small">${o.tracking||'<span class="muted">—</span>'}</td></tr>`}).join(''):`<tr><td colspan="11"><div class="empty" style="border:0">এই ফিল্টারে কোনো অর্ডার নেই</div></td></tr>`;
+    <td class="num muted small">${off+i+1}</td>
+    <td><b class="num">${o.inv}</b>${r.length?` <span class="pill bad nodot" title="${esc(r.join('; '))}">ঝুঁকি</span>`:''}<div class="small muted">${fdate(o.createdAt)}</div></td>
+    <td>${esc(o.name)}<div class="small muted">${esc(o.district)} · ${o.items.reduce((n,x)=>n+x.qty,0)}টি পণ্য</div></td>
+    <td class="num" style="white-space:nowrap">${o.phone} <a class="om-wa" href="https://wa.me/${waNum(o.phone)}" target="_blank" rel="noopener" data-act="stop" aria-label="${esc(o.name)}-কে WhatsApp করুন">${ICON.wa}</a></td>
+    <td>${pillSt(o.status)}</td><td class="num"><b>${tk(o.total)}</b></td>
+    <td class="small">${o.courier?COURIERS[o.courier].t+' Courier':'<span class="muted">—</span>'}</td>
+    <td class="small num">${u?`<a class="om-trk" href="${u}" target="_blank" rel="noopener" data-act="stop">↗ ${o.tracking}</a>`:'<span class="muted">N/A</span>'}</td>
+    <td><span class="om-pay ${paid?'paid':'due'}">${paid?'PAID':'DUE'}</span>${p.method!=='cod'?`<div class="small muted">${PAY[p.method]}${p.status==='pending'?' · যাচাই বাকি':''}</div>`:''}</td></tr>`}).join(''):`<tr><td colspan="10"><div class="empty" style="border:0">এই ফিল্টারে কোনো অর্ডার নেই</div></td></tr>`;
+  const pg=$('#opg');if(pg)pg.innerHTML=`<button class="btn sm plain" data-act="opg" data-id="-1" ${adm.pg<=1?'disabled':''}>‹ Prev</button><span>Page ${adm.pg} / ${pages}</span><button class="btn sm plain" data-act="opg" data-id="1" ${adm.pg>=pages?'disabled':''}>Next ›</button>`;
   renderBulk();const sa=document.querySelector('[data-act="selall"]');if(sa)sa.checked=list.length>0&&list.every(o=>adm.sel.has(o.id));
 }
-function renderBulk(){
-  const b=$('#bulk');if(!b)return;const n=adm.sel.size;
-  b.innerHTML=n?`<div class="bulkbar"><b>${n}টি অর্ডার বাছাই করা</b>
-    <select class="inp" id="bulkSt" aria-label="নতুন স্ট্যাটাস"><option value="">স্ট্যাটাস বদলান…</option>${ST_KEYS.filter(k=>k!=='returned').map(k=>`<option value="${k}">${STATUS[k].t}</option>`).join('')}</select><button class="btn sm" data-act="bulkSt">প্রয়োগ</button>
-    <select class="inp" id="bulkC" aria-label="কুরিয়ার">${Object.entries(COURIERS).map(([k,c])=>`<option value="${k}">${c.t}</option>`).join('')}</select><button class="btn sm" data-act="bulkC">কুরিয়ারে পাঠান</button>
-    <button class="btn sm plain" data-act="invoices">ইনভয়েস প্রিন্ট</button><button class="btn sm plain" data-act="clearsel">বাছাই বাতিল</button></div>`:'';
-}
+function renderBulk(){const c=$('#ocount');if(c)c.textContent=adm.sel.size||ordersFiltered().length}
 function orderDrawer(id){
   const o=S.orders.find(x=>x.id===id);if(!o)return;
   const prev=S.orders.filter(x=>x.phone===o.phone&&x.id!==o.id),risk=riskOf(o);
-  const acts={pending:[['confirmed','কনফার্ম করুন',''],['hold','হোল্ডে রাখুন','plain'],['cancelled','ক্যানসেল','danger']],confirmed:[['courier','কুরিয়ারে পাঠান',''],['hold','হোল্ডে রাখুন','plain'],['cancelled','ক্যানসেল','danger']],hold:[['confirmed','কনফার্ম করুন',''],['cancelled','ক্যানসেল','danger']],ready:[['transit','কুরিয়ার পিকআপ করেছে',''],['cancelled','ক্যানসেল','danger']],transit:[['delivered','ডেলিভারড',''],['returned','রিটার্ন হয়েছে','danger']],delivered:[['returned','রিটার্ন/রিপ্লেসমেন্ট','plain']],cancelled:[['pending','আবার পেন্ডিং করুন','plain']],returned:[]}[o.status];
+  const acts={pending:[['confirmed','কনফার্ম করুন',''],['hold','হোল্ডে রাখুন','plain'],['cancelled','ক্যানসেল','danger']],confirmed:[['courier','কুরিয়ারে পাঠান',''],['hold','হোল্ডে রাখুন','plain'],['cancelled','ক্যানসেল','danger']],hold:[['confirmed','কনফার্ম করুন',''],['cancelled','ক্যানসেল','danger']],ready:[['transit','কুরিয়ার পিকআপ করেছে',''],['cancelled','ক্যানসেল','danger']],transit:[['delivered','ডেলিভারড',''],['partial','পার্শিয়াল রিটার্ন','plain'],['returned','রিটার্ন হয়েছে','danger']],delivered:[['returned','রিটার্ন/রিপ্লেসমেন্ট','plain']],cancelled:[['pending','আবার পেন্ডিং করুন','plain']],partial:[],returned:[]}[o.status];
   const msg=`আসসালামু আলাইকুম ${o.name}, ${S.settings.name} থেকে বলছি। আপনার অর্ডার ${o.inv} (${o.items.map(i=>itemText(i)+' ×'+i.qty).join(', ')}) মোট ${o.total} টাকা। ঠিকানা: ${o.address}, ${o.district}। অর্ডারটি কনফার্ম করতে "হ্যাঁ" লিখুন।`;
   openModal(`${o.inv} ${pillSt(o.status)}`,`
     ${risk.length?`<div class="insight risk" style="border:1px solid color-mix(in srgb,var(--bad) 35%,transparent);border-radius:8px;padding:8px 10px"><span class="dot"></span><div>${risk.map(esc).join('<br>')}</div></div>`:''}
@@ -1650,7 +1693,7 @@ function renderAdmin(page){
   const inner={overview:pageOverview,orders:pageOrders,returns:pageReturns,incomplete:pageIncomplete,customers:pageCustomers,messages:pageMessages,reviews:pageReviews,products:pageProducts,categories:pageCategories,coupons:pageCoupons,settings:pageSettings}[page]();
   $('#app').innerHTML=adminShell(page,inner);
   $('#meSel').onchange=e=>{S.me=+e.target.value;save();toast(`এখন ${meName()} হিসেবে কাজ করছেন`)};
-  if(page==='orders'){renderOrdersTable();$('#oq').oninput=e=>{adm.q=e.target.value;renderOrdersTable()}}
+  if(page==='orders'){renderOrdersTable();$('#oq').oninput=e=>{adm.q=e.target.value;adm.pg=1;renderOrdersTable()};['#ofrom','#oto'].forEach(id=>$(id).onchange=()=>{adm.from=$('#ofrom').value;adm.to=$('#oto').value;adm.pg=1;refreshAdmin()})}
   if(page==='products'){renderProductsTable();$('#pq').oninput=e=>{adm.pq=e.target.value;renderProductsTable()}}
   if(page==='customers')$('#cq').onchange=e=>{adm.cq=e.target.value;refreshAdmin()};
   if(page==='categories')$('#cf').onsubmit=e=>{e.preventDefault();const n=$('#cfName').value.trim();if(!n)return;S.categories.push({id:'c'+Date.now(),name:n,nameEn:$('#cfNameEn').value.trim(),icon:'tag',img:$('#cfImg').value.trim(),tint:$('#cfTint').value});save();refreshAdmin();toast('ক্যাটাগরি যোগ হয়েছে')};
@@ -1717,12 +1760,21 @@ const A={
   range:el=>{adm.range=el.dataset.id;adm.sel.clear();refreshAdmin()},
   notif:()=>{adm.notif=!adm.notif;refreshAdmin()},
   markread:()=>{S.lastSeen=Date.now();adm.notif=false;save();refreshAdmin()},
-  ostatus:el=>{adm.status=el.dataset.id;adm.sel.clear();refreshAdmin()},
+  ostatus:el=>{adm.status=el.dataset.id;adm.pg=1;adm.sel.clear();refreshAdmin()},
+  goinc:()=>{location.hash='admin-incomplete'},
+  oreload:()=>{adm.from=$('#ofrom').value;adm.to=$('#oto').value;adm.pg=1;adm.sel.clear();refreshAdmin();toast('অর্ডার লিস্ট রিলোড হয়েছে')},
+  oclear:()=>{Object.assign(adm,{from:'',to:'',courier:'',q:'',status:'all',pg:1});adm.sel.clear();refreshAdmin()},
+  opg:el=>{adm.pg+=+el.dataset.id;renderOrdersTable();window.scrollTo(0,0)},
+  stop:()=>{},
+  bulkApply:()=>{const v=$('#bulkAct').value;if(!v){toast('আগে একটা অ্যাকশন বাছুন');return}if(v==='csv'){exportCSV();return}if(!adm.sel.size){toast('আগে অর্ডার বাছাই করুন');return}
+    if(v==='inv'){showInvoices([...adm.sel]);return}
+    if(v.startsWith('st:')){const s=v.slice(3),n=adm.sel.size;adm.sel.forEach(id=>{const o=S.orders.find(x=>x.id===id);if(o)setStatus(o,s,s==='cancelled'?'একসাথে ক্যানসেল করা':'')});adm.sel.clear();save();toast(`${n}টি অর্ডার ${STATUS[s].t} করা হয়েছে`);refreshAdmin();return}
+    const c=v.slice(2);let n=0,skip=0;adm.sel.forEach(id=>{const o=S.orders.find(x=>x.id===id);if(o&&['pending','confirmed','hold','ready'].includes(o.status)&&!o.tracking){sendToCourier(o,c);n++}else skip++});adm.sel.clear();save();toast(`${n}টি অর্ডার ${COURIERS[c].t}-এ পাঠানো হয়েছে${skip?`, ${skip}টি বাদ (আগেই পাঠানো বা বন্ধ)`:''}`);refreshAdmin()},
   gostatus:el=>{adm.status=el.dataset.id;adm.range='all';location.hash='admin-orders'},
   openOrder:el=>orderDrawer(el.dataset.id),
   custorders:el=>{adm.q=el.dataset.id;adm.status='all';adm.range='all';location.hash='admin-orders'},
   sel:(el,e)=>{const id=el.dataset.id;el.checked?adm.sel.add(id):adm.sel.delete(id);el.closest('tr').classList.toggle('sel',el.checked);renderBulk()},
-  selall:el=>{const l=ordersFiltered();if(el.checked)l.forEach(o=>adm.sel.add(o.id));else adm.sel.clear();renderOrdersTable()},
+  selall:el=>{const l=ordersFiltered().slice((adm.pg-1)*OPP,adm.pg*OPP);if(el.checked)l.forEach(o=>adm.sel.add(o.id));else adm.sel.clear();renderOrdersTable()},
   clearsel:()=>{adm.sel.clear();renderOrdersTable()},
   bulkSt:()=>{const s=$('#bulkSt').value;if(!s){toast('আগে একটা স্ট্যাটাস বাছুন');return}const n=adm.sel.size;adm.sel.forEach(id=>{const o=S.orders.find(x=>x.id===id);if(o)setStatus(o,s,s==='cancelled'?'একসাথে ক্যানসেল করা':'')});adm.sel.clear();save();toast(`${n}টি অর্ডার ${STATUS[s].t} করা হয়েছে`);refreshAdmin()},
   bulkC:()=>{const c=$('#bulkC').value;let n=0,skip=0;adm.sel.forEach(id=>{const o=S.orders.find(x=>x.id===id);if(o&&['pending','confirmed','hold','ready'].includes(o.status)&&!o.tracking){sendToCourier(o,c);n++}else skip++});adm.sel.clear();save();toast(`${n}টি অর্ডার ${COURIERS[c].t}-এ পাঠানো হয়েছে${skip?`, ${skip}টি বাদ (আগেই পাঠানো বা বন্ধ)`:''}`);refreshAdmin()},
@@ -1770,7 +1822,8 @@ document.addEventListener('change',e=>{
   else if(k==='fquick'){shop.quick=[...document.querySelectorAll('[data-ch="fquick"]:checked')].map(x=>x.value);renderShop('products')}
   else if(k==='fprice'){shop.price=el.value;shop.min='';shop.max='';renderShop('products')}
   else if(k==='fsort'){shop.sort=el.value;renderProductGrid()}
-  else if(k==='ocourier'){adm.courier=el.value;adm.sel.clear();refreshAdmin()}
+  else if(k==='ocourier'){adm.courier=el.value;adm.pg=1;adm.sel.clear();refreshAdmin()}
+  else if(k==='ostatusSel'){adm.status=el.value;adm.pg=1;adm.sel.clear();refreshAdmin()}
   else if(k==='pcat'){adm.pcat=el.value;renderProductsTable()}
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('#overlay').innerHTML)closeModal();const sg=$('#suggest');if(sg)sg.innerHTML=''}});
