@@ -2,7 +2,7 @@ import {useState} from 'react';
 import {S,tk,fdate,ago,DAY,AREAS,RET_TYPES,RET_ST,PAGE_TITLES,pad,prod,variant,catName,minPrice,maxPrice,totalStock,hasOpts,soldQty,buildVariants,itemText,
   validPhone,createOrder,save,toast,openModal,closeModal,askConfirm,meName,applyTheme,resetStore} from '../lib/core.js';
 import {PImg,CatIcon,Stars,ItemLabel} from '../components/ui.jsx';
-import {useAdm,setAdm,INC_ST,isLive,frCall} from './logic.js';
+import {useAdm,setAdm,INC_ST,isLive,frCall,getDirectKey,setDirectKey} from './logic.js';
 import {HBars} from './Overview.jsx';
 import {copyText} from '../shop/views.jsx';
 
@@ -212,6 +212,7 @@ const toLocal=ts=>{const d=new Date(ts);return `${d.getFullYear()}-${pad(d.getMo
 export function Settings(){
   const s=S.settings;
   const [f,setF]=useState(()=>({...s,flash:{...s.flash,pids:[...s.flash.pids],end:toLocal(s.flash.endsAt)},banners:s.banners.map(b=>({...b})),pages:{...s.pages},pagesEn:{...(s.pagesEn||{})}}));
+  const [apiKey,setApiKey]=useState(getDirectKey);
   const up=k=>e=>setF({...f,[k]:e.target.value});
   const F=(k,l,type='text',ph='')=><div className="field"><label htmlFor={'st_'+k}>{l}</label><input className="inp" type={type} id={'st_'+k} value={f[k]??''} placeholder={ph} onChange={up(k)}/></div>;
   const fl=f.flash,setFl=p=>setF({...f,flash:{...fl,...p}}),setBn=(i,k,v)=>setF({...f,banners:f.banners.map((b,j)=>j===i?{...b,[k]:v}:b)});
@@ -222,8 +223,8 @@ export function Settings(){
     if(st.pixelId&&!/^\d{6,20}$/.test(st.pixelId))toast('Pixel ID must be digits only, this one will not work');
     if(st.ga4Id&&!/^G-[A-Z0-9]{4,20}$/.test(st.ga4Id))toast('GA4 ID should look like G-XXXXXXX');
     st.flash={on:fl.on,title:fl.title.trim()||'Flash Sale',titleEn:fl.title.trim(),endsAt:new Date(fl.end).getTime()||Date.now()+DAY,pids:fl.pids};
-    st.banners=f.banners.map(b=>({...b,titleEn:b.title,subEn:b.sub,ctaEn:b.cta}));st.pages=f.pages;st.pagesEn={...f.pages};save();applyTheme();toast('Settings saved')};
-  const test=async()=>{S.settings.fraudUrl=(f.fraudUrl||'').trim()||'courier-check.php';S.settings.fraudSecret=(f.fraudSecret||'').trim();save();try{await frCall({action:'ping'});toast('BD Courier connection OK ✓')}catch(e){toast(e.message)}};
+    setDirectKey(apiKey.trim());st.banners=f.banners.map(b=>({...b,titleEn:b.title,subEn:b.sub,ctaEn:b.cta}));st.pages=f.pages;st.pagesEn={...f.pages};save();applyTheme();toast('Settings saved')};
+  const test=async()=>{setDirectKey(apiKey.trim());S.settings.fraudUrl=(f.fraudUrl||'').trim()||'courier-check.php';S.settings.fraudSecret=(f.fraudSecret||'').trim();save();try{await frCall({action:'ping'});toast('BD Courier connection OK ✓')}catch(e){toast(e.message)}};
   const logo=async e=>{const fl=e.target.files[0];if(!fl)return;S.settings.logo=await resizeImage(fl,120,'h');save();toast('Logo saved')};
   return <><form className="panels" onSubmit={submit}>
     <div className="panel w6" style={{display:'flex',flexDirection:'column',gap:12}}><h3>Store details</h3><div className="grid2">{F('name','Store name')}{F('phone','Hotline number')}</div>
@@ -247,8 +248,10 @@ export function Settings(){
       {F('pixelId','Meta (Facebook) Pixel ID','text','e.g. 123456789012345')}{F('ga4Id','Google Analytics 4 Measurement ID','text','e.g. G-XXXXXXXXXX')}
       <p className="small muted" style={{margin:0}}>When set, the live site sends PageView, ViewContent, AddToCart, InitiateCheckout and Purchase events automatically.</p>
       <h3 style={{marginTop:6}}>Fraud checker (BD Courier)</h3>
+      <div className="field"><label htmlFor="st_bdkey">BD Courier API key (option 1: works anywhere, saved only in this browser)</label><input className="inp" id="st_bdkey" type="password" autoComplete="off" value={apiKey} onChange={e=>setApiKey(e.target.value)} placeholder="Paste the key from app.bdcourier.com → API"/></div>
+      <p className="small muted" style={{margin:0}}>Option 2 for your own hosting: keep the key in courier-check.php and enter its secret word below.</p>
       <div className="grid2">{F('fraudUrl','PHP file path','text','courier-check.php')}{F('fraudSecret','Secret word (same as in the PHP file)','password')}</div>
-      <div className="row"><button type="button" className="btn sm plain" onClick={test}>Test connection</button><span className="small muted">The API key is not stored here, only in courier-check.php on your hosting.</span></div></div>
+      <div className="row"><button type="button" className="btn sm plain" onClick={test}>Test connection</button><span className="small muted">The key is never saved to GitHub or shared with customers.</span></div></div>
     <div className="panel w12" style={{display:'flex',flexDirection:'column',gap:12}}><h3>Homepage banner slider</h3><div className="panels">
       {f.banners.map((b,i)=><div className="panel" key={i} style={{display:'flex',flexDirection:'column',gap:8,background:'var(--bg)'}}><b className="small">Banner {i+1}</b>
         <input className="inp" value={b.title} onChange={e=>setBn(i,'title',e.target.value)} placeholder="Title" aria-label="Title"/>

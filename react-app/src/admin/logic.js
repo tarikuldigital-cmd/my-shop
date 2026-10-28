@@ -59,9 +59,25 @@ export function frParse(resp){
   const rep=resp&&(resp.reports||resp.fraud_reports||(resp.data&&resp.data.reports));
   return {sum,rows,reports:Array.isArray(rep)?rep:[]};
 }
+/* The API key for "direct mode" lives only in this browser (separate localStorage key),
+   never in the store data, the code or GitHub. */
+const KEY_LS='scg_bdc_key';
+export const getDirectKey=()=>{try{return localStorage.getItem(KEY_LS)||''}catch(e){return ''}};
+export const setDirectKey=k=>{try{k?localStorage.setItem(KEY_LS,k):localStorage.removeItem(KEY_LS)}catch(e){}};
+async function directCall(body,key){
+  const ping=body.action==='ping',url='https://api.bdcourier.com/'+(ping?'check-connection':'courier-check?phone='+body.phone);
+  let r;try{r=await fetch(url,{method:ping?'GET':'POST',headers:{'Authorization':'Bearer '+key,'Accept':'application/json',...(ping?{}:{'Content-Type':'application/json'})},body:ping?undefined:JSON.stringify({phone:body.phone})})}
+  catch(e){throw new Error('BD Courier blocked the request from the browser. Use courier-check.php on your own hosting instead.')}
+  let j;try{j=await r.json()}catch(e){throw new Error('BD Courier sent an unreadable reply (HTTP '+r.status+')')}
+  if(r.status===401||r.status===403)throw new Error('BD Courier rejected the API key. Check the key in Settings.');
+  if(!r.ok||j.status==='error')throw new Error('BD Courier replied: '+(j.message||j.error||r.status));
+  return j;
+}
 export async function frCall(body){
-  const st=S.settings;if(!st.fraudSecret)throw new Error('Add the fraud checker secret in Settings first');
-  if(/github\.io$/.test(location.hostname)||location.protocol==='file:')throw new Error('Fraud check only works on your own hosting (with courier-check.php), not on GitHub Pages');
+  const st=S.settings,key=getDirectKey(),local=/github\.io$/.test(location.hostname)||location.protocol==='file:';
+  if(key&&(local||!st.fraudSecret))return directCall(body,key);
+  if(!st.fraudSecret)throw new Error('Add your BD Courier API key (or the PHP secret) in Admin → Settings → Fraud checker');
+  if(local)throw new Error('On GitHub Pages, use the API key option in Settings → Fraud checker');
   let r;try{r=await fetch(st.fraudUrl||'courier-check.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...body,secret:st.fraudSecret})})}catch(e){throw new Error('Could not reach courier-check.php on the server')}
   let j;try{j=await r.json()}catch(e){throw new Error('courier-check.php not found or PHP is not running')}
   if(r.status===403)throw new Error('Secret does not match; use the same word in Settings and the PHP file');
