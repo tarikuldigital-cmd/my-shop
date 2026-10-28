@@ -139,7 +139,8 @@ svg.lword{display:block;height:42px;width:auto}
 .catmenu{position:absolute;left:0;top:100%;width:290px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:6px;z-index:30}
 .catmenu button{display:flex;width:100%;gap:10px;align-items:center;border:0;background:none;padding:9px 10px;border-radius:9px;text-align:left}
 .catmenu button:hover{background:var(--brand-soft);color:var(--brand)}
-.ci{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--t) 15%,transparent);color:var(--t);flex:none}
+.ci{position:relative;width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--t) 18%,var(--surface));color:var(--t);flex:none;overflow:hidden;font-weight:800}
+.ci img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .railnav{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
 .railnav::-webkit-scrollbar{display:none}
 .railnav a,.railnav button{white-space:nowrap;padding:12px 12px;text-decoration:none;color:var(--ink);font-weight:600;font-size:14px;border:0;background:none;border-bottom:2px solid transparent}
@@ -176,10 +177,13 @@ svg.lword{display:block;height:42px;width:auto}
 .sec-h h2{font-size:22px;font-weight:800}
 .sec-h p{margin:2px 0 0;color:var(--muted);font-size:14px}
 .sec-h button,.sec-h a{font-weight:700;font-size:14px;background:none;border:0;color:var(--brand);text-decoration:none;white-space:nowrap}
-.cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:12px}
-.cat{border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:16px 8px;display:flex;flex-direction:column;gap:9px;align-items:center;text-align:center;font-weight:700;font-size:13.5px;transition:border-color .15s,transform .15s}
+.cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}
+@media (max-width:520px){.cats{grid-template-columns:repeat(3,1fr);gap:8px}.cat{font-size:12px}}
+.cat{border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:8px 8px 12px;display:flex;flex-direction:column;gap:9px;align-items:center;text-align:center;font-weight:700;font-size:13.5px;transition:border-color .15s,transform .15s}
 .cat:hover{border-color:var(--brand);color:var(--brand);transform:translateY(-2px)}
-.cat .ci{width:58px;height:58px;border-radius:50%}
+.cat .ci{width:100%;height:auto;aspect-ratio:1;border-radius:12px;font-size:28px}
+.cat .ci img{transition:transform .4s}
+.cat:hover .ci img{transform:scale(1.06)}
 .cat span{font-size:12px;color:var(--muted);font-weight:500}
 /* flash sale */
 .flashbar{background:linear-gradient(100deg,#ff7a1a,var(--brand) 55%,var(--accent));color:#fff;border-radius:16px;padding:18px 22px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px}
@@ -228,6 +232,7 @@ svg.lword{display:block;height:42px;width:auto}
 .pact .btn{width:100%;padding:9px 8px;font-size:13.5px}
 .ph{position:relative;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 30% 25%,color-mix(in srgb,var(--t) 9%,var(--surface)) 0,color-mix(in srgb,var(--t) 22%,var(--surface)) 100%);color:var(--t);overflow:hidden}
 .ph svg{width:40%;height:40%;stroke-width:1.3;opacity:.9}
+.ph i{position:relative;z-index:1;font-style:normal;font-weight:800;font-size:13px;text-align:center;padding:8px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .ph::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,transparent 0 14px,color-mix(in srgb,var(--t) 6%,transparent) 14px 15px)}
 /* listing */
 .crumb{font-size:13px;color:var(--muted);margin:18px 0 0;display:flex;gap:6px;flex-wrap:wrap}
@@ -474,8 +479,8 @@ table.t .inp{padding:6px 8px}
    আসল অনলাইন অর্ডার নিতে শুধু এই DB অবজেক্টটা Firebase/Supabase দিয়ে বদলাতে হবে।
    ========================================================= */
 const DB={
-  key:'scg_store_v4',
-  load(){try{const r=localStorage.getItem(this.key);if(r){const d=JSON.parse(r);if(d&&d.v===4){if(!d.enDefault){d.prefs=d.prefs||{};d.prefs.lang='en';d.enDefault=1}if(d.settings&&/Chaina/.test(d.settings.name||''))d.settings.name=d.settings.name.replace('Chaina','China');return d}}}catch(e){}return null},
+  key:'scg_store_v5',
+  load(){try{const r=localStorage.getItem(this.key);if(r){const d=JSON.parse(r);if(d&&d.v===5){if(!d.enDefault){d.prefs=d.prefs||{};d.prefs.lang='en';d.enDefault=1}if(d.settings&&/Chaina/.test(d.settings.name||''))d.settings.name=d.settings.name.replace('Chaina','China');return d}}}catch(e){}return null},
   save(state){try{localStorage.setItem(this.key,JSON.stringify(state));return true}catch(e){return false}}
 };
 
@@ -558,13 +563,18 @@ function seed(){
   const R=mulberry32(271026),rnd=()=>R(),pick=a=>a[Math.floor(rnd()*a.length)];
   const now=Date.now();
   const categories=[
-    {id:'c1',name:'ইলেকট্রনিক্স ও গ্যাজেট',nameEn:'Electronics & Gadgets',icon:'device',tint:'#2b62a8'},
-    {id:'c2',name:'ফ্যাশন',nameEn:'Fashion',icon:'shirt',tint:'#a3405b'},
-    {id:'c3',name:'ঘর ও কিচেন',nameEn:'Home & Kitchen',icon:'pan',tint:'#b8641c'},
-    {id:'c4',name:'বিউটি ও কেয়ার',nameEn:'Beauty & Care',icon:'drop',tint:'#b04a86'},
-    {id:'c5',name:'গাছ ও বাগান',nameEn:'Plants & Garden',icon:'leaf',tint:'#2e7d4f'},
-    {id:'c6',name:'খেলনা ও বেবি',nameEn:'Toys & Baby',icon:'toy',tint:'#c98400'},
-    {id:'c7',name:'গ্রোসারি',nameEn:'Grocery',icon:'basket',tint:'#5f7d1c'}
+    {id:'c1',name:'ইলেকট্রনিক্স ও গ্যাজেট',nameEn:'Electronics & Gadgets',icon:'device',tint:'#2b62a8',img:'https://images.pexels.com/photos/17810098/pexels-photo-17810098.jpeg?auto=compress&cs=tinysrgb&w=500'},
+    {id:'c8',name:'মোবাইল ও ক্রিয়েটর গিয়ার',nameEn:'Mobile & Creator Gear',icon:'device',tint:'#7048c8',img:'https://images.pexels.com/photos/9413665/pexels-photo-9413665.jpeg?auto=compress&cs=tinysrgb&w=500'},
+    {id:'c9',name:'শীতের গ্যাজেট',nameEn:'Winter Gadgets',icon:'gift',tint:'#d9480f',img:'https://images.pexels.com/photos/15206538/pexels-photo-15206538.jpeg?auto=compress&cs=tinysrgb&w=500'},
+    {id:'c10',name:'স্মার্ট হোম ও সিকিউরিটি',nameEn:'Smart Home & Security',icon:'device',tint:'#0b7285',img:'https://images.pexels.com/photos/24346971/pexels-photo-24346971.jpeg?auto=compress&cs=tinysrgb&w=500'},
+    {id:'c11',name:'কার ও বাইক',nameEn:'Car & Bike',icon:'tag',tint:'#495057',img:'https://images.pexels.com/photos/33488/pexels-photo-33488.jpeg?auto=compress&cs=tinysrgb&w=500'},
+    {id:'c12',name:'পার্সোনাল কেয়ার',nameEn:'Personal Care',icon:'drop',tint:'#9c36b5',img:'https://images.pexels.com/photos/11372618/pexels-photo-11372618.jpeg?auto=compress&cs=tinysrgb&w=500'},
+    {id:'c2',name:'ফ্যাশন',nameEn:'Fashion',icon:'shirt',tint:'#a3405b',img:'https://images.pexels.com/photos/28494850/pexels-photo-28494850.jpeg?auto=compress&cs=tinysrgb&w=500'},
+    {id:'c3',name:'ঘর ও কিচেন',nameEn:'Home & Kitchen',icon:'pan',tint:'#b8641c',img:'https://images.pexels.com/photos/8055165/pexels-photo-8055165.jpeg?auto=compress&cs=tinysrgb&w=500'},
+    {id:'c4',name:'বিউটি ও কেয়ার',nameEn:'Beauty & Care',icon:'drop',tint:'#b04a86',img:'https://images.pexels.com/photos/34939709/pexels-photo-34939709.jpeg?auto=compress&cs=tinysrgb&w=500'},
+    {id:'c5',name:'গাছ ও বাগান',nameEn:'Plants & Garden',icon:'leaf',tint:'#2e7d4f',img:'https://images.pexels.com/photos/1084199/pexels-photo-1084199.jpeg?auto=compress&cs=tinysrgb&w=500'},
+    {id:'c6',name:'খেলনা ও বেবি',nameEn:'Toys & Baby',icon:'toy',tint:'#c98400',img:'https://images.pexels.com/photos/5889959/pexels-photo-5889959.jpeg?auto=compress&cs=tinysrgb&w=500'},
+    {id:'c7',name:'গ্রোসারি',nameEn:'Grocery',icon:'basket',tint:'#5f7d1c',img:'https://images.pexels.com/photos/11032901/pexels-photo-11032901.jpeg?auto=compress&cs=tinysrgb&w=500'}
   ];
   // P(id,name,nameEn,cat,flags,desc,descEn,daysOld,options,priceFn)
   const P=(id,name,nameEn,cat,flags,desc,descEn,days,options,pf)=>{
@@ -594,6 +604,30 @@ function seed(){
     P('p20','ওয়াটারপ্রুফ ল্যাপটপ ব্যাকপ্যাক','Water-Resistant Laptop Backpack','c2','','১৫.৬ ইঞ্চি ল্যাপটপ পকেট, ইউএসবি চার্জিং পোর্ট, ৩০ লিটার।','Fits a 15.6-inch laptop, built-in USB charging port, 30 L.',12,[O('রঙ',['কালো','ধূসর'])],()=>[1650,1990]),
     P('p21','পোলারাইজড সানগ্লাস','Polarized Sunglasses','c2','n','UV400 সুরক্ষা, হালকা ফ্রেম, কেস ও ক্লিনিং কাপড়সহ।','UV400 protection, lightweight frame, case and cloth included.',3,[O('ফ্রেম',['কালো','গোল্ড','টরটয়েজ'])],()=>[850,1150]),
     P('p22','ইলেকট্রিক কেটলি ১.৮ লিটার','Electric Kettle 1.8 L','c3','f','১৫০০ ওয়াট, ৫ মিনিটে পানি ফোটে, অটো শাট-অফ।','1500W, boils in about 5 minutes, automatic shut-off.',18,[O('বডি',['স্টেইনলেস স্টিল','গ্লাস'])],(v,i)=>[[1250,1450],[1490,1690]][i]),
+    P('p23','ব্লুটুথ নেকব্যান্ড (ENC)','Bluetooth Neckband (ENC)','c1','n','ম্যাগনেটিক ইয়ারবাড, ENC কল নয়েজ রিডাকশন, এক চার্জে ২৫ ঘণ্টা।','Magnetic earbuds, ENC call noise reduction, 25 hours per charge.',6,[O('রঙ',['কালো','নীল','লাল'])],()=>[690,990]),
+    P('p34','HY300 মিনি স্মার্ট প্রজেক্টর','HY300 Mini Smart Projector','c1','fn','অ্যান্ড্রয়েড, ওয়াইফাই ও ব্লুটুথ, ১৩০ ইঞ্চি পর্যন্ত বড় স্ক্রিন, অটো কিস্টোন।','Android, Wi-Fi and Bluetooth, up to 130-inch picture, auto keystone.',3,[O('মডেল',['HY300','HY300 Pro'])],(v,i)=>[[4490,5500],[8490,9900]][i]),
+    P('p41','রিচার্জেবল টেবিল ফ্যান + LED লাইট','Rechargeable Table Fan + LED Light','c1','','লোডশেডিংয়ে ৬-৮ ঘণ্টা চলে, ৩ স্পিড, সাথে নাইট লাইট।','Runs 6–8 hours during power cuts, 3 speeds, built-in night light.',30,[O('সাইজ',['১২ ইঞ্চি','১৪ ইঞ্চি'])],(v,i)=>[[2290,2790],[2890,3490]][i]),
+    P('p24','K9 ডুয়াল ওয়্যারলেস মাইক্রোফোন','K9 Dual Wireless Microphone','c8','fn','টিকটক, রিলস, ইউটিউবের জন্য পরিষ্কার সাউন্ড, প্লাগ অ্যান্ড প্লে।','Clear audio for TikTok, Reels and YouTube. Plug and play.',2,[O('পোর্ট',['Type-C','Lightning'])],()=>[690,950]),
+    P('p25','রিং লাইট + ৭ ফুট ট্রাইপড','Ring Light + 7 ft Tripod','c8','f','৩ কালার মোড, ১০ ধাপ ব্রাইটনেস, মোবাইল হোল্ডার ও রিমোট।','3 colour modes, 10 brightness levels, phone holder and remote.',9,[O('সাইজ',['১০ ইঞ্চি','১২ ইঞ্চি','১৮ ইঞ্চি'])],(v,i)=>[[900,1150],[1150,1500],[3200,3900]][i]),
+    P('p26','সেলফি স্টিক ট্রাইপড (ব্লুটুথ রিমোট)','Selfie Stick Tripod (Bluetooth Remote)','c8','','ভ্লগ, ভিডিও কল আর গ্রুপ সেলফির জন্য, ভাঁজ করে পকেটে রাখা যায়।','For vlogs, video calls and group selfies. Folds to pocket size.',20,[],()=>[650,850]),
+    P('p27','অ্যাডজাস্টেবল মোবাইল ও ট্যাব স্ট্যান্ড','Adjustable Phone & Tablet Stand','c8','','অ্যালুমিনিয়াম বডি, ভাঁজ করা যায়, অনলাইন ক্লাস ও ভিডিও কলের জন্য।','Aluminium, foldable, ideal for online classes and video calls.',40,[O('রঙ',['সিলভার','কালো'])],()=>[350,450]),
+    P('p28','মিনি রুম হিটার','Mini Room Heater','c9','fn','দ্রুত গরম করে, ওভারহিট প্রোটেকশন, অল্প বিদ্যুৎ খরচ।','Heats fast, overheat protection, low power use.',1,[O('মডেল',['৫০০W ডেস্ক মিনি','২০০০W PTC (রিমোটসহ)'])],(v,i)=>[[790,990],[2690,3200]][i]),
+    P('p29','ইলেকট্রিক হট ওয়াটার ব্যাগ','Electric Hot Water Bag','c9','f','১০-১৫ মিনিটে গরম হয়, কোমর ও পেটের ব্যথায় আরাম।','Heats in 10–15 minutes, soothing for back and cramp pain.',4,[O('কভার',['প্লেইন','কার্টুন'])],()=>[390,550]),
+    P('p30','ইলেকট্রিক লাঞ্চ বক্স','Electric Lunch Box','c9','','অফিসে ১৫ মিনিটে খাবার গরম, স্টিলের ভেতরের বাটি।','Warms food at the office in 15 minutes. Steel inner bowls.',14,[O('লেয়ার',['১ লেয়ার','২ লেয়ার'])],(v,i)=>[[990,1290],[1450,1790]][i]),
+    P('p31','V380 ওয়াইফাই আইপি ক্যামেরা','V380 Wi-Fi IP Camera','c10','fn','৩৬০° ঘোরে, নাইট ভিশন, দুই দিকে কথা বলা যায়, মোবাইলে লাইভ দেখুন।','360° rotation, night vision, two-way talk, live view on your phone.',5,[O('মডেল',['1080p সিঙ্গেল লেন্স','ডুয়াল লেন্স'])],(v,i)=>[[1450,1890],[2590,3200]][i]),
+    P('p32','স্মার্ট ওয়াইফাই প্লাগ','Smart Wi-Fi Plug','c10','','মোবাইল থেকে হিটার, গিজার বা লাইট অন-অফ, টাইমার সেট।','Switch heaters, geysers or lights from your phone, with timers.',22,[],()=>[990,1290]),
+    P('p33','RGB LED স্ট্রিপ লাইট (রিমোটসহ)','RGB LED Strip Light (with Remote)','c10','','১৬ রঙ, মিউজিক সিঙ্ক, ১০ মিনিটে ঘরের লুক বদলান।','16 colours, music sync, a room makeover in 10 minutes.',16,[O('দৈর্ঘ্য',['৫ মিটার','১০ মিটার'])],(v,i)=>[[850,1150],[1490,1850]][i]),
+    P('p35','কার ও বাইক ফোন হোল্ডার','Car & Bike Phone Holder','c11','f','শক্ত গ্রিপ, ৩৬০° ঘোরে, রাইড শেয়ারিংয়ে জিপিএস দেখার জন্য।','Firm grip, 360° rotation, ideal for GPS on ride-share trips.',11,[O('টাইপ',['এয়ার ভেন্ট','ড্যাশবোর্ড','বাইক হ্যান্ডেল'])],()=>[450,650]),
+    P('p36','ব্লুটুথ এফএম ট্রান্সমিটার কার চার্জার','Bluetooth FM Transmitter Car Charger','c11','','হ্যান্ডস-ফ্রি কল, গান বাজান, দুটো ফাস্ট চার্জিং পোর্ট।','Hands-free calls, music playback and two fast-charging ports.',26,[],()=>[950,1250]),
+    P('p37','পোর্টেবল কার ভ্যাকুয়াম ক্লিনার','Portable Car Vacuum Cleaner','c11','','তারবিহীন, শক্তিশালী সাকশন, সিট আর ড্যাশবোর্ড মিনিটেই পরিষ্কার।','Cordless with strong suction, cleans seats and dashboards in minutes.',33,[],()=>[1150,1490]),
+    P('p38','হেয়ার ও বিয়ার্ড ট্রিমার','Hair & Beard Trimmer','c12','f','রিচার্জেবল, ৪টি কম্ব সাইজ, বাড়িতেই সেলুনের মতো কাট।','Rechargeable, 4 comb sizes, salon-style cuts at home.',8,[O('মডেল',['বেসিক','৩-ইন-১ সেট'])],(v,i)=>[[790,1050],[1290,1590]][i]),
+    P('p39','মাসাজ গান','Massage Gun','c12','n','৪-৬টি হেড, জিম রিকভারি আর পিঠের ব্যথায় আরাম।','4–6 heads for gym recovery and back-pain relief.',7,[O('সাইজ',['মিনি','ফুল সাইজ'])],(v,i)=>[[1290,1650],[3490,4200]][i]),
+    P('p40','পোর্টেবল রিচার্জেবল জুস ব্লেন্ডার','Portable Rechargeable Juice Blender','c3','n','USB-C চার্জ, যেকোনো জায়গায় তাজা জুস আর স্মুদি।','USB-C charging, fresh juice and smoothies anywhere.',10,[O('সাইজ',['৩৮০ মিলি','৮০০ মিলি'])],(v,i)=>[[890,1150],[1350,1650]][i]),
+    P('p42','১৫-ইন-১ ভেজিটেবল চপার','15-in-1 Vegetable Chopper','c3','','পেঁয়াজ, সবজি আর সালাদ কয়েক সেকেন্ডে কাটুন।','Cut onions, vegetables and salad in seconds.',19,[],()=>[690,990]),
+    P('p46','ডেকোরেটিভ ফেয়ারি লাইট','Decorative Fairy Lights','c3','','উষ্ণ আলো, ঘর আর অনুষ্ঠান সাজানোর জন্য।','Warm glow for home and event decoration.',27,[O('দৈর্ঘ্য',['৫ মিটার','১০ মিটার'])],(v,i)=>[[290,450],[490,650]][i]),
+    P('p43','কোরিয়ান সানস্ক্রিন SPF50','Korean Sunscreen SPF50','c4','','হালকা টেক্সচার, সাদা দাগ ফেলে না, প্রতিদিনের জন্য।','Lightweight, no white cast, made for daily use.',15,[],()=>[1290,1500]),
+    P('p44','হেয়ার স্ট্রেইটনার','Hair Straightener','c4','','সিরামিক প্লেট, দ্রুত গরম, চুলে কম ক্ষতি।','Ceramic plates, heats fast and is gentler on hair.',24,[],()=>[890,1150]),
+    P('p45','লেডিস ক্রসবডি ব্যাগ','Women\'s Crossbody Bag','c2','n','PU লেদার, অ্যাডজাস্টেবল স্ট্র্যাপ, মোবাইল আর ওয়ালেট রাখার জায়গা।','PU leather, adjustable strap, room for phone and wallet.',9,[O('রঙ',['কালো','বাদামি','ক্রিম'])],()=>[1290,1690]),
     P('p18','কিচেন কম্বো: ফ্রাইপ্যান + বোতল','Kitchen Combo: Pan + Bottle','c3','c','২৬ সেমি ফ্রাইপ্যান আর ১ লিটার বোতল একসাথে, আলাদা কেনার চেয়ে ২৫০ টাকা কম।','A 26 cm pan and a 1 L bottle together, ৳250 less than buying separately.',1,[],()=>[1390,1640,14])
   ];
   // Realistic sample photos from Pexels (free to use: https://www.pexels.com/license/). Replace with your own product photos.
@@ -602,7 +636,7 @@ function seed(){
     p5:[28494850,10769408,27385944],p6:[20702676],p7:[10726876,12628400,9660927,18212364],p8:[8055165,8629104,5593697],p9:[7879974,3737799],
     p10:[34939709,30229017,8140898],p11:[14656188,33794923,17511746],p12:[1084199,5978608,4207783],p13:[8936387,2123482,9004904,8061943],
     p15:[5889959],p16:[8108170,1311771,7421198],p17:[11032901,4480158,17023410],p18:[12292644,6245,8055165],
-    p19:[3779780,31683433,880874],p20:[3731256,18999333,1591244],p21:[1499477,6253849,16577200],p22:[15206538,33521165]};
+    p19:[3779780,31683433,880874],p24:[722706],p25:[9413665,13929349,6954103],p31:[24347621,24346971,5589597],p32:[29292011],p33:[10482375],p35:[33488,4824425],p38:[12032916,18377451],p39:[11372618,11372617,6389069],p40:[7460165,6824660],p41:[5850342],p46:[52907,966861,1400141],p23:[15399398],p20:[3731256,18999333,1591244],p21:[1499477,6253849,16577200],p22:[15206538,33521165]};
   products.forEach(p=>{p.images=(IMG[p.id]||[]).map(px)});
   const staff=['রিয়া','সাকিব','মিম','নাঈম'];
   const names=['নুসরাত জাহান','ফারজানা আক্তার','তানিয়া সুলতানা','রুমানা ইসলাম','সাবরিনা হক','মরিয়ম বেগম','আয়েশা সিদ্দিকা','ইশরাত জাহান','রাকিবুল হাসান','মাহমুদুল হক','তানভীর আহমেদ','সুমাইয়া রহমান','জান্নাতুল ফেরদৌস','আরিফ হোসেন','নাদিয়া আফরিন','শাহরিয়ার কবির','মৌসুমী দাস','সাদিয়া ইসলাম','ফাহিম মুনতাসির','কামরুন নাহার','ইমরান খান','রেজাউল করিম'];
@@ -646,15 +680,15 @@ function seed(){
   const reviews=[];let rid=1;
   products.forEach(p=>{const n=Math.floor(rnd()*5);for(let k=0;k<n;k++){const r=pick(rv);reviews.push({id:'r'+(rid++),pid:p.id,name:pick(names),rating:r[1],text:r[0],at:now-Math.floor(rnd()*40)*DAY-Math.floor(rnd()*20)*HOUR,approved:true,verified:rnd()<.7})}});
   reviews.push({id:'r'+(rid++),pid:'p2',name:'তানভীর আহমেদ',rating:4,text:'ব্যাটারি ব্যাকআপ ভালো। ব্লুটুথ কল পরিষ্কার শোনা যায়।',at:now-3*HOUR,approved:false,verified:true});
-  return {v:4,
+  return {v:5,
     settings:{name:'Smart China Gallery',nameBn:'স্মার্ট চায়না গ্যালারি',logo:'',tagline:'দরকারি সব প্রোডাক্ট এক জায়গায়। সারা দেশে হোম ডেলিভারি, ক্যাশ অন ডেলিভারি।',taglineEn:'Everything you need, in one place. Nationwide delivery with cash on delivery.',
       phone:'+880 1338-325365',whatsapp:'8801338325365',email:'',address:'নিউ পল্টন, ঢাকা',addressEn:'New Paltan, Dhaka',facebook:'',
       inside:60,outside:120,freeShipMin:3000,brandColor:'#f85606',bkash:'',nagad:'',pixelId:'',ga4Id:'',
       announce:'৩০০০ টাকার বেশি অর্ডারে ফ্রি ডেলিভারি · সারা দেশে ক্যাশ অন ডেলিভারি',announceEn:'Free delivery on orders over ৳3,000 · Cash on delivery nationwide',
-      flash:{on:true,title:'ফ্ল্যাশ সেল',titleEn:'Flash Sale',endsAt:now+30*HOUR,pids:['p1','p3','p8','p19','p21']},
+      flash:{on:true,title:'ফ্ল্যাশ সেল',titleEn:'Flash Sale',endsAt:now+30*HOUR,pids:['p28','p29','p31','p24','p38']},
       banners:[
         {title:'নতুন গ্যাজেট, সাশ্রয়ী দামে',titleEn:'New gadgets, honest prices',sub:'ইয়ারবাড, স্মার্ট ওয়াচ আর পাওয়ার ব্যাংকে ২৫% পর্যন্ত ছাড়।',subEn:'Up to 25% off earbuds, smart watches and power banks.',cta:'গ্যাজেট দেখুন',ctaEn:'Shop gadgets',cat:'c1',tint:'#2b62a8'},
-        {title:'ঘর সাজান সবুজ গাছে',titleEn:'Bring your home to life',sub:'টবসহ ইনডোর গাছ, যত্নের গাইড ফ্রি।',subEn:'Indoor plants delivered in pots, with a free care guide.',cta:'গাছ দেখুন',ctaEn:'Shop plants',cat:'c5',tint:'#2e7d4f'},
+        {title:'শীতের গ্যাজেট এসে গেছে',titleEn:'Winter gadgets are here',sub:'রুম হিটার, হট ওয়াটার ব্যাগ, কেটলি আর লাঞ্চ বক্স, সাশ্রয়ী দামে।',subEn:'Room heaters, hot water bags, kettles and lunch boxes at honest prices.',cta:'শীতের কালেকশন',ctaEn:'Shop winter',cat:'c9',tint:'#d9480f'},
         {title:'কিচেনের সব দরকারি জিনিস',titleEn:'Kitchen essentials',sub:'ফ্রাইপ্যান, বোতল আর কম্বো অফার এক জায়গায়।',subEn:'Pans, bottles and combo deals in one place.',cta:'কিচেন দেখুন',ctaEn:'Shop kitchen',cat:'c3',tint:'#b8641c'}],
       pages:{
         about:'Smart China Gallery একটি অনলাইন শপ, যেখানে গ্যাজেট, ফ্যাশন, ঘর ও কিচেন, বিউটি, গাছ, খেলনা আর গ্রোসারি পাওয়া যায়। আমরা সারা বাংলাদেশে হোম ডেলিভারি দিই, পণ্য হাতে পেয়ে টাকা দেওয়া যায়।\n\n(এটা নমুনা লেখা। অ্যাডমিন প্যানেলের সেটিংস থেকে বদলানো যাবে।)',
@@ -690,13 +724,14 @@ const catOf=id=>S.categories.find(c=>c.id===id)||{name:'অন্যান্য
 const catName=id=>catOf(id).name;
 const meName=()=>S.staff[S.me]||'অ্যাডমিন';
 function pimg(p,cls='',i=0){
-  if(!p)return `<span class="ph ${cls}" style="--t:#889">${sv(CAT_ICONS.tag)}</span>`;
+  if(!p)return `<span class="ph ${cls}" style="--t:#889"></span>`;
   const im=(p.images||[])[i];
   const c=catOf(p.cat);
-  if(im)return `<img class="${cls}" src="${im}" alt="${esc(p.name)}" loading="lazy" referrerpolicy="no-referrer" data-t="${c.tint}" data-ic="${c.icon}" onerror="imgFail(this)">`;return `<span class="ph ${cls}" style="--t:${c.tint}" role="img" aria-label="${esc(p.name)}">${sv(CAT_ICONS[c.icon]||CAT_ICONS.tag)}</span>`;
+  const src=im||(cls==='alt'?'':c.img);
+  if(src)return `<img class="${cls}" src="${src}" alt="${esc(p.name)}" loading="lazy" referrerpolicy="no-referrer" data-t="${c.tint}" onerror="imgFail(this)">`;return cls==='alt'?'':`<span class="ph ${cls}" style="--t:${c.tint}" role="img" aria-label="${esc(p.name)}"><i>${esc(pn(p))}</i></span>`;
 }
-function imgFail(el){if(el.classList.contains('alt')){el.remove();return}const s=document.createElement('span');s.className='ph broken '+el.className;s.style.setProperty('--t',el.dataset.t||'#889');s.setAttribute('role','img');s.setAttribute('aria-label',el.alt||'');s.innerHTML=sv(CAT_ICONS[el.dataset.ic]||CAT_ICONS.tag);el.replaceWith(s)}
-const catIcon=(c,w=20)=>`<span class="ci" style="--t:${c.tint}">${sv(CAT_ICONS[c.icon]||CAT_ICONS.tag,w)}</span>`;
+function imgFail(el){if(el.classList.contains('alt')){el.remove();return}const s=document.createElement('span');s.className='ph broken '+el.className;s.style.setProperty('--t',el.dataset.t||'#889');s.setAttribute('role','img');s.setAttribute('aria-label',el.alt||'');const i=document.createElement('i');i.textContent=el.alt||'';s.appendChild(i);el.replaceWith(s)}
+const catIcon=(c,w=20)=>`<span class="ci" style="--t:${c.tint}">${c.img?`<img src="${esc(c.img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`:''}<b>${esc((c.nameEn||c.name||'?').trim()[0]||'')}</b></span>`;
 function soldQty(pid){let n=0;for(const o of S.orders)if(!['cancelled','returned'].includes(o.status))for(const it of o.items)if(it.pid===pid)n+=it.qty;return n}
 const pillSt=s=>`<span class="pill ${STATUS[s].c}">${STATUS[s].t}</span>`;
 const freeShip=sub=>+S.settings.freeShipMin>0&&sub>=+S.settings.freeShipMin;
@@ -1544,9 +1579,9 @@ function productForm(id){
 }
 function pageCategories(){
   const iconSel=(id,cur)=>`<select class="inp" id="${id}" style="width:auto" aria-label="আইকন">${Object.keys(CAT_ICONS).map(k=>`<option value="${k}" ${k===cur?'selected':''}>${{device:'গ্যাজেট',shirt:'পোশাক',pan:'কিচেন',drop:'বিউটি',leaf:'গাছ',toy:'খেলনা',basket:'গ্রোসারি',gift:'গিফট',tag:'সাধারণ',book:'বই'}[k]}</option>`).join('')}</select>`;
-  return `<div class="panels"><div class="panel w8" style="padding:0"><div class="tbl-wrap" style="border:0"><table class="t"><thead><tr><th></th><th>নাম (বাংলা)</th><th>Name (English)</th><th>আইকন ও রঙ</th><th>প্রোডাক্ট</th><th></th></tr></thead><tbody>
-  ${S.categories.map(c=>`<tr><td>${catIcon(c,18)}</td><td><input class="inp" value="${esc(c.name)}" id="cn_${c.id}" aria-label="ক্যাটাগরির নাম"></td><td><input class="inp" value="${esc(c.nameEn||'')}" id="ce_${c.id}" aria-label="English name"></td><td><div class="row" style="flex-wrap:nowrap">${iconSel('ci_'+c.id,c.icon)}<input type="color" id="ct_${c.id}" value="${c.tint}" aria-label="রঙ"></div></td><td class="num">${S.products.filter(p=>p.cat===c.id).length}</td><td style="white-space:nowrap"><button class="btn sm plain" data-act="csave" data-id="${c.id}">সেভ</button> <button class="btn sm plain" style="color:var(--bad)" data-act="cdel" data-id="${c.id}">মুছুন</button></td></tr>`).join('')}
-  </tbody></table></div></div><div class="panel"><h3>নতুন ক্যাটাগরি</h3><form id="cf" style="display:flex;flex-direction:column;gap:10px"><input class="inp" id="cfName" placeholder="নাম (যেমন: বই ও স্টেশনারি)" aria-label="নতুন ক্যাটাগরির নাম"><input class="inp" id="cfNameEn" placeholder="English name (e.g. Books)" aria-label="English name"><div class="row">${iconSel('cfIcon','tag')}<input type="color" id="cfTint" value="#0b6b52" aria-label="রঙ"></div><button class="btn">যোগ করুন</button></form><p class="small muted">যে ক্যাটাগরিতে প্রোডাক্ট আছে সেটা মোছা যাবে না, আগে প্রোডাক্টগুলো অন্য ক্যাটাগরিতে সরান।</p></div></div>`;
+  return `<div class="panels"><div class="panel w8" style="padding:0"><div class="tbl-wrap" style="border:0"><table class="t"><thead><tr><th></th><th>নাম (বাংলা)</th><th>Name (English)</th><th>ছবি (URL) ও রঙ</th><th>প্রোডাক্ট</th><th></th></tr></thead><tbody>
+  ${S.categories.map(c=>`<tr><td>${catIcon(c,18)}</td><td><input class="inp" value="${esc(c.name)}" id="cn_${c.id}" aria-label="ক্যাটাগরির নাম"></td><td><input class="inp" value="${esc(c.nameEn||'')}" id="ce_${c.id}" aria-label="English name"></td><td><div class="row" style="flex-wrap:nowrap"><input class="inp" id="cimg_${c.id}" value="${esc(c.img||'')}" placeholder="https://...jpg" aria-label="ছবির লিংক" style="min-width:150px"><input type="color" id="ct_${c.id}" value="${c.tint}" aria-label="রঙ"></div></td><td class="num">${S.products.filter(p=>p.cat===c.id).length}</td><td style="white-space:nowrap"><button class="btn sm plain" data-act="csave" data-id="${c.id}">সেভ</button> <button class="btn sm plain" style="color:var(--bad)" data-act="cdel" data-id="${c.id}">মুছুন</button></td></tr>`).join('')}
+  </tbody></table></div></div><div class="panel"><h3>নতুন ক্যাটাগরি</h3><form id="cf" style="display:flex;flex-direction:column;gap:10px"><input class="inp" id="cfName" placeholder="নাম (যেমন: বই ও স্টেশনারি)" aria-label="নতুন ক্যাটাগরির নাম"><input class="inp" id="cfNameEn" placeholder="English name (e.g. Books)" aria-label="English name"><input class="inp" id="cfImg" placeholder="ছবির লিংক (https://...jpg)" aria-label="ছবির লিংক"><div class="row"><input type="color" id="cfTint" value="#0b6b52" aria-label="রঙ"></div><button class="btn">যোগ করুন</button></form><p class="small muted">যে ক্যাটাগরিতে প্রোডাক্ট আছে সেটা মোছা যাবে না, আগে প্রোডাক্টগুলো অন্য ক্যাটাগরিতে সরান।</p></div></div>`;
 }
 let revFilter='pending';
 function pageReviews(){
@@ -1619,7 +1654,7 @@ function renderAdmin(page){
   if(page==='orders'){renderOrdersTable();$('#oq').oninput=e=>{adm.q=e.target.value;renderOrdersTable()}}
   if(page==='products'){renderProductsTable();$('#pq').oninput=e=>{adm.pq=e.target.value;renderProductsTable()}}
   if(page==='customers')$('#cq').onchange=e=>{adm.cq=e.target.value;refreshAdmin()};
-  if(page==='categories')$('#cf').onsubmit=e=>{e.preventDefault();const n=$('#cfName').value.trim();if(!n)return;S.categories.push({id:'c'+Date.now(),name:n,nameEn:$('#cfNameEn').value.trim(),icon:$('#cfIcon').value,tint:$('#cfTint').value});save();refreshAdmin();toast('ক্যাটাগরি যোগ হয়েছে')};
+  if(page==='categories')$('#cf').onsubmit=e=>{e.preventDefault();const n=$('#cfName').value.trim();if(!n)return;S.categories.push({id:'c'+Date.now(),name:n,nameEn:$('#cfNameEn').value.trim(),icon:'tag',img:$('#cfImg').value.trim(),tint:$('#cfTint').value});save();refreshAdmin();toast('ক্যাটাগরি যোগ হয়েছে')};
   if(page==='coupons')$('#cpf').onsubmit=e=>{e.preventDefault();const code=$('#cpCode').value.trim().toUpperCase(),v=+$('#cpVal').value;if(!code||!v){$('#cpErr').textContent='কোড আর পরিমাণ দিন';return}if(S.coupons.some(c=>c.code===code)){$('#cpErr').textContent='এই কোড আগেই আছে';return}S.coupons.push({code,type:$('#cpType').value,value:v,min:+$('#cpMin').value||0,active:true,used:0});save();refreshAdmin();toast('কুপন তৈরি হয়েছে')};
   if(page==='settings'){
     $('#st_logo').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas'),sc=Math.min(1,120/im.height);c.width=im.width*sc;c.height=im.height*sc;c.getContext('2d').drawImage(im,0,0,c.width,c.height);S.settings.logo=c.toDataURL('image/png');save();refreshAdmin();toast('লোগো সেভ হয়েছে')};im.src=r.result};r.readAsDataURL(f)};
@@ -1710,7 +1745,7 @@ const A={
   revf:el=>{revFilter=el.dataset.id;refreshAdmin()},
   pedit:el=>productForm(el.dataset.id),
   pdel:el=>{const p=prod(el.dataset.id);askConfirm(`"${esc(p.name)}" মুছে ফেলবেন? আগের অর্ডারে নামটা থেকে যাবে।`,()=>{S.products=S.products.filter(x=>x!==p);S.cart=S.cart.filter(x=>x.pid!==p.id);S.wish=S.wish.filter(x=>x!==p.id);save();refreshAdmin();toast('প্রোডাক্ট মুছে ফেলা হয়েছে')},'মুছে ফেলুন')},
-  csave:el=>{const c=S.categories.find(x=>x.id===el.dataset.id),v=$('#cn_'+c.id).value.trim();if(!v)return;c.name=v;c.nameEn=$('#ce_'+c.id).value.trim();c.icon=$('#ci_'+c.id).value;c.tint=$('#ct_'+c.id).value;save();refreshAdmin();toast('ক্যাটাগরি সেভ হয়েছে')},
+  csave:el=>{const c=S.categories.find(x=>x.id===el.dataset.id),v=$('#cn_'+c.id).value.trim();if(!v)return;c.name=v;c.nameEn=$('#ce_'+c.id).value.trim();c.img=$('#cimg_'+c.id).value.trim();c.tint=$('#ct_'+c.id).value;save();refreshAdmin();toast('ক্যাটাগরি সেভ হয়েছে')},
   cdel:el=>{const id=el.dataset.id;if(S.products.some(p=>p.cat===id)){toast('এই ক্যাটাগরিতে প্রোডাক্ট আছে, আগে সেগুলো সরান');return}S.categories=S.categories.filter(c=>c.id!==id);save();refreshAdmin()},
   ctog:el=>{const c=S.coupons[+el.dataset.id];c.active=!c.active;save();refreshAdmin()},
   cpdel:el=>{S.coupons.splice(+el.dataset.id,1);save();refreshAdmin()},
