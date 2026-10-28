@@ -61,3 +61,13 @@ cPanel → File Manager → `public_html` ফোল্ডারে `index.html` 
 - SMS: OTP আর অর্ডার কনফার্মেশন
 - পেমেন্ট: bKash বা SSLCommerz
 - Facebook Pixel ও Conversion API
+
+## ফ্রড চেকার (BD Courier কুরিয়ার হিস্টোরি)
+
+অর্ডার পেজে প্রতিটা কাস্টমারের পাশে "Courier History" কলাম আছে। Check চাপলে BD Courier থেকে ওই নম্বরের সব কুরিয়ারের মোট অর্ডার, ডেলিভারড, ক্যানসেল আর সাফল্যের হার দেখাবে। অর্ডারে ক্লিক করলে কুরিয়ার-ভিত্তিক বিস্তারিত আর ফ্রড রিপোর্ট দেখা যাবে। এটা শুধু নিজের হোস্টিংয়ে (PHP সহ) কাজ করবে, GitHub Pages-এ না।
+
+1. `server/courier-check.php` ফাইলটা হোস্টিংয়ের `public_html`-এ `index.html`-এর পাশে আপলোড করুন।
+2. cPanel File Manager-এ ফাইলটা এডিট করে `$BDC_API_KEY`-এ আপনার BD Courier API Key আর `$ADMIN_SECRET`-এ একটা গোপন শব্দ দিন।
+3. অ্যাডমিন → সেটিংস → "ফ্রড চেকার"-এ সেই গোপন শব্দটা দিয়ে "কানেকশন টেস্ট" চাপুন, তারপর সেভ করুন।
+
+আসল API Key কখনো GitHub-এ বা `index.html`-এ দেবেন না।

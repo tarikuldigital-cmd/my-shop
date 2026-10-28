@@ -459,6 +459,14 @@ table.t .inp{padding:6px 8px}
 .om-trk{color:var(--info);font-weight:600;text-decoration:none}.om-trk:hover{text-decoration:underline}
 .om-pay{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;letter-spacing:.04em}.om-pay::before{content:"";width:9px;height:9px;border-radius:50%}
 .om-pay.due{color:var(--bad)}.om-pay.due::before{background:var(--bad)}.om-pay.paid{color:var(--good)}.om-pay.paid::before{background:var(--good)}
+.fr-b{border:0;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700;white-space:nowrap;cursor:pointer;font-variant-numeric:tabular-nums}
+.fr-b.btn-chk{background:color-mix(in srgb,var(--info) 12%,transparent);color:var(--info)}.fr-b.load{background:var(--bg);color:var(--muted)}
+.fr-b.good{background:color-mix(in srgb,var(--good) 15%,transparent);color:var(--good)}.fr-b.warn{background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--warn)}
+.fr-b.bad{background:color-mix(in srgb,var(--bad) 14%,transparent);color:var(--bad)}.fr-b.new{background:color-mix(in srgb,var(--hold) 14%,transparent);color:var(--hold)}
+.fr-sum{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.fr-sum div{background:var(--bg);border-radius:8px;padding:8px;text-align:center}
+.fr-sum b{display:block;font-size:20px;font-variant-numeric:tabular-nums}.fr-sum span{font-size:11.5px;color:var(--muted)}
+.fr-sum .g b,.fr-sum .good b{color:var(--good)}.fr-sum .r b,.fr-sum .bad b{color:var(--bad)}.fr-sum .warn b{color:var(--warn)}
+.fr-bar{height:8px;border-radius:99px;background:color-mix(in srgb,var(--bad) 30%,transparent);overflow:hidden}.fr-bar i{display:block;height:100%;background:var(--good)}
 .om-t th{text-transform:uppercase;font-size:12px;letter-spacing:.05em}
 @media(max-width:900px){.om-top{grid-template-columns:1fr}.om-bar select{min-width:0}}
 .bulkbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--brand-soft);border:1px solid color-mix(in srgb,var(--brand) 35%,transparent);border-radius:var(--r);padding:10px 12px}
@@ -741,7 +749,7 @@ function seedIncomplete(products,now){
       items:[{pid:p.id,vkey:v.key,name:p.name,price:v.price,cost:v.cost,qty}],sub:v.price*qty,at,updated:at+4*6e4,status,
       log:status==='new'?[]:[{t:status==='dropped'?'বাদ দেওয়া হয়েছে':status==='converted'?'অর্ডারে রূপান্তর':'ফোন করা হয়েছে',by:'রিয়া',at:at+2*HOUR}],orderInv:status==='converted'?'INV-'+(30090-i):''}});
 }
-let S=DB.load()||seed();
+let S=DB.load()||seed();S.fraud=S.fraud||{};if(S.settings.fraudUrl==null)S.settings.fraudUrl='courier-check.php';
 let storageWarned=false;
 function save(){if(!DB.save(S)&&!storageWarned){storageWarned=true;toast('ব্রাউজারে ডেটা সেভ হচ্ছে না, রিফ্রেশ করলে পরিবর্তন মুছে যাবে')}}
 
@@ -1398,6 +1406,60 @@ function pageOverview(){
   </div>`;
 }
 
+const frPhone=p=>{p=String(p).replace(/\D/g,'');if(p.startsWith('880'))p=p.slice(2);return p};
+/* ---------- BD Courier fraud check ---------- */
+const FR_TTL=12*3600*1000,frBusy=new Set();
+function frParse(resp){
+  const num=(...v)=>{for(const x of v)if(x!=null&&x!==''&&!isNaN(+x))return +x;return null};
+  let root=resp&&(resp.courierData||resp.courier_data||(resp.data&&(resp.data.courierData||resp.data))||resp);
+  const rows=[];let sum=null;
+  if(root&&typeof root==='object')for(const [k,v] of Object.entries(root)){
+    if(!v||typeof v!=='object'||Array.isArray(v))continue;
+    const tot=num(v.total_parcel,v.total_parcels,v.total,v.total_deliveries,v.total_order),ok=num(v.success_parcel,v.success_parcels,v.success,v.delivered,v.total_success),cn=num(v.cancelled_parcel,v.cancel_parcel,v.cancelled,v.cancel,v.returned,v.total_cancel);
+    if(tot==null&&ok==null)continue;
+    const r={k,name:v.name||k.charAt(0).toUpperCase()+k.slice(1),total:tot??((ok||0)+(cn||0)),ok:ok||0,cancel:cn??Math.max(0,(tot||0)-(ok||0)),ratio:num(v.success_ratio,v.successRatio)};
+    if(r.ratio==null)r.ratio=r.total?r.ok/r.total*100:0;
+    if(/^(summary|aggregate|total)$/i.test(k))sum=r;else rows.push(r);
+  }
+  if(!sum){const t=rows.reduce((a,r)=>({total:a.total+r.total,ok:a.ok+r.ok,cancel:a.cancel+r.cancel}),{total:0,ok:0,cancel:0});sum={...t,ratio:t.total?t.ok/t.total*100:0}}
+  const rep=resp&&(resp.reports||resp.fraud_reports||(resp.data&&resp.data.reports));
+  return {sum,rows,reports:Array.isArray(rep)?rep:[]};
+}
+async function frCall(body){
+  const st=S.settings;if(!st.fraudSecret)throw new Error('সেটিংসে ফ্রড চেকারের Secret দেওয়া নেই');
+  if(/github\.io$/.test(location.hostname)||location.protocol==='file:')throw new Error('ফ্রড চেক শুধু আপনার নিজের হোস্টিংয়ে (courier-check.php সহ) কাজ করবে, GitHub Pages-এ না');
+  let r;try{r=await fetch(st.fraudUrl||'courier-check.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...body,secret:st.fraudSecret})})}catch(e){throw new Error('সার্ভারে courier-check.php পৌঁছানো যায়নি')}
+  let j;try{j=await r.json()}catch(e){throw new Error('courier-check.php পাওয়া যায়নি বা PHP চলছে না')}
+  if(r.status===403)throw new Error('Secret মেলেনি, সেটিংস আর PHP ফাইলে একই শব্দ দিন');
+  if(!j.ok)throw new Error(j.error||('BD Courier উত্তর দিয়েছে: '+(j.data&&(j.data.message||j.data.error)||j.status)));
+  return j.data;
+}
+async function fraudCheck(phone,force){
+  const p=frPhone(phone),c=S.fraud[p];if(!force&&c&&Date.now()-c.at<FR_TTL)return c;
+  if(frBusy.has(p))return null;frBusy.add(p);frRefresh();
+  try{const data=await frCall({action:'check',phone:p});const res={...frParse(data),at:Date.now(),raw:data};S.fraud[p]=res;save();return res}
+  catch(e){toast(e.message);return null}finally{frBusy.delete(p);frRefresh()}
+}
+function frRefresh(){if(curAdminPage==='orders')renderOrdersTable();const d=$('#frBox');if(d)d.innerHTML=frDetail(d.dataset.phone)}
+const frCls=r=>r>=80?'good':r>=60?'warn':'bad';
+function frBadge(phone){
+  const p=frPhone(phone),c=S.fraud[p];
+  if(frBusy.has(p))return `<span class="fr-b load">চেক হচ্ছে…</span>`;
+  if(!c)return `<button class="fr-b btn-chk" data-act="fcheck" data-id="${p}">Check</button>`;
+  if(!c.sum.total)return `<button class="fr-b new" data-act="fcheck" data-id="${p}" title="কোনো কুরিয়ারে আগে পার্সেল নেই">নতুন কাস্টমার</button>`;
+  return `<button class="fr-b ${frCls(c.sum.ratio)}" data-act="fcheck" data-id="${p}" title="মোট ${c.sum.total} · ডেলিভারড ${c.sum.ok} · ক্যানসেল ${c.sum.cancel}">${Math.round(c.sum.ratio)}% · ${c.sum.ok}/${c.sum.total}</button>`;
+}
+function frDetail(phone){
+  const p=frPhone(phone),c=S.fraud[p];
+  if(frBusy.has(p))return `<div class="muted small">BD Courier থেকে হিস্টোরি আনা হচ্ছে…</div>`;
+  if(!c)return `<div class="row"><span class="small muted">এই নম্বরের কুরিয়ার হিস্টোরি এখনো চেক করা হয়নি।</span><button class="btn sm" data-act="fcheck" data-id="${p}" data-force="1">কুরিয়ার হিস্টোরি চেক করুন</button></div>`;
+  const s=c.sum;
+  return `<div class="fr-sum"><div><b>${s.total}</b><span>মোট অর্ডার</span></div><div class="g"><b>${s.ok}</b><span>ডেলিভারড</span></div><div class="r"><b>${s.cancel}</b><span>ক্যানসেল/রিটার্ন</span></div><div class="${frCls(s.ratio)}"><b>${s.total?Math.round(s.ratio)+'%':'—'}</b><span>সাফল্যের হার</span></div></div>
+  ${s.total?`<div class="fr-bar"><i style="width:${s.ratio}%"></i></div>`:'<div class="small muted">কোনো কুরিয়ারে এই নম্বরে আগে পার্সেল যায়নি (নতুন কাস্টমার)।</div>'}
+  ${c.rows.length?`<table class="t mini"><thead><tr><th>কুরিয়ার</th><th>মোট</th><th>ডেলিভারড</th><th>ক্যানসেল</th><th>হার</th></tr></thead><tbody>${c.rows.map(r=>`<tr><td>${esc(r.name)}</td><td class="num">${r.total}</td><td class="num">${r.ok}</td><td class="num">${r.cancel}</td><td class="num">${r.total?Math.round(r.ratio)+'%':'—'}</td></tr>`).join('')}</tbody></table>`:''}
+  ${c.reports.length?`<div class="insight risk" style="padding:8px 10px;border-radius:8px;border:1px solid color-mix(in srgb,var(--bad) 35%,transparent)"><span class="dot"></span><div><b>${c.reports.length}টি ফ্রড রিপোর্ট আছে</b>${c.reports.slice(0,3).map(x=>`<div class="small">${esc(typeof x==='string'?x:(x.details||x.message||x.comment||JSON.stringify(x)))}</div>`).join('')}</div></div>`:''}
+  <div class="row small muted">BD Courier থেকে · ${fdate(c.at)}<span class="grow"></span><button class="btn sm plain" data-act="fcheck" data-id="${p}" data-force="1">↻ আবার চেক</button><button class="btn sm plain" data-act="fraw" data-id="${p}">Raw</button></div>`;
+}
 const OPP=20;
 function inODates(o){const a=adm.from?new Date(adm.from+'T00:00').getTime():0,b=adm.to?new Date(adm.to+'T00:00').getTime()+DAY:Infinity;return o.createdAt>=a&&o.createdAt<b}
 function ordersBase(){return S.orders.filter(o=>inODates(o)&&(!adm.courier||o.courier===adm.courier))}
@@ -1424,7 +1486,7 @@ function pageOrders(){
       <optgroup label="অন্যান্য"><option value="inv">ইনভয়েস প্রিন্ট</option><option value="csv">CSV এক্সপোর্ট</option></optgroup></select>
     <button class="btn good" data-act="bulkApply">✓ Apply</button>
     <span class="grow"></span><div class="om-pg" id="opg"></div><button class="btn" data-act="newOrder">+ New Order</button></div>
-  <div class="tbl-wrap"><table class="t om-t"><thead><tr><th></th><th>#</th><th>Invoice</th><th>Customer</th><th>Phone</th><th>Status</th><th>Amount</th><th>Courier</th><th>Tracking link</th><th>Payment</th></tr></thead><tbody id="otbody"></tbody></table></div>`;
+  <div class="tbl-wrap"><table class="t om-t"><thead><tr><th></th><th>#</th><th>Invoice</th><th>Customer</th><th>Phone</th><th>Courier History</th><th>Status</th><th>Amount</th><th>Courier</th><th>Tracking link</th><th>Payment</th></tr></thead><tbody id="otbody"></tbody></table></div>`;
 }
 const payPill=o=>{const p=o.payment||{method:'cod',status:'unpaid'};return `<span class="pill ${PAY_ST[p.status].c} nodot">${p.method==='cod'?'COD':PAY[p.method]}${p.status==='pending'?' · যাচাই বাকি':p.status==='paid'&&p.method!=='cod'?' ✓':''}</span>`};
 function renderOrdersTable(){
@@ -1435,11 +1497,11 @@ function renderOrdersTable(){
     <td class="num muted small">${off+i+1}</td>
     <td><b class="num">${o.inv}</b>${r.length?` <span class="pill bad nodot" title="${esc(r.join('; '))}">ঝুঁকি</span>`:''}<div class="small muted">${fdate(o.createdAt)}</div></td>
     <td>${esc(o.name)}<div class="small muted">${esc(o.district)} · ${o.items.reduce((n,x)=>n+x.qty,0)}টি পণ্য</div></td>
-    <td class="num" style="white-space:nowrap">${o.phone} <a class="om-wa" href="https://wa.me/${waNum(o.phone)}" target="_blank" rel="noopener" data-act="stop" aria-label="${esc(o.name)}-কে WhatsApp করুন">${ICON.wa}</a></td>
+    <td class="num" style="white-space:nowrap">${o.phone} <a class="om-wa" href="https://wa.me/${waNum(o.phone)}" target="_blank" rel="noopener" data-act="stop" aria-label="${esc(o.name)}-কে WhatsApp করুন">${ICON.wa}</a></td><td>${frBadge(o.phone)}</td>
     <td>${pillSt(o.status)}</td><td class="num"><b>${tk(o.total)}</b></td>
     <td class="small">${o.courier?COURIERS[o.courier].t+' Courier':'<span class="muted">—</span>'}</td>
     <td class="small num">${u?`<a class="om-trk" href="${u}" target="_blank" rel="noopener" data-act="stop">↗ ${o.tracking}</a>`:'<span class="muted">N/A</span>'}</td>
-    <td><span class="om-pay ${paid?'paid':'due'}">${paid?'PAID':'DUE'}</span>${p.method!=='cod'?`<div class="small muted">${PAY[p.method]}${p.status==='pending'?' · যাচাই বাকি':''}</div>`:''}</td></tr>`}).join(''):`<tr><td colspan="10"><div class="empty" style="border:0">এই ফিল্টারে কোনো অর্ডার নেই</div></td></tr>`;
+    <td><span class="om-pay ${paid?'paid':'due'}">${paid?'PAID':'DUE'}</span>${p.method!=='cod'?`<div class="small muted">${PAY[p.method]}${p.status==='pending'?' · যাচাই বাকি':''}</div>`:''}</td></tr>`}).join(''):`<tr><td colspan="11"><div class="empty" style="border:0">এই ফিল্টারে কোনো অর্ডার নেই</div></td></tr>`;
   const pg=$('#opg');if(pg)pg.innerHTML=`<button class="btn sm plain" data-act="opg" data-id="-1" ${adm.pg<=1?'disabled':''}>‹ Prev</button><span>Page ${adm.pg} / ${pages}</span><button class="btn sm plain" data-act="opg" data-id="1" ${adm.pg>=pages?'disabled':''}>Next ›</button>`;
   renderBulk();const sa=document.querySelector('[data-act="selall"]');if(sa)sa.checked=list.length>0&&list.every(o=>adm.sel.has(o.id));
 }
@@ -1453,6 +1515,7 @@ function orderDrawer(id){
     ${risk.length?`<div class="insight risk" style="border:1px solid color-mix(in srgb,var(--bad) 35%,transparent);border-radius:8px;padding:8px 10px"><span class="dot"></span><div>${risk.map(esc).join('<br>')}</div></div>`:''}
     <dl class="kv"><dt>কাস্টমার</dt><dd><b>${esc(o.name)}</b></dd><dt>ফোন</dt><dd class="num">${o.phone}</dd><dt>ঠিকানা</dt><dd>${esc(o.address)}, ${esc(o.district)}</dd><dt>সোর্স</dt><dd>${esc(o.source)}</dd><dt>পেমেন্ট</dt><dd>${(()=>{const p=o.payment||{method:'cod',status:'unpaid'};return `${PAY[p.method]} · <span class="pill ${PAY_ST[p.status].c}">${PAY_ST[p.status].t}</span>${p.trx?`<div class="small">TrxID: <b class="num">${esc(p.trx)}</b> · প্রেরক: <span class="num">${esc(p.sender||'')}</span></div>`:''}${p.method!=='cod'&&p.status!=='paid'?`<div class="row" style="margin-top:6px"><button class="btn sm" data-act="payst" data-id="${o.id}" data-s="paid">পেমেন্ট পেয়েছি</button><button class="btn sm plain" style="color:var(--bad)" data-act="payst" data-id="${o.id}" data-s="failed">TrxID মেলেনি</button></div>`:''}`})()}</dd><dt>আগের অর্ডার</dt><dd>${prev.length?`${prev.length}টি (${prev.filter(x=>x.status==='delivered').length}টি ডেলিভারড, ${prev.filter(x=>!isLive(x)).length}টি ক্যানসেল/রিটার্ন)`:'প্রথম অর্ডার'}</dd>
     ${o.courier?`<dt>কুরিয়ার</dt><dd>${COURIERS[o.courier].t} · <span class="num">${o.tracking}</span></dd>`:''}${o.note?`<dt>কাস্টমারের নোট</dt><dd>${esc(o.note)}</dd>`:''}${o.status==='cancelled'&&o.cancelReason?`<dt>ক্যানসেলের কারণ</dt><dd>${esc(o.cancelReason)}</dd>`:''}${o.ret?`<dt>${RET_TYPES[o.ret.type]}</dt><dd>${esc(o.ret.reason)} · ${RET_ST[o.ret.st]}</dd>`:''}</dl>
+    <div class="card" style="padding:10px 12px;display:flex;flex-direction:column;gap:8px"><b>কুরিয়ার হিস্টোরি (ফ্রড চেক)</b><div id="frBox" data-phone="${frPhone(o.phone)}" style="display:flex;flex-direction:column;gap:8px">${frDetail(o.phone)}</div></div>
     <div class="card" style="padding:10px 12px">${o.items.map(i=>`<div class="sumrow small"><span>${itemLabel(i)} × ${i.qty}</span><span class="num">${tk(i.price*i.qty)}</span></div>`).join('')}
       <div class="sumrow small"><span>ডেলিভারি চার্জ</span><span class="num">${tk(o.delivery)}</span></div>${o.discount?`<div class="sumrow small"><span>ছাড় ${esc(o.coupon)}</span><span class="num">−${tk(o.discount)}</span></div>`:''}<div class="sumrow total"><span>${o.payment&&o.payment.method!=='cod'&&o.payment.status==='paid'?'অগ্রিম পরিশোধিত (COD ৳0)':'COD আদায় করতে হবে'}</span><span class="num">${tk(o.total)}</span></div></div>
     ${acts.length?`<div><div class="small muted" style="margin-bottom:6px">পরের ধাপ</div><div class="row">${acts.map(a=>`<button class="btn sm ${a[2]}" data-act="oact" data-id="${o.id}" data-s="${a[0]}">${a[1]}</button>`).join('')}</div></div>`:''}
@@ -1673,6 +1736,9 @@ function pageSettings(){
     <div class="field"><label>ফ্ল্যাশ সেলের প্রোডাক্ট</label><div style="max-height:170px;overflow:auto;border:1px solid var(--line);border-radius:9px;padding:6px 10px">${S.products.map(p=>`<label class="opt"><input type="checkbox" class="flp" value="${p.id}" ${fl.pids.includes(p.id)?'checked':''}>${esc(p.name)}</label>`).join('')}</div></div>
     <h3 style="margin-top:6px">মার্কেটিং ট্র্যাকিং</h3>
     ${f('pixelId','Meta (Facebook) Pixel ID','text','যেমন 123456789012345')}${f('ga4Id','Google Analytics 4 Measurement ID','text','যেমন G-XXXXXXXXXX')}
+    <h3 style="margin-top:6px">ফ্রড চেকার (BD Courier)</h3>
+    <div class="grid2">${f('fraudUrl','PHP ফাইলের ঠিকানা','text','courier-check.php')}${f('fraudSecret','Secret শব্দ (PHP ফাইলে যা দিয়েছেন)','password')}</div>
+    <div class="row"><button type="button" class="btn sm plain" data-act="ftest">কানেকশন টেস্ট</button><span class="small muted">API Key এখানে না, শুধু হোস্টিংয়ের courier-check.php ফাইলে থাকবে।</span></div>
     <p class="small muted" style="margin:0">দিলে লাইভ সাইটে PageView, ViewContent, AddToCart, InitiateCheckout আর Purchase ইভেন্ট নিজে থেকে যাবে।</p></div>
   <div class="panel w12" style="display:flex;flex-direction:column;gap:12px"><h3>হোমপেজ ব্যানার স্লাইডার</h3><div class="panels">
     ${s.banners.map((b,i)=>`<div class="panel" style="display:flex;flex-direction:column;gap:8px;background:var(--bg)"><b class="small">ব্যানার ${i+1}</b><input class="inp" id="bn_t_${i}" value="${esc(b.title)}" placeholder="শিরোনাম" aria-label="শিরোনাম"><input class="inp" id="bn_te_${i}" value="${esc(b.titleEn||'')}" placeholder="Title (English)" aria-label="Title English"><input class="inp" id="bn_s_${i}" value="${esc(b.sub)}" placeholder="উপশিরোনাম" aria-label="উপশিরোনাম"><input class="inp" id="bn_se_${i}" value="${esc(b.subEn||'')}" placeholder="Subtitle (English)" aria-label="Subtitle English"><div class="grid2"><input class="inp" id="bn_c_${i}" value="${esc(b.cta)}" placeholder="বাটন" aria-label="বাটনের লেখা"><input class="inp" id="bn_ce_${i}" value="${esc(b.ctaEn||'')}" placeholder="Button" aria-label="Button English"></div><div class="row" style="flex-wrap:nowrap"><select class="inp" id="bn_k_${i}" aria-label="কোন ক্যাটাগরিতে যাবে">${S.categories.map(c=>`<option value="${c.id}" ${b.cat===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select><input type="color" id="bn_x_${i}" value="${b.tint}" aria-label="রঙ"></div></div>`).join('')}</div></div>
@@ -1701,7 +1767,7 @@ function renderAdmin(page){
   if(page==='settings'){
     $('#st_logo').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas'),sc=Math.min(1,120/im.height);c.width=im.width*sc;c.height=im.height*sc;c.getContext('2d').drawImage(im,0,0,c.width,c.height);S.settings.logo=c.toDataURL('image/png');save();refreshAdmin();toast('লোগো সেভ হয়েছে')};im.src=r.result};r.readAsDataURL(f)};
     $('#sf').onsubmit=e=>{e.preventDefault();const st=S.settings;
-      for(const k of ['name','nameBn','tagline','taglineEn','phone','whatsapp','email','facebook','address','addressEn','announce','announceEn','bkash','nagad','pixelId','ga4Id'])st[k]=$('#st_'+k).value.trim();
+      for(const k of ['name','nameBn','tagline','taglineEn','phone','whatsapp','email','facebook','address','addressEn','announce','announceEn','bkash','nagad','pixelId','ga4Id','fraudUrl','fraudSecret'])st[k]=$('#st_'+k).value.trim();
       st.whatsapp=st.whatsapp.replace(/\D/g,'');st.brandColor=$('#st_brandColor').value;
       for(const k of ['inside','outside','freeShipMin'])st[k]=Math.max(0,+$('#st_'+k).value||0);
       if(st.pixelId&&!/^\d{6,20}$/.test(st.pixelId))toast('Pixel ID শুধু সংখ্যা হবে, এটা কাজ করবে না');
@@ -1762,6 +1828,9 @@ const A={
   markread:()=>{S.lastSeen=Date.now();adm.notif=false;save();refreshAdmin()},
   ostatus:el=>{adm.status=el.dataset.id;adm.pg=1;adm.sel.clear();refreshAdmin()},
   goinc:()=>{location.hash='admin-incomplete'},
+  fcheck:el=>{fraudCheck(el.dataset.id,!!el.dataset.force||!!S.fraud[el.dataset.id])},
+  fraw:el=>{const c=S.fraud[el.dataset.id];if(c)openModal('BD Courier raw response',`<pre style="white-space:pre-wrap;font-size:12px;max-height:60vh;overflow:auto">${esc(JSON.stringify(c.raw,null,2))}</pre>`)},
+  ftest:async()=>{S.settings.fraudUrl=$('#st_fraudUrl').value.trim()||'courier-check.php';S.settings.fraudSecret=$('#st_fraudSecret').value.trim();save();try{const d=await frCall({action:'ping'});toast('BD Courier কানেকশন ঠিক আছে ✓');console.log(d)}catch(e){toast(e.message)}},
   oreload:()=>{adm.from=$('#ofrom').value;adm.to=$('#oto').value;adm.pg=1;adm.sel.clear();refreshAdmin();toast('অর্ডার লিস্ট রিলোড হয়েছে')},
   oclear:()=>{Object.assign(adm,{from:'',to:'',courier:'',q:'',status:'all',pg:1});adm.sel.clear();refreshAdmin()},
   opg:el=>{adm.pg+=+el.dataset.id;renderOrdersTable();window.scrollTo(0,0)},
