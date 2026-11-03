@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { S, save, useDb } from '../store/db'
 import { Field, Panel, tk, toast } from './ui'
-import Img from '../components/common/Img'
+import ImageUploader from './ImageUploader'
 
 /** Pick an ordered list of books (by slug). */
 function BookPicker({ value, onChange, max }) {
@@ -43,13 +43,16 @@ export default function HomeEditor() {
         <Panel title="Banner slider" sub="2–5 wide images (21:9 works best)">
           <ul className="space-y-3">
             {h.banners.map((b, i) => (
-              <li key={i} className="grid grid-cols-[120px_1fr_auto] items-start gap-2">
-                <Img src={b.image} alt="" className="aspect-[21/9] w-full rounded object-cover text-[8px]" />
-                <div className="space-y-1">
-                  <input className="field font-mono text-xs" value={b.image} onChange={(e) => up(() => { b.image = e.target.value })} aria-label="Banner image" placeholder="banner/… or https://…" />
-                  <input className="field text-xs" value={b.link || ''} onChange={(e) => up(() => { b.link = e.target.value || null })} placeholder="Link when clicked, e.g. /category/combo-package" aria-label="Banner link" />
+              <li key={i} className="rounded-md border border-line p-3">
+                <div className="mb-2 flex items-center justify-between text-sm font-semibold">Banner {i + 1}
+                  <span className="flex gap-2 font-normal">
+                    <button onClick={() => up(() => { if (i) [h.banners[i - 1], h.banners[i]] = [h.banners[i], h.banners[i - 1]] })} disabled={!i} aria-label="Move up">↑</button>
+                    <button onClick={() => up(() => { if (i < h.banners.length - 1) [h.banners[i + 1], h.banners[i]] = [h.banners[i], h.banners[i + 1]] })} aria-label="Move down">↓</button>
+                    <button className="text-red-600" onClick={() => up(() => h.banners.splice(i, 1))}>Delete banner</button>
+                  </span>
                 </div>
-                <button className="px-2 text-red-600" onClick={() => up(() => h.banners.splice(i, 1))} aria-label="Remove banner">×</button>
+                <ImageUploader kind="banner" multiple={false} aspect="aspect-[21/9]" value={b.image ? [b.image] : []} onChange={(v) => up(() => { b.image = v[0] || '' })} />
+                <input className="field mt-2 text-xs" value={b.link || ''} onChange={(e) => up(() => { b.link = e.target.value || null })} placeholder="ক্লিক করলে কোথায় যাবে, যেমন /category/combo-package (ঐচ্ছিক)" aria-label="Banner link" />
               </li>
             ))}
           </ul>
@@ -63,7 +66,7 @@ export default function HomeEditor() {
           <div className="mt-3 grid gap-3 border-t border-line pt-3 sm:grid-cols-2">
             <label className="flex items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" checked={h.flash.on} onChange={(e) => up(() => { h.flash.on = e.target.checked })} />Show flash-sale countdown</label>
             <Field label="Flash sale ends at"><input type="datetime-local" className="field" value={toLocal(h.flash.endsAt)} onChange={(e) => up(() => { h.flash.endsAt = new Date(e.target.value).getTime() })} /></Field>
-            <Field label="Reviews banner image"><input className="field font-mono text-xs" value={h.reviewBanner || ''} onChange={(e) => up(() => { h.reviewBanner = e.target.value })} /></Field>
+            <div className="sm:col-span-2"><ImageUploader kind="banner" multiple={false} aspect="aspect-[21/9]" label="Customer reviews banner" value={h.reviewBanner ? [h.reviewBanner] : []} onChange={(v) => up(() => { h.reviewBanner = v[0] || '' })} /></div>
           </div>
         </Panel>
 

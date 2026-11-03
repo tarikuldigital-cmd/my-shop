@@ -191,7 +191,7 @@ export default function Settings() {
             <button className="text-sm text-brand" onClick={() => setF({ ...f, staff: [...f.staff, 'New staff'] })}>+ Add staff</button>
           </Panel>
           <Panel title="Backup & restore">
-            <p className="mb-3 text-sm text-muted">This demo keeps everything in this browser. Download a backup before clearing the browser or moving to another computer.</p>
+            <p className="mb-3 text-sm text-muted">This demo keeps everything in this browser. Download a backup before clearing the browser or moving to another computer. Note: photos uploaded in this demo stay in this browser and are not inside the backup file — with the Laravel backend they are saved on the server.</p>
             <div className="flex flex-wrap gap-2">
               <button className="btn-brand" onClick={() => download(`bookshelf-backup-${new Date().toISOString().slice(0, 10)}.json`, exportDb(), 'application/json')}>Download backup</button>
               <label className="btn-outline cursor-pointer">Restore backup<input type="file" accept="application/json" className="hidden" onChange={async (e) => { try { importDb(await e.target.files[0].text()); toast('Backup restored'); setF(JSON.parse(JSON.stringify(S.settings))) } catch (err) { toast(err.message) } }} /></label>

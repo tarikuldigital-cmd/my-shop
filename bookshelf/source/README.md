@@ -31,7 +31,8 @@ npm run build            # production build in dist/
 src/
   store/       db.js — mock backend shared by storefront + admin (orders, incomplete, settings…)
   admin/       admin panel (Dashboard, Orders, Incomplete, Products, Categories, HomeEditor, Misc, Settings)
-  lib/         tracking.js (Pixel/GTM/GA4/TikTok events) · seo.js (meta tags, JSON-LD) · recent.js
+  lib/         tracking.js (Pixel/GTM/GA4/TikTok events) · seo.js (meta tags, JSON-LD) · recent.js · imageStore.js (demo image uploads in IndexedDB)
+  services/uploadService.js — image upload: demo → IndexedDB, live → POST /admin/uploads
   config/      env.js (env vars, asset URLs) · api.js (Axios instance + ENDPOINTS map)
   services/    catalogService · authService · orderService · mockStore   ← only layer that knows mock vs API
   mocks/       products.json (187 products) · categories.json · home.json · pages.json · settings.json

@@ -48,7 +48,7 @@ Orders: list with filters (status, date range, courier, q, page) + counts per st
 Courier: `POST /orders/{id}/steadfast` → Steadfast `create_order` API, save `consignment_id` + `tracking_code`; webhook `POST /webhooks/steadfast` updates status to transit/delivered/returned automatically. Pathao/RedX the same way.
 Fraud: `GET /fraud/{phone}` → calls `api.bdcourier.com/courier-check` with the key from `.env`, caches 12 h.
 Incomplete: list/filter · `PATCH status` · `POST convert` (creates order).
-Catalogue: products CRUD + **image upload** (store to `storage/app/public/product`, generate WebP + thumbnails) · categories · home sections · banners · coupons · reviews approve/delete · pages · messages.
+Catalogue: products CRUD + **image upload** (`POST /admin/uploads`, multipart `file` + `kind` = product/page/banner/category → returns `{ path }`; the admin already resizes to WebP before sending) (store to `storage/app/public/product`, generate WebP + thumbnails) · categories · home sections · banners · coupons · reviews approve/delete · pages · messages.
 Settings: `GET/PUT /settings/{group}` (tracking, seo, courier keys stored encrypted).
 Dashboard: `GET /dashboard?range=` returns the KPIs the React dashboard computes today (orders, sales, delivered, cancel/return rates, trend, top books, categories, sources, courier success, SLA counts).
 

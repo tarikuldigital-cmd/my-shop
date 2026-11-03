@@ -146,7 +146,7 @@ export default function ProductDetail() {
   useSeo(product ? {
     title: product.seoTitle || product.name,
     description: product.seoDescription || product.description || `${product.name} — ${formatPrice(product.price)}। ক্যাশ অন ডেলিভারি, সারাদেশে হোম ডেলিভারি।`,
-    image: product.images[0] ? `product/${product.images[0]}` : undefined,
+    image: product.images[0] && (product.images[0].includes('/') ? product.images[0] : `product/${product.images[0]}`),
     jsonLd: bookJsonLd(product, location.href),
   } : {})
 

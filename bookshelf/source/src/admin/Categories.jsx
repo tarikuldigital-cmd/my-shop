@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { S, save, useDb } from '../store/db'
 import { Field, toast } from './ui'
-import Img from '../components/common/Img'
+import ImageUploader from './ImageUploader'
 
 const slugify = (s) => s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 
@@ -17,11 +17,10 @@ export default function Categories() {
       <p className="text-sm text-muted">The order here is the order of the main menu, the Top Categories grid and the homepage sections.</p>
       <div className="space-y-3">
         {S.categories.map((c, i) => (
-          <div key={c.slug} className="card grid gap-3 p-4 md:grid-cols-[80px_1fr_1fr_auto]">
-            <Img src={c.image} alt="" className="h-20 w-20 rounded object-cover text-[9px]" />
+          <div key={c.slug} className="card grid gap-3 p-4 md:grid-cols-[180px_1fr_1fr_auto]">
+            <ImageUploader kind="category" multiple={false} aspect="aspect-square" value={c.image ? [c.image] : []} onChange={(v) => { c.image = v[0] || ''; save() }} />
             <div className="space-y-2">
               <Field label={`Name · /category/${c.slug} · ${count(c.slug)} books`}><input className="field" value={c.name} onChange={(e) => { c.name = e.target.value; save() }} /></Field>
-              <Field label="Image (path or URL)"><input className="field font-mono text-xs" value={c.image || ''} onChange={(e) => { c.image = e.target.value; save() }} /></Field>
             </div>
             <div>
               <p className="field-label">Subcategories</p>

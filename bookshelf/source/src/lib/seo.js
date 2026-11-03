@@ -18,7 +18,7 @@ export function useSeo({ title, description, image, jsonLd, noindex } = {}) {
     const seo = S.settings.seo
     const fullTitle = title ? `${title}${seo.titleSuffix || ''}` : seo.title
     const desc = (description || seo.description || '').replace(/<[^>]+>/g, '').slice(0, 160)
-    const img = assetUrl(image || seo.ogImage)
+    const img = assetUrl(image && !image.includes('idb:') ? image : seo.ogImage)
     document.title = fullTitle
     setMeta('name', 'description', desc)
     setMeta('name', 'keywords', seo.keywords)
@@ -44,7 +44,7 @@ export function bookJsonLd(p, url) {
     '@context': 'https://schema.org',
     '@type': ['Product', 'Book'],
     name: p.name,
-    image: p.images.map((i) => assetUrl(`product/${i}`)),
+    image: p.images.filter((i) => !i.startsWith('idb:')).map((i) => assetUrl(i.includes('/') ? i : `product/${i}`)),
     ...(p.author ? { author: { '@type': 'Person', name: p.author } } : {}),
     ...(p.publisher ? { publisher: { '@type': 'Organization', name: p.publisher } } : {}),
     ...(p.isbn ? { isbn: p.isbn } : {}),

@@ -4,6 +4,7 @@ import { Field, Modal, Pill, tk, toast, Empty } from './ui'
 import Img from '../components/common/Img'
 import { discountPercent } from '../utils/format'
 import { storeUrl } from '../config/env'
+import ImageUploader from './ImageUploader'
 
 const slugify = (s) => s.toLowerCase().trim().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '')
 const lines = (s) => s.split('\n').map((x) => x.trim()).filter(Boolean)
@@ -11,7 +12,7 @@ const lines = (s) => s.split('\n').map((x) => x.trim()).filter(Boolean)
 const BLANK = { name: '', slug: '', price: 0, oldPrice: null, stock: null, images: [], categories: [], subcategories: [], author: '', publisher: '', isbn: '', pages: null, edition: '', language: 'Bangla', coverType: 'Paperback', lookInside: [], comboItems: [], sku: '', brand: '', description: '', seoTitle: '', seoDescription: '', active: true, featured: false, sold: 0, variations: [], productType: 'Physical' }
 
 function ProductForm({ product, onDone }) {
-  const [f, setF] = useState(() => ({ ...BLANK, ...product, imagesText: (product?.images || []).join('\n'), lookText: (product?.lookInside || []).join('\n'), comboText: (product?.comboItems || []).join('\n') }))
+  const [f, setF] = useState(() => ({ ...BLANK, ...product, images: [...(product?.images || [])], lookInside: [...(product?.lookInside || [])], comboText: (product?.comboItems || []).join('\n') }))
   const [err, setErr] = useState('')
   const set = (k, num) => (e) => {
     const v = e.target.type === 'checkbox' ? e.target.checked : e.target.value
@@ -23,9 +24,10 @@ function ProductForm({ product, onDone }) {
     const slug = f.slug.trim() || slugify(f.name)
     if (!f.name.trim() || !f.price) return setErr('Name and selling price are required')
     if (!f.categories.length) return setErr('Choose at least one category')
+    if (!f.images.length && !confirm('এই বইয়ের কোনো ছবি দেওয়া হয়নি। ছবি ছাড়াই সেভ করবেন?')) return
     if (S.products.some((p) => p.slug === slug && p.id !== product?.id)) return setErr('Another book already uses this URL slug')
-    const data = { ...f, slug, name: f.name.trim(), images: lines(f.imagesText), lookInside: lines(f.lookText), comboItems: lines(f.comboText) }
-    delete data.imagesText; delete data.lookText; delete data.comboText
+    const data = { ...f, slug, name: f.name.trim(), comboItems: lines(f.comboText) }
+    delete data.comboText
     if (product?.id) Object.assign(S.products.find((p) => p.id === product.id), data)
     else S.products.unshift({ ...data, id: Math.floor(Date.now() / 1000) })
     save(); toast(product?.id ? 'Book updated' : 'Book added'); onDone()
@@ -44,6 +46,10 @@ function ProductForm({ product, onDone }) {
           <label className="flex items-center gap-2"><input type="checkbox" checked={f.active} onChange={set('active')} />Visible on website</label>
           <label className="flex items-center gap-2"><input type="checkbox" checked={f.featured} onChange={set('featured')} />Featured</label>
         </div>
+      </section>
+
+      <section className="rounded-lg border border-line bg-surface/50 p-3">
+        <ImageUploader kind="product" label="বইয়ের ছবি * — প্রথম ছবিটি মূল ছবি (কার্ড ও লিস্টে দেখাবে)" value={f.images} onChange={(v) => setF((x) => ({ ...x, images: v }))} max={8} />
       </section>
 
       <section>
@@ -71,8 +77,10 @@ function ProductForm({ product, onDone }) {
       </section>
 
       <section className="grid gap-3 sm:grid-cols-2">
-        <Field label="Product images (one per line)" hint="File name from /uploads/product/ or a full https:// link. File upload comes with the backend."><textarea rows={3} className="field font-mono text-xs" value={f.imagesText} onChange={set('imagesText')} /></Field>
-        <Field label="একটু পড়ে দেখুন — preview page images (one per line)" hint="Shows a 'Look inside' button with these pages"><textarea rows={3} className="field font-mono text-xs" value={f.lookText} onChange={set('lookText')} /></Field>
+        <div className="sm:col-span-2">
+          <ImageUploader kind="page" label="একটু পড়ে দেখুন — বইয়ের ভেতরের কয়েকটি পৃষ্ঠার ছবি (ঐচ্ছিক)" value={f.lookInside} onChange={(v) => setF((x) => ({ ...x, lookInside: v }))} max={12} aspect="aspect-[3/4]" />
+          <p className="mt-1 text-xs text-muted">ছবি দিলে বইয়ের পেজে "📖 একটু পড়ে দেখুন" বাটন আসবে।</p>
+        </div>
         <Field label="Combo / package contents (one book per line)" hint="Shown as a checklist on combo products" className="sm:col-span-2"><textarea rows={3} className="field" value={f.comboText} onChange={set('comboText')} /></Field>
         <Field label="Description (HTML allowed)" className="sm:col-span-2"><textarea rows={6} className="field font-mono text-xs" value={f.description || ''} onChange={set('description')} /></Field>
       </section>
