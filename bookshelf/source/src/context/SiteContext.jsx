@@ -1,19 +1,16 @@
-import { createContext, useContext, useEffect, useState } from 'react'
-import { getCategories, getSettings } from '../services/catalogService'
-import settingsFallback from '../mocks/settings.json'
-import categoriesFallback from '../mocks/categories.json'
+import { createContext, useContext, useEffect } from 'react'
+import { useDb } from '../store/db'
+import { initTracking } from '../lib/tracking'
 
 const SiteContext = createContext(null)
 
-/** Global site settings (phone, address, shipping charges…) and the category tree. */
+/** Global site settings (phone, address, shipping, tracking IDs…) and the category tree — live from the store. */
 export function SiteProvider({ children }) {
-  const [settings, setSettings] = useState(settingsFallback)
-  const [categories, setCategories] = useState(categoriesFallback)
+  const db = useDb()
+  const { settings, categories } = db
 
-  useEffect(() => {
-    getSettings().then(setSettings).catch(() => {})
-    getCategories().then(setCategories).catch(() => {})
-  }, [])
+  // marketing tags load on the storefront only, never inside the admin panel
+  useEffect(() => { if (!/\/admin/.test(location.pathname + location.hash)) initTracking(settings.tracking) }, [settings.tracking])
 
   const findCategory = (slug) => categories.find((c) => c.slug === slug)
   const findSubcategory = (slug) => {

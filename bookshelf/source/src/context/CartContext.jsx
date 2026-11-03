@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useReducer } from 'react'
+import { track } from '../lib/tracking'
 
 const CART_KEY = 'bookshelf_cart'
 const CartContext = createContext(null)
@@ -51,7 +52,10 @@ export function CartProvider({ children }) {
       items,
       count,
       subtotal,
-      add: (product, quantity = 1) => dispatch({ type: 'add', product, quantity }),
+      add: (product, quantity = 1) => {
+        dispatch({ type: 'add', product, quantity })
+        track('AddToCart', { items: [{ productId: product.id, name: product.name, price: product.price, quantity, category: product.categories?.[0] }] })
+      },
       setQty: (slug, quantity) => dispatch({ type: 'setQty', slug, quantity }),
       remove: (slug) => dispatch({ type: 'remove', slug }),
       clear: () => dispatch({ type: 'clear' }),

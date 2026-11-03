@@ -1,48 +1,31 @@
 import api, { ENDPOINTS, TOKEN_KEY } from '../config/api'
 import { USE_MOCK } from '../config/env'
-import { delay, local, ApiError } from './mockStore'
+import { delay, ApiError } from './mockStore'
+import { S, STATUS, createOrder, normPhone, upsertIncomplete, removeIncomplete } from '../store/db'
 
 const unwrap = (d) => (d && 'data' in d && !('meta' in d) ? d.data : d)
-const normalizePhone = (p = '') => p.replace(/[^\d]/g, '').replace(/^88/, '')
 
-export const ORDER_STATUSES = {
-  pending: 'Pending',
-  confirmed: 'Confirmed',
-  processing: 'Processing',
-  shipped: 'Shipped',
-  delivered: 'Delivered',
-  cancelled: 'Cancelled',
-}
+export const ORDER_STATUSES = Object.fromEntries(Object.entries(STATUS).map(([k, v]) => [k, v.t]))
+const myPhone = () => localStorage.getItem(TOKEN_KEY)?.replace('mock-', '') || null
 
 /**
- * payload: { name, phone, address, shippingArea, paymentMethod, note,
- *            items: [{ productId, slug, name, price, quantity }], subtotal, shippingCharge, total }
+ * payload: { name, phone, address, shippingArea, paymentMethod, trx, sender, couponCode, note, items: [{ productId, slug, name, price, quantity }] }
+ * Totals are recalculated here (and by the backend) — never trusted from the browser.
  */
 export async function placeOrder(payload) {
   if (!USE_MOCK) return unwrap(await api.post(ENDPOINTS.placeOrder, payload))
   await delay(400)
-  const orders = local.orders()
-  const invoice = `BS${String(100000 + orders.length + 1)}`
-  const token = localStorage.getItem(TOKEN_KEY)
-  const order = {
-    id: orders.length + 1,
-    invoice,
-    ...payload,
-    phone: normalizePhone(payload.phone),
-    customerToken: token || null,
-    status: 'pending',
-    createdAt: new Date().toISOString(),
-  }
-  local.saveOrders([order, ...orders])
-  return order
+  const payment = payload.paymentMethod && payload.paymentMethod !== 'cod'
+    ? { method: payload.paymentMethod, status: 'pending', trx: payload.trx?.trim().toUpperCase(), sender: normPhone(payload.sender) }
+    : { method: 'cod', status: 'unpaid' }
+  return createOrder({ ...payload, payment, customerPhone: myPhone() })
 }
 
 export async function getMyOrders() {
   if (!USE_MOCK) return unwrap(await api.get(ENDPOINTS.orders))
   await delay()
-  const token = localStorage.getItem(TOKEN_KEY)
-  const phone = token?.replace('mock-', '')
-  return local.orders().filter((o) => o.customerToken === token || o.phone === phone)
+  const phone = myPhone()
+  return S.orders.filter((o) => phone && (o.customerPhone === phone || o.phone === phone))
 }
 
 export async function getMyOrder(invoice) {
@@ -55,8 +38,18 @@ export async function getMyOrder(invoice) {
 export async function trackOrder({ phone, invoice }) {
   if (!USE_MOCK) return unwrap(await api.post(ENDPOINTS.trackOrder, { phone, invoice }))
   await delay(300)
-  const p = normalizePhone(phone)
-  const list = local.orders().filter((o) => o.phone === p && (!invoice || o.invoice.toLowerCase() === invoice.trim().toLowerCase()))
+  const p = normPhone(phone)
+  const list = S.orders.filter((o) => o.phone === p && (!invoice || o.invoice.toLowerCase() === invoice.trim().toLowerCase()))
   if (!list.length) throw new ApiError('এই তথ্য দিয়ে কোনো অর্ডার পাওয়া যায়নি', 404)
   return list
+}
+
+/** Abandoned-checkout capture (Laravel: POST /checkout/draft). */
+export async function saveCheckoutDraft(draftId, data) {
+  if (!USE_MOCK) return api.post('/checkout/draft', { draft_id: draftId, ...data }).catch(() => {})
+  upsertIncomplete(draftId, data)
+}
+export async function discardCheckoutDraft(draftId) {
+  if (!USE_MOCK) return
+  removeIncomplete(draftId)
 }

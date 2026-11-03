@@ -1,7 +1,10 @@
 # Bookshelf.com.bd — React frontend (Phase 1–2)
 
 Public storefront rebuild of https://bookshelf.com.bd in **React + Vite + React Router + Tailwind CSS + Axios**.
-Backend and admin panel are **not** part of this phase. All data comes from `src/mocks/*.json` until the Laravel API is connected.
+Includes an **admin panel at `/admin`** (orders, incomplete orders, books, homepage, coupons, reviews, Pixel/GTM/GA4/TikTok, SEO, courier) modelled on Smart China Gallery.
+Until the Laravel API is connected, all data lives in a mock store (`src/store/db.js`) saved in **this browser's localStorage** — admin changes and orders are visible only in the same browser. See `docs/BACKEND_API_SPEC.md` and `docs/ROADMAP.md`.
+
+Admin demo login: `admin@bookshelf.com.bd` / `123456` (demo only — replaced by a server login in the Laravel phase).
 
 ```bash
 npm install
@@ -26,6 +29,9 @@ npm run build            # production build in dist/
 ## Folder structure
 ```
 src/
+  store/       db.js — mock backend shared by storefront + admin (orders, incomplete, settings…)
+  admin/       admin panel (Dashboard, Orders, Incomplete, Products, Categories, HomeEditor, Misc, Settings)
+  lib/         tracking.js (Pixel/GTM/GA4/TikTok events) · seo.js (meta tags, JSON-LD) · recent.js
   config/      env.js (env vars, asset URLs) · api.js (Axios instance + ENDPOINTS map)
   services/    catalogService · authService · orderService · mockStore   ← only layer that knows mock vs API
   mocks/       products.json (187 products) · categories.json · home.json · pages.json · settings.json
@@ -56,7 +62,7 @@ UI components never import mock files; they call services only.
 ## Live demo on GitHub Pages
 This project lives in the `bookshelf/` folder of the `my-shop` repo:
 - `bookshelf/source/` — source code (this folder)
-- `bookshelf/index.html` + `bookshelf/assets/` — built site, live at https://tarikuldigital-cmd.github.io/my-shop/bookshelf/
+- `bookshelf/index.html` + `bookshelf/assets/` — built site: https://tarikuldigital-cmd.github.io/my-shop/bookshelf/ · admin: `…/bookshelf/#/admin`
 
 To update the live demo: `cd bookshelf/source && npm install && npm run build:pages`, then copy `dist/*` into `bookshelf/` (replace the old `assets/`).
 The Pages build uses hash URLs (`#/product/...`) because GitHub Pages can't rewrite sub-folder routes; the normal `npm run build` keeps clean URLs for the real domain.

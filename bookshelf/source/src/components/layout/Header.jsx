@@ -6,22 +6,41 @@ import { useSite } from '../../context/SiteContext'
 import { useCart } from '../../context/CartContext'
 import { useAuth } from '../../context/AuthContext'
 import CartDrawer from './CartDrawer'
+import { suggest } from '../../services/catalogService'
 
 function SearchBox({ onDone, className = '' }) {
   const [params] = useSearchParams()
   const [q, setQ] = useState(params.get('keyword') || '')
+  const [open, setOpen] = useState(false)
   const navigate = useNavigate()
+  const hits = open ? suggest(q) : []
+  const go = (path) => { setOpen(false); navigate(path); onDone?.() }
   const submit = (e) => {
     e.preventDefault()
     if (!q.trim()) return
-    navigate(`/search?keyword=${encodeURIComponent(q.trim())}`)
-    onDone?.()
+    go(`/search?keyword=${encodeURIComponent(q.trim())}`)
   }
   return (
-    <form onSubmit={submit} className={`flex w-full overflow-hidden rounded-md border-2 border-brand bg-white ${className}`} role="search">
-      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="বইয়ের নাম লিখে খুঁজুন..." className="min-w-0 flex-1 px-3 py-2 text-sm outline-none" aria-label="Search products" />
-      <button className="bg-brand px-4 text-white" aria-label="Search"><Icon name="search" /></button>
-    </form>
+    <div className={`relative w-full ${className}`}>
+      <form onSubmit={submit} className="flex w-full overflow-hidden rounded-md border-2 border-brand bg-white" role="search">
+        <input value={q} onChange={(e) => { setQ(e.target.value); setOpen(true) }} onFocus={() => setOpen(true)} onBlur={() => setTimeout(() => setOpen(false), 150)} placeholder="বইয়ের নাম বা লেখকের নাম লিখে খুঁজুন..." className="min-w-0 flex-1 px-3 py-2 text-sm outline-none" aria-label="Search products" autoComplete="off" />
+        <button className="bg-brand px-4 text-white" aria-label="Search"><Icon name="search" /></button>
+      </form>
+      {hits.length > 0 && (
+        <ul className="absolute inset-x-0 top-full z-50 mt-1 overflow-hidden rounded-md border border-line bg-white shadow-lg">
+          {hits.map((p) => (
+            <li key={p.slug}>
+              <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => go(`/product/${p.slug}`)} className="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-surface">
+                <Img src={p.images[0]} alt="" className="h-12 w-9 shrink-0 rounded object-cover text-[6px]" />
+                <span className="min-w-0 flex-1"><span className="line-clamp-1 text-sm">{p.name}</span>{p.author && <span className="block text-xs text-muted">{p.author}</span>}</span>
+                <span className="text-sm font-semibold text-accent">৳{p.price}</span>
+              </button>
+            </li>
+          ))}
+          <li><button type="button" onMouseDown={(e) => e.preventDefault()} onClick={submit} className="w-full bg-surface px-3 py-2 text-left text-sm font-semibold text-brand">"{q}" এর সব ফলাফল দেখুন →</button></li>
+        </ul>
+      )}
+    </div>
   )
 }
 
@@ -120,7 +139,7 @@ export default function Header() {
         <Link to="/" className="shrink-0" aria-label="Bookshelf home">
           <Img src={settings.logoDark} alt="Bookshelf" className="h-9 w-auto sm:h-11" />
         </Link>
-        <SearchBox className="mx-auto hidden max-w-xl md:flex" />
+        <SearchBox className="mx-auto hidden max-w-xl md:block" />
         <div className="ml-auto flex items-center gap-4 md:ml-0">
           <Link to="/customer/order-track" className="hidden text-sm font-medium hover:text-brand lg:block">Track Order</Link>
           <Link to={user ? '/customer/account' : '/customer/login'} className="flex items-center gap-1 text-sm font-medium hover:text-brand">

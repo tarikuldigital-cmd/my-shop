@@ -16,11 +16,17 @@ import OrderDetail from './pages/customer/OrderDetail'
 import Contact from './pages/info/Contact'
 import InfoPage from './pages/info/InfoPage'
 import NotFound from './pages/NotFound'
+import { lazy, Suspense } from 'react'
+import { Spinner } from './components/common/ui'
+
+// Admin is split into its own chunk so customers never download it
+const AdminApp = lazy(() => import('./admin/AdminApp'))
 
 // Routes mirror the live Laravel URLs so existing links, ads and SEO keep working.
 export default function App() {
   return (
     <Routes>
+      <Route path="admin/*" element={<Suspense fallback={<Spinner className="py-24" />}><AdminApp /></Suspense>} />
       <Route element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="category/:slug" element={<ProductList mode="category" />} />

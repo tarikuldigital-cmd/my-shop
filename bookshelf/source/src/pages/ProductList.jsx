@@ -7,6 +7,9 @@ import useAsync from '../hooks/useAsync'
 import { getProducts, SORT_OPTIONS } from '../services/catalogService'
 import { useSite } from '../context/SiteContext'
 import NotFound from './NotFound'
+import { useEffect } from 'react'
+import { useSeo } from '../lib/seo'
+import { track } from '../lib/tracking'
 
 function CategoryTree({ categories, onPick }) {
   const linkCls = ({ isActive }) => `block rounded px-2 py-1.5 text-sm hover:bg-surface hover:text-brand ${isActive ? 'font-semibold text-brand' : ''}`
@@ -84,6 +87,9 @@ export default function ProductList({ mode }) {
     if (key !== 'page') next.delete('page')
     setParams(next)
   }
+
+  useSeo({ title: mode === 'search' ? `"${keyword}" search results` : title, description: mode === 'search' ? undefined : `${title} — Bookshelf-এ ${title} এর সব বই, সেরা দামে। ক্যাশ অন ডেলিভারি।`, noindex: mode === 'search' })
+  useEffect(() => { if (mode === 'search' && keyword) track('Search', { query: keyword }) }, [mode, keyword])
 
   if (invalid) return <NotFound />
 

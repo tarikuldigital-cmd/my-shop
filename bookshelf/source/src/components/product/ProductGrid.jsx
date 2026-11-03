@@ -10,14 +10,15 @@ export function ProductGrid({ products, cols = 'grid-cols-2 sm:grid-cols-3 lg:gr
 }
 
 /** Homepage block: title bar + optional "View More" link + grid. */
-export function ProductSection({ title, products, viewMore, badge }) {
+export function ProductSection({ title, products, viewMore, badge, extra }) {
   if (!products?.length) return null
   return (
     <section className="container-x mt-8">
-      <div className="mb-4 flex items-center justify-between border-b-2 border-line">
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-2 border-b-2 border-line">
         <h2 className="section-title -mb-0.5 flex items-center gap-2 border-b-2 border-accent pb-2">
           {badge && <span aria-hidden="true">{badge}</span>}{title}
         </h2>
+        {extra && <div className="pb-2">{extra}</div>}
         {viewMore && <Link to={viewMore} className="pb-2 text-sm font-semibold text-accent hover:underline">View More</Link>}
       </div>
       <ProductGrid products={products} cols="grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6" />

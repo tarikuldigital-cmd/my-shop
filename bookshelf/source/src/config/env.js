@@ -9,3 +9,9 @@ export function assetUrl(path) {
   if (/^https?:\/\//.test(path)) return path
   return `${ASSET_BASE_URL}/${path.replace(/^\//, '')}`
 }
+
+/** Absolute link to a storefront route that works in both router modes (used by the admin panel). */
+export function storeUrl(path = '/') {
+  const base = import.meta.env.BASE_URL
+  return import.meta.env.VITE_ROUTER === 'hash' ? `${base}#${path}` : `${base.replace(/\/$/, '')}${path}`
+}
