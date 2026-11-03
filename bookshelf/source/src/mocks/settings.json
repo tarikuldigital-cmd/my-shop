@@ -1,0 +1,42 @@
+{
+  "siteName": "Bookshelf",
+  "logoDark": "settings/bookshelf-logo-dark.svg",
+  "logoWhite": "settings/bookshelf-logo-white.svg",
+  "phone": "01776363309",
+  "phoneIntl": "+8801776363309",
+  "email": null,
+  "address": "Shop 12, Level 2, Lily Shopping Complex, Lalbag Killamor, Dhaka, Bangladesh",
+  "topBarText": "Bookshelf-এ স্বাগতম! অরিজিনাল IELTS, Spoken English ও Test Preparation বই — ৩-৫ দিনের মধ্যে সারাদেশে হোম ডেলিভারি, ক্যাশ অন ডেলিভারি।",
+  "messengerUrl": "https://m.me/bookshelf.com.bd",
+  "whatsappUrl": "https://wa.me/+8801776363309",
+  "socials": [
+    { "name": "Facebook", "url": "#" },
+    { "name": "Instagram", "url": "#" },
+    { "name": "YouTube", "url": "#" },
+    { "name": "TikTok", "url": "#" },
+    { "name": "LinkedIn", "url": "#" },
+    { "name": "X", "url": "#" }
+  ],
+  "shipping": [
+    { "id": "inside_dhaka", "label": "ঢাকার ভিতরে", "labelEn": "Inside Dhaka", "charge": 70, "eta": "১-৩ কার্যদিবস" },
+    { "id": "outside_dhaka", "label": "ঢাকার বাইরে", "labelEn": "Outside Dhaka", "charge": 120, "eta": "৩-৫ কার্যদিবস" }
+  ],
+  "paymentMethods": [
+    { "id": "cod", "label": "ক্যাশ অন ডেলিভারি" }
+  ],
+  "copyright": "© 2026 Bookshelf. All Rights Reserved.",
+  "developer": { "name": "StackAlix", "url": "https://stackalix.com" },
+  "footerUsefulLinks": [
+    { "label": "Contact Us", "to": "/site/contact-us" },
+    { "label": "Order procedure", "to": "/page/order-procedure" },
+    { "label": "Delivery Rules", "to": "/page/delivery-rules" },
+    { "label": "Return Policy", "to": "/page/return-policy" }
+  ],
+  "footerLinks": [
+    { "label": "Delivery Rules", "to": "/page/delivery-rules" },
+    { "label": "Return Policy", "to": "/page/return-policy" },
+    { "label": "Terms & Conditions", "to": "/page/terms-&-conditions" },
+    { "label": "Privacy Policy", "to": "/page/privacy-policy" }
+  ],
+  "orderPolicyHtml": "<ul><li>বিক্রিত বই ফেরত নেওয়া হয় না।</li><li>ভুল, ছেঁড়া/নষ্ট বা অসম্পূর্ণ বই পেলে ডেলিভারির ২৪ ঘণ্টার মধ্যে জানালে বিনামূল্যে পরিবর্তন করে দেওয়া হবে।</li><li>সমমূল্যের বা বেশি দামের বইয়ের সাথে মূল্যের পার্থক্য দিয়ে পরিবর্তন করা যাবে; কম দামের বইয়ের সাথে পরিবর্তন করা যাবে না।</li><li>Bookshelf-এর ভুল না হলে রিটার্ন কুরিয়ার খরচ ক্রেতাকে বহন করতে হবে।</li></ul>"
+}

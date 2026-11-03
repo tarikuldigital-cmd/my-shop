@@ -1,0 +1,209 @@
+# Captured from bookshelf.com.bd category pages on 2026-11-03.
+# Format: slug | exact name | sale price | original price (- = none shown) | image file (- = unavailable)
+# A product listed under several categories is merged by slug.
+
+@listening
+cambridge-ielts-listening-answers-developer-guide|CAMBRIDGE IELTS LISTENING ANSWERS DEVELOPER GUIDE|150|650|1789754723-26109-rsz_rsz_listening_answers_developer.jpg
+lizs-ielts-listening-strategies-book-bangla-translated|Liz's IELTS Listening Strategies Book - (Bangla Translated)|90|140|1789754706-17099-lizs-ielts-listening-strategies.jpg
+khans-monologue-ielts-listening|Khan's Monologue IELTS Listening by Mehadi Shameem|120|220|1789754638-4581-whatsapp-image-2023-08-30-at-12.56.46-am.jpeg
+cambridge-ielts-listening-for-high-band-score|Cambridge IELTS Listening For High Band Score|80|-|1789754631-4536-cambridge-ielts-listening-for-high-band-score.jpg
+rachel-mitchell-listening-strategies|Rachel Mitchell Listening Strategies|70|120|1789754604-4402-rachel-mitchell-listening-strategies.jpg
+
+@reading
+cambridge-ielts-reading-answers-developer-guide|Cambridge IELTS Reading Answers Developer Guide Vol. 1|150|650|1789754720-26113-rsz_rsz_1readign_answers_developer.jpg
+cambridge-ielts-vocabulary-and-phrases-guide|Cambridge IELTS Vocabulary and Phrases Guide|160|650|1789754718-26115-rsz_cambridge-ielts-vocabulary-and-phrases-guide-from-reading-passages.jpg
+lis-ielts-reading-strategies-bangla-translated|Liz's IELTS Reading Strategies - (Bangla Translated)|90|140|1789754707-17202-lizr.jpg
+makkar-ielts-reading-general|Makkar IELTS Reading General|140|220|1789754678-26171-rsz_whatsapp-image-2024-03-07-at-182956_5a9d3670.jpg
+makkar-ielts-reading-volume-1|Makkar IELTS Reading volume 1|99|150|1789754646-4597-whatsapp-image-2023-08-30-at-1.04.15-am.jpeg
+ielts-academic-reading-test-bymacarter|IELTS Academic Reading Test by(MaCarter)|99|180|1789754636-4577-whatsapp-image-2023-08-30-at-12.53.16-am.jpeg
+makkar-ielts-reading-volume-2|Makkar IELTS Reading volume 2|90|180|1789754634-4573-whatsapp-image-2023-08-30-at-12.51.30-am.jpeg
+makkar-ielts-reading-volume-3|Makkar IELTS Reading volume 3|90|180|1789754629-4512-whatsapp-image-2023-08-30-at-12.49.16-am.jpeg
+ielts-advantage-reading-skills|IELTS Advantage Reading Skills|140|250|1789754624-4500-whatsapp-image-2023-08-30-at-12.39.42-am.jpeg
+khans-ielts-reading-flash|Khan's IELTS Reading Flash By Dr. M. Moniruzzaman|120|220|1789754615-4481-whatsapp-image-2023-08-30-at-12.29.44-am.jpeg
+simon-master-ielts-reading|Simon Master IELTS Reading|70|99|1789754607-4420-simon-master-ielts-reading-.jpg
+
+@writing
+confidents-cambridge-ielts-writing-task-2-answers-developer|CONFIDENT’S CAMBRIDGE IELTS WRITING TASK 2 ANSWERS DEVELOPER|150|650|1789754722-26111-rsz_rsz_1writing_task_2_answers_developer.jpg
+cambridge-ielts-writing-task-1-answers-developer-guide|Cambridge IELTS Writing Task 1 Answers Developer Guide|150|650|1789754721-26112-rsz_rsz_writing_task_1_answers_developer.jpg
+makkar-ielts-writing-bundle-package-latest|Makkar IELTS Writing Bundle Package (Latest)|299|450|1789754712-26122-rsz_kiran-makkar-ielts-writing-books-writing-task-1-writing-task-2-ideas-for-essays.jpg
+makkar-ideas-for-essay-with-500-samples|Makkar Ideas For Essay with 500+ Samples|100|160|1789754711-26123-rsz_makkar-poster567899-2.jpg
+lizs-ielts-writing-task-1-and-2-bangla-translated|Liz's IELTS WRITING TASK 1+2 - (Bangla Translated)|90|140|1789754709-17201-lizw.jpg
+liz-grammar-for-ielts-writing-task-2-bangla-translated|Liz Grammar For IELTS Writing Task 2 (Bangla Translated)|140|180|1789754705-17094-liz-grammar-for-ielts-writing-task-2.jpg
+ideas-for-ielts-essay-topics-bangla-translated|Ideas For IELTS Essay Topics (Bangla Translated)|90|140|1789754704-17090-ideas-for-ielts-essay-topics.jpg
+makkar-ielts-writing-task-2-essays-2026-edition|Makkar IELTS Writing Task 2 Essays (2026 Edition)|130|299|1789754690-26145-rsz_whatsapp-image-2024-03-24-at-163404_04411f8d.jpg
+makkar-ielts-writing-task-1-graph-2026-edition|Makkar IELTS Writing Task 1 Graph (2026 Edition)|110|299|1789754689-26148-rsz_whatsapp-image-2024-03-24-at-163253_151e45ea.jpg
+makkar-ielts-writing-task-1-2-2026-edition|Makkar IELTS Writing Task 1 & 2 (2026 Edition)|200|350|1789754687-26154-rsz_whatsapp-image-2024-03-24-at-130416_72e7fe5c.jpg
+ielts-journal-writing-task-2-adam-smith|IELTS Journal Writing Task -2 Adam Smith|70|150|1789754685-26159-rsz_whatsapp-image-2024-03-07-at-190442_3491736a.jpg
+ielts-journal-writing-task-1-by-adam-smith|IELTS Journal Writing Task -1 By Adam Smith|70|150|1789754684-26161-rsz_whatsapp-image-2024-03-07-at-190442_b116bc52.jpg
+ielts-writingtask-1-2-by-simon-braverman|IELTS WritingTask 1 & 2 by Simon Braverman|70|150|1789754680-26167-rsz_whatsapp-image-2024-03-07-at-182956_dc3b7833.jpg
+makkar-ielts-general-training-essays-letters|Makkar IELTS General Training Essays & Letters|120|220|1789754679-26169-rsz_1whatsapp-image-2024-03-07-at-182956_5eb13699.jpg
+liz-ielts-grammar-and-eassay|Liz IELTS Grammar and Eassay|230|399|1789754668-26199-rsz_whatsapp-image-2023-10-23-at-72307-pm.jpg
+jibon-ielts-writing-task-2|Jibon IELTS Writing task 2|200|320|1789754650-26225-rsz_whatsapp-image-2023-08-30-at-10834-am.jpg
+makkar-ielts-essay-writing-task-2|Makkar IELTS Essay Writing task 2|110|180|1789754645-4595-whatsapp-image-2023-08-30-at-1.03.20-am.jpeg
+makkar-ielts-graph-writing-task-1|Makkar IELTS Graph Writing task 1|85|160|1789754644-4593-whatsapp-image-2023-08-30-at-1.02.19-am.jpeg
+ielts-writing-task-1and-2-by-simon-vravman-english-to-bangla|IELTS writing Task 1and 2 by Simon vravman (English to Bangla)|70|-|1789754633-4545-ielts-writing-task-1and-2-by-simon-vravman-english-to-bangla.jpg
+ielts-advantage-writing-skills|IELTS Advantage Writing Skills|140|220|1789754628-4510-whatsapp-image-2023-08-30-at-12.47.55-am.jpeg
+ielts-academic-writing-practice-by-sam-mecarter|IELTS Academic Writing practice by (sam MeCarter)|99|160|1789754626-4506-whatsapp-image-2023-08-30-at-12.45.07-am.jpeg
+makkar-ielts-general-training-essays-and-letters|Makkar IELTS General Training Essays and Letters|120|180|1789754623-4498-whatsapp-image-2023-08-30-at-12.38.14-am.jpeg
+khans-ielts-writing-flash|Khan’s IELTS Writing flash By Dr. M. Moniruzzaman|120|220|1789754621-4494-whatsapp-image-2023-08-30-at-12.36.59-am.jpeg
+jibon-ielts-writing-task-1|Jibon IELTS Writing Task 1|200|320|1789754619-4490-whatsapp-image-2023-08-30-at-12.34.57-am.jpeg
+
+@speaking
+confidents-repeated-cue-cards-for-ielts-speaking|Confidents Repeated Cue Cards for IELTS Speaking|360|600|1789754781-25908-rsz_117.jpg
+sylheti-ielts-actual-question-bank-march-2026|Sylheti IELTS Actual Question Bank (March-2026))|50|85|1789754767-25940-rsz_makkar-speaking.jpg
+sylheti-ielts-actual-question-bank-december-2025|Sylheti IELTS Actual Question Bank (December 2025)|50|85|1789754765-25942-rsz_makkar-speaking-1.jpg
+sylheti-ielts-actual-question-bank-november-2025|Sylheti IELTS Actual Question Bank (November 2025)|50|85|1789754763-25944-rsz_1makkar-speaking-1.jpg
+sylheti-makkar-speaking|Sylheti Makkar Speaking|80|140|1789754758-25951-rsz_makkar-speaking-2-e1760187269928.jpg
+makkar-speaking-for-bangladesh-and-monthly-digest-recent|Makkar Speaking For Bangladesh and IELTS Monthly Recent Digset Latest|115|185|1789754756-25997-rsz_makkar-speaking-3.jpg
+sylheti-ielts-paraphrase|Sylheti IELTS Paraphrase|60|110|1789754754-26002-rsz_sylheti-ielts-paraphrasing.jpg
+sylheti-ielts-special-cue-card|Sylheti IELTS Special Cue Card|110|200|1789754752-26007-rsz_528598890_714088918332765_1677977556313891177_n.jpg
+cambridge-ielts-answers-developer-books|Cambridge IELTS Answers Developer Books|799|2600|1789754724-26108-rsz_confidents-cambridge-ielts-answers-developer-combo.jpg
+cambridge-ielts-speaking-answers-developer-guide|Cambridge IELTS Speaking Answers Developer Guide|200|650|1789754719-26114-rsz_rsz_speaking_answers_developer.jpg
+confident-cambridge-ielts-mock-test-9-to-18|Confident Cambridge IELTS Mock Test [9 to 18] – অফিসিয়াল প্র্যাকটিস টেস্ট সিরিজ|300|380|1789754715-26117-rsz_confident-cambridge-ielts-mock-test-9-to-18.jpg
+ramadan-deal-liz-combo-offer|Ramadan Deal Liz Combo Offer|599|680|1789754714-26118-rsz_liz-ielts-books-reading-writing-listening-speaking-scaled-1.jpg
+speaking-for-ielts-by-liz-bangla-translated|Speaking for IELTS by Liz - (Bangla Translated)|90|140|1789754710-17200-liz-s.jpg
+cambridge-ielts-with-answer-1-to18-book-academic-without-dvd|Cambridge IELTS with Answer 1 to19 Book (academic) without DVD|760|1560|1789754693-26142-rsz_cam119.jpg
+cambridge-ielts-19-academic|Cambridge IELTS 19 Academic|40|50|1789754692-16326-cam-19-1.jpg
+makkar-ielts-speaking-and-writing-task-1-2-2026-edition|Makkar IELTS Speaking and Writing Task 1 & 2 (2026 Edition)|280|480|1789754688-26151-rsz_1whatsapp-image-2024-03-24-at-140023_a6d687b4.jpg
+cambridge-ielts-with-answer-11-18-book-general-with-dvd-news-print|Cambridge IELTS With Answer 11-18 Book (General) Without DVD (News Print)|320|450|1789754686-26157-rsz_81b05278c85d85858f787c66b0cdfbed.jpg
+ramadan-offer-11|Cambridge IELTS 10 to 19 (Academic)|400|600|1789754676-26175-rsz_cambridge-ielts-10-to-19-scaled-1-e1780379916132.jpg
+cambridge-ielts-18-general-training|Cambridge IELTS 18 General Training|35|99|1789754675-4780-whatsapp-image-2023-10-29-at-2.49.57-pm.jpeg
+ghore-bose-ielts-by-munzereen|Ghore Bose IELTS by Munzereen|600|850|1789754673-4774-whatsapp-image-2023-10-26-at-2.08.56-am.jpeg
+ielts-consultant-band-9-books-series|IELTS Consultant Band 9 Books Series|300|360|1789754669-26198-rsz_whatsapp-image-2023-10-23-at-71514-pm.jpg
+cambridge-ielts-academic-18-solution-explanation|Cambridge IELTS Academic 18 Solution & Explanation|35|99|1789754661-26217-rsz_whatsapp-image-2023-09-22-at-62413-pm.jpg
+ielts-speaking-strategies|Rachel Mitchell IELTS Speaking Strategies|60|150|1789754660-26218-rsz_whatsapp-image-2023-09-22-at-181758.jpg
+makkar-ielts-speaking-latest-edition-may-to-august-2026|Makkar IELTS Speaking Latest Edition May to August 2026|80|120|1789754657-26220-rsz_makkar-speaking-3-1.jpg
+cambridge-ielts-official-guide|Cambridge IELTS Official Guide|120|160|1789754654-4614-whatsapp-image-2023-08-30-at-1.13.57-am.jpeg
+ielts-trainer-2|IELTS Trainer 2|89|140|1789754653-4612-whatsapp-image-2023-08-30-at-1.13.33-am-1.jpeg
+ielts-trainer|IELTS Trainer|89|160|1789754652-4610-whatsapp-image-2023-08-30-at-1.12.36-am-1.jpeg
+ielts-to-success|IELTS To Success|99|140|1789754649-4603-whatsapp-image-2023-08-30-at-1.07.37-am.jpeg
+ielts-101-for-general|IELTS 101 for General|99|150|1789754648-4601-whatsapp-image-2023-08-30-at-1.06.15-am.jpeg
+ielts-on-track-general|IELTS On Track General|99|160|1789754639-4583-whatsapp-image-2023-08-30-at-12.57.40-am.jpeg
+cambridge-ielts-instant-practice-test|Cambridge IELTS Instant Practice test|99|160|1789754637-4579-whatsapp-image-2023-08-30-at-12.55.38-am.jpeg
+ielts-advantage-speaking-listening-skills|IELTS Advantage Speaking &Listening Skills|140|220|1789754630-4517-whatsapp-image-2023-08-30-at-12.50.39-am-1.jpeg
+khans-ielts-cue-card-2|Khan’s IELTS Cue card 2 by by Mehadi Shameem|120|220|1789754622-4496-whatsapp-image-2023-08-30-at-12.37.38-am.jpeg
+khans-ielts-cue-card-1|Khan’s IELTS CUE CARD 1 by Mehadi Shameem|120|220|1789754620-4492-whatsapp-image-2023-08-30-at-12.35.59-am.jpeg
+prepare-for-ielts-general|Prepare For IELTS General|95|160|1789754618-4488-whatsapp-image-2023-08-30-at-12.33.02-am.jpeg
+simon-master-ielts-speaking|Simon Master IELTS Speaking|70|99|1789754606-4416-simon-master-ielts-speaking.jpg
+confident-cambridge-ielts-q-card|Confident Cambridge IELTS Q-Card|90|295|1789754602-4283-aaa.jpg
+
+@grammar
+banglay-ielts-grammar-by-rashed-mujib-zaman|Banglay IELTS Grammar by Rashed, Mujib, Zaman|550|680|1789754793-27896-rsz_1whatsapp_image_2026-08-13_at_45711_pm_1.jpg
+ramadan-deal-grammar-combo-offer|Ramadan Deal Grammar Combo Offer|870|1030|1789754736-26089-rsz_grammar-books-ssc-hsc-spoken-ielts-scaled-1.jpg
+cambridge-ielts-grammar-secrets|Cambridge IELTS Grammar Secrets|60|160|1789754702-17015-cambridge-ielts-band-9.jpg
+practical-english-usage|Practical English Usage (Fully Revised)|160|1175|1789754701-17009-practical-english-usage.jpg
+advanced-grammar-in-use|Advanced Grammar in Use (3rd Edition) - White Print|220|780|1789754700-26139-rsz_advanced-grammar-in-use.jpg
+practical-spoken-english|Practical Spoken English (Bangla Translated)|60|120|1789754699-17008-practical-spoken-grammar-based.jpg
+communicative-smart-english-with-speaking-power-high-school-english-grammar-and-composition-bangla-with-answer-by-wren-martin|COMMUNICATIVE SMART ENGLISH WITH SPEAKING POWER & High School English Grammar and Composition Bangla With Answer By Wren & Martin|580|1170|1789754698-26140-rsz_whatsapp-image-2024-10-23-at-012639_1036217f.jpg
+high-school-english-grammar-bangla:-wren-&-martin-with-answer-93|High School English Grammar Bangla: Wren & Martin with Answer|350|450|1789803697-wren-789.webp
+essential-english-grammar-2nd-edition|Essential English Grammar (2ND EDITION)|200|299|1789754683-26163-rsz_whatsapp-image-2024-03-07-at-185915_07eeda0c.jpg
+applied-english-grammar-composition|Applied English Grammar & Composition|130|199|1789754682-5084-whatsapp-image-2024-03-07-at-18.56.22_0debe8ca.jpg
+জার্মান-ব্যাকরণ-a1-থেকে-b1|জার্মান ব্যাকরণ A1 থেকে B1|990|1299|1789754677-26172-rsz_whatsapp-image-2024-03-07-at-181123_9ca4108d-1.jpg
+the-unlimited-guide-to-sat-grammar|The Unlimited Guide To SAT Grammar|280|450|1789754665-4729-whatsapp-image-2023-10-08-at-10.54.19-pm.jpeg
+liz-ideas-for-ielts-essay-topics|Liz Ideas For IELTS Essay Topics|99|160|1789754643-4591-whatsapp-image-2023-08-30-at-1.01.32-am.jpeg
+liz-grammar-for-ielts-writing-task-2|Liz grammar for IELTS Writing task 2|140|180|1789754642-4589-whatsapp-image-2023-08-30-at-1.00.50-am.jpeg
+cambridge-ielts-grammar|Cambridge IELTS Grammar|99|160|1789754641-4587-whatsapp-image-2023-08-30-at-1.00.04-am.jpeg
+essential-grammar-in-use-4th-edition|Essential Grammar in Use (Fourth Edition)|130|190|1789754640-4585-whatsapp-image-2023-08-30-at-12.59.02-am.jpeg
+english-grammar-in-use-fifth-editions|English Grammar in use (Fifth Editions)|140|180|1789754625-4615-whatsapp-image-2023-08-30-at-12.42.39-am-1.jpeg
+word-smart-12|Word Smart 1&2|120|180|1789754617-4486-whatsapp-image-2023-08-30-at-12.31.47-am.jpeg
+applied-english-grammar-and-composition|Applied English Grammar and Composition|120|190|1789754614-4479-whatsapp-image-2023-08-30-at-12.24.09-am.jpeg
+
+@vocabulary
+sylheti-ielts-reading-and-listening-vocabulary|Sylheti IELTS Reading and Listening Vocabulary|110|180|1789754753-26005-rsz_sylheti-ielts-reading-and-listening-vocabulary.jpg
+lizs-ielts-high-level-vocabulary-bangla-translated|Liz's IELTS High Level Vocabulary - (Bangla Translated)|90|140|1789754708-17199-liz-v.jpg
+cambridge-ielts-vocabulary-by-jibon-ahmed|Cambridge IELTS Vocabulary by Jibon Ahmed|140|250|1789754681-26165-rsz_whatsapp-image-2024-03-07-at-182957_c070c356.jpg
+munzereen-vocabulary|Munzereen Vocabulary|300|380|1789754672-4772-whatsapp-image-2023-10-26-at-2.07.57-am.jpeg
+jibon-ielts-vocabulary-e-b|Jibon IELTS Vocabulary (E/B)|140|180|1789754651-26223-rsz_whatsapp-image-2023-08-30-at-10933-am.jpg
+cambridge-vocabulary-for-ielts-advanced-by-pauline-cullen|Cambridge Vocabulary for IELTS Advanced by pauline cullen|99|170|1789754647-4599-whatsapp-image-2023-08-30-at-1.04.57-am.jpeg
+saifurs-student-vocabulary|Saifurs Student Vocabulary|200|260|1789754635-4575-whatsapp-image-2023-08-30-at-12.52.18-am.jpeg
+makkar-ielts-vocabulary-builder-english-to-bangla|Makkar IELTS Vocabulary Builder (English to Bangla)|70|-|1789754632-4538-makkar-ielts-vocabulary-builder-english-to-bangla.jpg
+cambridge-ielts-vocabulary-e-b-2|Cambridge IELTS Vocabulary (E/B)|130|220|1789754627-4508-whatsapp-image-2023-08-30-at-12.46.57-am.jpeg
+word-power-made-easy|Word Power Made Easy|110|180|1789754616-4484-whatsapp-image-2023-08-30-at-12.30.51-am.jpeg
+cambridge-ielts-vocabulary-english-to-english-1-20-with-synonyms-and-antonyms|Cambridge IELTS Vocabulary English to English (1-20) with Synonyms and Antonyms|90|-|1789754611-4428-cambridge-ielts-vocabulary-english-to-english-1-18-with-synonyms-and-antonyms.jpg
+
+@spoken-english
+5-world-famous-bestselling-story-books|5 world-famous bestselling Story books|620|850|1789754762-25945-rsz_story-books.jpg
+3-best-selling-story-books|3 Best Selling Story Books|320|450|1789754761-25947-rsz_story-books-3.jpg
+sylheti-ielts-spoken-english|Sylheti IELTS Spoken English|140|-|1789754755-25998-rsz_makkar-speaking-2.jpg
+একেবারেই-সহজে-spoken-english-part-1-2-mahmud-sir|একেবারেই সহজে Spoken English Part 1 & 2 (Mahmud Sir)|999|1700|1789754751-26010-rsz_11_20250724_211805_0006.jpg
+communicative-smart-english-with-speaking-power|COMMUNICATIVE SMART ENGLISH WITH SPEAKING POWER|250|300|1789754691-16181-whatsapp-image-2024-05-14-at-22.41.04.jpeg
+english-therapy|English Therapy|520|699|1789754674-26195-rsz_whatsapp-image-2023-10-26-at-21040-am.jpg
+munzereen-shahid-spoken-english|Munzereen Shahid Spoken English|300|380|1789754671-4770-whatsapp-image-2023-10-26-at-2.06.44-am.jpeg
+harry-potter-8-books-series-premium-print-quality|Harry Potter 8 Books series (Premium Print quality)|1280|1600|1789754667-26201-rsz_whatsapp-image-2023-10-23-at-72015-pm.jpg
+easy-spoken-english-series|Easy Spoken English Series|999|1499|1789754659-4685-whatsapp-image-2023-09-19-at-11.27.20-pm.jpeg
+guru-spoken-gift-box-5-books-series|Guru Spoken Gift Box (5 books series)|450|800|1789754658-4683-whatsapp-image-2023-09-19-at-11.20.46-pm.jpeg
+
+@combo-package
+sylheti-ielts-smart-solution-and-explanation-11-to-21|Sylheti IELTS Smart Solution and Explanation (11 to 21)|650|1500|1789754795-27955-computer-based-cambridge-16-to-21-academic-6-books.png
+ielts-computer-based-student-36-combo|IELTS Computer Based Student 36 Combo|1600|1950|1789754789-26425-whatsapp-image-2026-04-21-at-4.03.04-pm.jpeg
+ielts-budget-friendly-books-combo-6|IELTS Budget Friendly Books Combo - 6|750|999|1789754788-25990-your-paragraph-text-5.png
+ielts-budget-friendly-books-combo-5|IELTS Budget Friendly Books Combo - 5|600|999|1789754787-25987-your-paragraph-text-4.png
+ielts-budget-friendly-books-combo-4|IELTS Budget Friendly Books Combo - 4|750|999|1789754786-25984-your-paragraph-text-3.png
+ielts-budget-friendly-books-combo-3|IELTS Budget Friendly Books Combo - 3|780|999|1789754785-25981-your-paragraph-text-2.png
+ielts-budget-friendly-books-combo-2|IELTS Budget Friendly Books Combo - 2|760|999|1789754784-25978-your-paragraph-text-1.png
+ielts-budget-friendly-books-combo-1|IELTS Budget Friendly Books Combo - 1|780|999|1789754783-25974-your-paragraph-text.png
+cambridge-computer-based-ielts-31-combo-package|Cambridge Computer Based IELTS 31 Combo Package|1700|2200|1789754782-25907-rsz_18.jpg
+cambridge-ielts-practice-test-plus-1-2-3|Cambridge IELTS Practice Test Plus 1, 2, 3|240|400|1789754780-25909-rsz_whatsapp-image-2026-01-17-at-123144-pm.jpg
+confidents-computer-based-cambridge-ielts-11-note-guide-11|Confidents Computer Based Cambridge IELTS 11 & Note Guide 11|130|200|1789754779-25913-rsz_111.jpg
+confidents-computer-based-cambridge-ielts-12-note-guide-12|Confidents Computer Based Cambridge IELTS 12 & Note Guide 12|130|200|1789754778-25914-rsz_10.jpg
+confidents-computer-based-cambridge-ielts-13-note-guide-13|Confidents Computer Based Cambridge IELTS 13 & Note Guide 13|130|200|1789754777-25915-rsz_9.jpg
+confidents-computer-based-cambridge-ielts-14-note-guide-14|Confidents Computer Based Cambridge IELTS 14 & Note Guide 14|130|200|1789754776-25925-rsz_8.jpg
+confidents-computer-based-cambridge-ielts-15-note-guide-15|Confidents Computer Based Cambridge IELTS 15 & Note Guide 15|130|200|1789754775-25927-rsz_7.jpg
+confidents-computer-based-cambridge-ielts-16-note-guide-16|Confidents Computer Based Cambridge IELTS 16 & Note Guide 16|130|200|1789754774-25929-rsz_6.jpg
+confidents-computer-based-cambridge-ielts-17-note-guide-17|Confidents Computer Based Cambridge IELTS 17 & Note Guide 17|130|200|1789754773-25930-rsz_5.jpg
+confidents-computer-based-cambridge-ielts-18-note-guide-18|Confidents Computer Based Cambridge IELTS 18 & Note Guide 18|130|200|1789754772-25931-rsz_4.jpg
+confidents-computer-based-cambridge-ielts-19-note-guide-19|Confidents Computer Based Cambridge IELTS 19 & Note Guide 19|130|200|1789754771-25932-rsz_3.jpg
+confidents-computer-based-cambridge-ielts-20-note-guide-20|Confidents Computer Based Cambridge IELTS 20 & Note Guide 20|130|200|1789754770-25933-rsz_2.jpg
+confidents-cambridge-ielts-11-to-20-computer-based-note-guide|Confidents Cambridge IELTS 11–20 Computer Based Note Guide|600|1500|1789754769-25934-rsz_14.jpg
+computer-based-cambridge-ielts-11-20-academic|Computer Based Cambridge IELTS 11–20 (Academic)|400|1500|1789754768-25938-rsz_13.jpg
+ielts-beginner-to-advanced-package-42-combo|IELTS Beginner to Advanced Package (42 Combo)|1450|2180|1789754766-25941-rsz_ielts-special-combo-package-41-books.jpg
+sylheti-ielts-books-combo-shuva-bhai|Sylheti IELTS 8 Books Combo - Shuva Bhai|650|880|1789754764-25943-rsz_585784155_803126816095641_3331036084524176129_n.jpg
+ielts-budget-friendly-17-books-combo|IELTS Budget Friendly 17 Books Combo|699|1099|1789754760-25949-rsz_1white-and-navy-aesthetic-modern-new-collection-shoes-instagram-post.jpg
+ielts-actual-question-bank-2026-last-6-months-digest|IELTS Actual Question Bank 2026 (Last 6 Months Digest)|280|600|1789754759-25950-rsz_story-books-1.jpg
+cambridge-ielts-with-answer-1-to-20-book-academic|Cambridge IELTS with Answer 1 to 20 Book (academic)|700|1200|1789754757-25952-rsz_whatsapp-image-2025-10-11-at-131046_22d59492.jpg
+cambridge-ielts-20-with-solution-and-explanation|Cambridge IELTS 20 with Solution and Explanation|70|120|1789754750-26011-rsz_cambridge-ielts-20-with-answer-and-bangla-explanation.jpg
+cambridge-ielts-11-to-19-general|Cambridge IELTS 11 to 19 General|350|480|1789754749-26013-rsz_11-1-1.jpg
+ielts-exam-package|IELTS Exam Package|699|1050|1789754748-26072-rsz_494111553_695892763382067_678659393451091265_n.jpg
+eid-special-deal-6|EID Special Deal|660|880|1789754747-26074-rsz_1camrbidge-ielts-eid-books-offer-vocabulary-simon-makkar-scaled-1.jpg
+eid-special-deal-5|EID Special Deal|720|950|1789754746-26075-rsz_camrbidge-ielts-eid-books-offer-makkar-vocabulary-scaled-1.jpg
+eid-special-deal-4|EID Special Deal|700|950|1789754745-26076-rsz_camrbidge-ielts-eid-books-offer-makkar-books-grammar-scaled-1.jpg
+eid-special-deal-3|EID Special Deal|777|999|1789754744-26077-rsz_camrbidge-ielts-eid-books-offer-vocabulary-official-guide-makkar-scaled-1.jpg
+eid-special-deal-2|Eid Special Deal|650|850|1789754743-26079-rsz_camrbidge-ielts-eid-books-offer-rachel-mitchell-official-guide-scaled-1.jpg
+eid-special-deal|EID Special Deal|650|850|1789754742-26080-rsz_cambridge-ielts-eid-offer-liz-books-scaled-1.jpg
+ramadan-deal|Ramadan Deal|999|1200|1789754741-26081-rsz_ielts-cambridge-answers-developer-package-all-module-scaled-1.jpg
+ramadan-deal-cambridgeliz-combo|Ramadan Deal: Cambridge+Liz Combo|840|1350|1789754740-26082-rsz_ramadan-ielts-offer-cambridge-and-liz-scaled-1.jpg
+ramadan-offer-12|Ramadan Offer|799|999|1789754735-26090-rsz_ramadan-ielts-offer-17-books-scaled-1.jpg
+ramadan-offer-8|Ramadan Offer|440|650|1789754734-26092-rsz_your-paragraph-text-scaled-1.jpg
+ramadan-offer-9|Ramadan Offer|450|650|1789754733-26093-rsz_your-paragraph-text-1-scaled-1.jpg
+ramadan-offer-7|Ramadan Offer|450|650|1789754732-26094-rsz_your-paragraph-text-2-scaled-1.jpg
+ramadan-offer-6|Ramadan Offer|499|650|1789754731-26095-rsz_your-paragraph-text-3-scaled-1.jpg
+ramadan-offer-5|Ramadan Offer|499|699|1789754730-26096-rsz_your-paragraph-text-4-scaled-1.jpg
+ramadan-offer-4|Ramadan Offer|499|650|1789754729-26097-rsz_your-paragraph-text-5-scaled-1.jpg
+ramadan-offer-3|Ramadan Offer|450|650|1789754728-26099-rsz_your-paragraph-text-6-scaled-1.jpg
+ramadan-offer-2|Ramadan Offer|499|700|1789754727-26100-rsz_your-paragraph-text-7-scaled-1.jpg
+ramadan-offer|Ramadan Offer|450|650|1789754726-26101-rsz_cambridge-10-19-liz-listening-liz-reading-scaled-1.jpg
+# Combo page 3 failed to load; these 11 came from the "related products" block (price known, image unavailable)
+ielts-beginner-combo-package-26-books|IELTS Beginner Combo Package (26 Books)|999|1328|-
+ielts-special-combo-package-52-books|IELTS Special Combo Package (52 Books)|1599|2180|-
+ielts-combo-package-16-books-rashed-sir|IELTS Combo Package 17 books (Rashed sir)|820|1020|-
+ielts-best-package-20-combo|IELTS Best Combo Package (19 Items)|999|1400|-
+ielts-advance-combo-package-50-books|IELTS Advance Combo Package (50 Books)|1799|2100|-
+cambridge-ielts-7-19-academic|Cambridge IELTS (7-19) Academic|520|780|-
+cambridge-ielts-9-19-academic|Cambridge IELTS (9-19) Academic|440|660|-
+cambridge-ielts-11-19-academic|Cambridge IELTS (11-19) Academic|360|540|-
+cambridge-ielts-10-to-20-solution-bangla-explanation|Cambridge IELTS 10 to 20 Solution & Bangla Explanation|350|400|-
+cambridge-ielts-short-combo-pack|Cambridge IELTS Short Combo Pack|950|1150|-
+cambridge-ielts-answers-developer-package|Cambridge IELTS Answers Developer Package|1299|1860|-
+
+@test-preparation
+banglay-ielts-rashed-sir-combo-package|Banglay IELTS - Rashed Sir Combo Package|1990|2500|1789754794-27906-copy-of-english-a-to-z.jpg
+cbt-official-cambridge-ielts-books|CBT Official Cambridge IELTS Books|550|690|1789754792-27892-rsz_copy_of_english_a_to_z.jpg
+computer-based-ielts-33-short-package|Computer Based IELTS 33 Short Package|1050|1500|1789754791-27801-rsz_computer_based_cambridge_16_to_21_academic_6_books.jpg
+computer-based-ielts-55-combo|Computer Based IELTS 55 Combo|1699|2430|1789754790-27343-rsz_for_cp.jpg
+ramadan-deal-sat-combo-offer|EID Special Deal SAT Combo Offer|999|1299|1789754739-26083-rsz_sat-books-digital-guide-sat-math-1600io_-scaled-1.jpg
+ramadan-deal-gre-combo-offer-10-books|Ramadan Deal GRE Combo Offer (10 Books)|1800|2200|1789754738-26085-rsz_gre-combo-offer-official-guide-books-scaled-e1774963279489.jpg
+ramadan-deal-gre-combo-offer-8-books|EID Special Deal GRE Combo Offer (8 Books)|1700|2050|1789754737-26086-rsz_gre-books-official-guide-5lb-scaled-e1774963355743.jpg
+gre-special-combo-package-13-books|GRE Special Combo package 13 Books|2800|3350|1789754670-26197-rsz_1whatsapp-image-2023-10-25-at-122059-am.jpg
+the-collage-panda-sat-math|The Collage Panda SAT Math|240|450|1789754664-4727-whatsapp-image-2023-10-08-at-10.50.35-pm.jpeg
+the-complete-guide-to-sat-reading|The Complete Guide To SAT Reading|250|500|1789754663-4725-whatsapp-image-2023-10-08-at-10.48.42-pm.jpeg
+sat-official-guide-2022|SAT Official Guide 2022|399|600|1789754662-4723-whatsapp-image-2023-10-08-at-10.47.02-pm.jpeg

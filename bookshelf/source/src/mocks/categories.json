@@ -1,0 +1,25 @@
+[
+  { "slug": "listening", "name": "Listening", "image": "category/1789802506-whatsapp-image-2026-09-19-at-1.31.28-am.webp", "subcategories": [] },
+  { "slug": "reading", "name": "Reading", "image": "category/1789802484-whatsapp-image-2026-09-19-at-1.30.41-am.webp", "subcategories": [
+    { "slug": "academic-reading", "name": "Academic Reading" },
+    { "slug": "general-reading", "name": "General Reading" }
+  ] },
+  { "slug": "writing", "name": "Writing", "image": "category/1789802466-whatsapp-image-2026-09-19-at-1.29.19-am.webp", "subcategories": [
+    { "slug": "academic-writing", "name": "Academic Writing" },
+    { "slug": "general-writing", "name": "General Writing" }
+  ] },
+  { "slug": "speaking", "name": "Speaking", "image": "category/1789802445-whatsapp-image-2026-09-19-at-1.27.58-am.webp", "subcategories": [
+    { "slug": "cue-card", "name": "Cue Card" }
+  ] },
+  { "slug": "grammar", "name": "Grammar", "image": "category/1789802425-whatsapp-image-2026-09-19-at-1.25.42-am.webp", "subcategories": [] },
+  { "slug": "vocabulary", "name": "Vocabulary", "image": "category/1789802400-whatsapp-image-2026-09-19-at-1.24.30-am.webp", "subcategories": [] },
+  { "slug": "spoken-english", "name": "Spoken English", "image": "category/1789802381-whatsapp-image-2026-09-19-at-1.23.05-am.webp", "subcategories": [
+    { "slug": "english-story", "name": "English Story" }
+  ] },
+  { "slug": "combo-package", "name": "Combo Package", "image": "category/1789802356-whatsapp-image-2026-09-19-at-1.17.59-am.webp", "subcategories": [] },
+  { "slug": "test-preparation", "name": "Test Preparation", "image": "category/1789802296-whatsapp-image-2026-09-19-at-1.16.37-am.webp", "subcategories": [
+    { "slug": "sat", "name": "SAT" },
+    { "slug": "gre", "name": "GRE" },
+    { "slug": "computer-based", "name": "Computer Based" }
+  ] }
+]

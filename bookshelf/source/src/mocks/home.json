@@ -1,0 +1,49 @@
+{
+  "banners": [
+    { "image": "banner/1789802533WhatsApp%20Image%202026-09-19%20at%201.07.18%20AM.jpeg", "link": null },
+    { "image": "banner/1789802550WhatsApp%20Image%202026-09-19%20at%201.02.21%20AM.jpeg", "link": null }
+  ],
+  "flashSale": [
+    "sylheti-ielts-smart-solution-and-explanation-11-to-21",
+    "confidents-cambridge-ielts-11-to-20-computer-based-note-guide",
+    "computer-based-cambridge-ielts-11-20-academic",
+    "ielts-actual-question-bank-2026-last-6-months-digest",
+    "cambridge-ielts-answers-developer-books",
+    "cambridge-ielts-listening-answers-developer-guide",
+    "confidents-cambridge-ielts-writing-task-2-answers-developer",
+    "cambridge-ielts-writing-task-1-answers-developer-guide",
+    "cambridge-ielts-reading-answers-developer-guide",
+    "cambridge-ielts-speaking-answers-developer-guide",
+    "cambridge-ielts-vocabulary-and-phrases-guide",
+    "cambridge-ielts-grammar-secrets"
+  ],
+  "hotDeal": "sameAsFlashSale",
+  "allProducts": [
+    "makkar-ielts-general-training-essays-and-letters",
+    "sylheti-ielts-books-combo-shuva-bhai",
+    "makkar-ielts-reading-volume-3",
+    "sylheti-ielts-reading-and-listening-vocabulary",
+    "essential-grammar-in-use-4th-edition",
+    "khans-ielts-writing-flash",
+    "makkar-ielts-speaking-latest-edition-may-to-august-2026",
+    "sat-official-guide-2022",
+    "ielts-to-success",
+    "ielts-budget-friendly-books-combo-1",
+    "ramadan-offer",
+    "munzereen-vocabulary",
+    "ramadan-offer-11",
+    "confidents-repeated-cue-cards-for-ielts-speaking"
+  ],
+  "categorySections": {
+    "listening": ["lizs-ielts-listening-strategies-book-bangla-translated", "khans-monologue-ielts-listening", "cambridge-ielts-listening-for-high-band-score", "rachel-mitchell-listening-strategies"],
+    "reading": ["lis-ielts-reading-strategies-bangla-translated", "makkar-ielts-reading-general", "makkar-ielts-reading-volume-1", "ielts-academic-reading-test-bymacarter"],
+    "writing": ["makkar-ielts-writing-bundle-package-latest", "makkar-ideas-for-essay-with-500-samples", "lizs-ielts-writing-task-1-and-2-bangla-translated", "liz-grammar-for-ielts-writing-task-2-bangla-translated"],
+    "speaking": ["sylheti-ielts-actual-question-bank-march-2026", "sylheti-ielts-actual-question-bank-december-2025", "sylheti-ielts-actual-question-bank-november-2025", "sylheti-makkar-speaking", "makkar-speaking-for-bangladesh-and-monthly-digest-recent"],
+    "grammar": ["banglay-ielts-grammar-by-rashed-mujib-zaman", "ramadan-deal-grammar-combo-offer", "practical-english-usage", "advanced-grammar-in-use", "practical-spoken-english"],
+    "vocabulary": ["lizs-ielts-high-level-vocabulary-bangla-translated", "cambridge-ielts-vocabulary-by-jibon-ahmed", "jibon-ielts-vocabulary-e-b", "cambridge-vocabulary-for-ielts-advanced-by-pauline-cullen"],
+    "spoken-english": ["5-world-famous-bestselling-story-books", "3-best-selling-story-books", "sylheti-ielts-spoken-english", "একেবারেই-সহজে-spoken-english-part-1-2-mahmud-sir", "communicative-smart-english-with-speaking-power", "english-therapy"],
+    "combo-package": ["ielts-computer-based-student-36-combo", "ielts-budget-friendly-books-combo-6", "ielts-budget-friendly-books-combo-5", "ielts-budget-friendly-books-combo-4", "ielts-budget-friendly-books-combo-3"],
+    "test-preparation": ["banglay-ielts-rashed-sir-combo-package", "cbt-official-cambridge-ielts-books", "computer-based-ielts-33-short-package", "computer-based-ielts-55-combo", "ramadan-deal-sat-combo-offer", "ramadan-deal-gre-combo-offer-10-books"]
+  },
+  "reviewBanner": "banner/1789803032WhatsApp%20Image%202026-09-19%20at%201.05.55%20AM.jpeg"
+}

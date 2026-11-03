@@ -1,0 +1,62 @@
+# Bookshelf.com.bd — React frontend (Phase 1–2)
+
+Public storefront rebuild of https://bookshelf.com.bd in **React + Vite + React Router + Tailwind CSS + Axios**.
+Backend and admin panel are **not** part of this phase. All data comes from `src/mocks/*.json` until the Laravel API is connected.
+
+```bash
+npm install
+cp .env.example .env     # VITE_USE_MOCK=true by default
+npm run dev              # http://localhost:5173
+npm run build            # production build in dist/
+```
+
+## Pages (URLs identical to the live Laravel site)
+| Route | Page |
+|---|---|
+| `/` | Home — banner slider, Top Categories, Flash Sales, Hot Deal, All Products, 9 category sections, customer-review banner |
+| `/category/:slug`, `/subcategory/:slug`, `/search?keyword=` | Listing — category tree, price filter, 6 sort options, 24/page pagination |
+| `/product/:slug` | Product — gallery, price/discount, code/type/brand, qty, add to cart, অর্ডার করুন, call/WhatsApp, delivery charges, Description / Order Policy / Reviews tabs, related products |
+| `/customer/checkout` | Cart + checkout (qty update, remove, delivery area, COD) |
+| `/customer/order-success/:invoice` | Order confirmation |
+| `/customer/login`, `/customer/register`, `/customer/forgot-password` | Auth (mobile + password, OTP reset) |
+| `/customer/order-track` | Track by phone (+ optional invoice) |
+| `/customer/account`, `/customer/orders`, `/customer/orders/:invoice` | Customer dashboard & order history (login required) |
+| `/site/contact-us`, `/page/:slug` | Contact form and CMS pages |
+
+## Folder structure
+```
+src/
+  config/      env.js (env vars, asset URLs) · api.js (Axios instance + ENDPOINTS map)
+  services/    catalogService · authService · orderService · mockStore   ← only layer that knows mock vs API
+  mocks/       products.json (187 products) · categories.json · home.json · pages.json · settings.json
+  context/     SiteContext (settings + categories) · CartContext · AuthContext
+  components/  layout/ (Header, nav, mobile menu, mini-cart, Footer) · product/ · common/
+  pages/       Home, ProductList, ProductDetail, Checkout, customer/*, info/*
+scripts/       raw-products.txt (data captured from the live site) → build-mock-data.py → products.json
+docs/          PHASE1_SITE_ANALYSIS.md (page inventory + what could not be verified)
+```
+UI components never import mock files; they call services only.
+
+## Connecting the Laravel API later
+1. Set `VITE_USE_MOCK=false` and `VITE_API_BASE_URL=https://bookshelf.com.bd/api/v1` in `.env`.
+2. Adjust paths in `src/config/api.js → ENDPOINTS` to match the real routes.
+3. Make API responses match the mock shapes (see `src/mocks/products.json`), or map them inside the service functions:
+   - product: `{ id, slug, name, price, oldPrice, images[], categories[], subcategories[], sku, productType, brand, description(html), sold, variations[] }`
+   - list: Laravel paginator `{ data: [...], meta: { current_page, last_page, per_page, total, from, to } }`
+   - login/register: `{ token, user }` — token is sent as `Authorization: Bearer` (Sanctum-ready)
+4. Images: `VITE_ASSET_BASE_URL` (default `https://bookshelf.com.bd/public/uploads`) + stored relative path.
+
+## Known gaps (documented, not guessed)
+- Exact colours/fonts: the live CSS couldn't be read. Brand tokens are in **one place** — `src/index.css` `@theme`.
+- Product descriptions and SKUs (except P0194) — `null` until the API provides them.
+- Writing page 2 (7 products) not captured; 11 combo products have no image.
+- Live checkout page was blocked from inspection — current checkout follows the site's own "Order procedure" page.
+- Mock auth/orders are stored in the browser's localStorage (demo OTP: `123456`).
+
+## Live demo on GitHub Pages
+This project lives in the `bookshelf/` folder of the `my-shop` repo:
+- `bookshelf/source/` — source code (this folder)
+- `bookshelf/index.html` + `bookshelf/assets/` — built site, live at https://tarikuldigital-cmd.github.io/my-shop/bookshelf/
+
+To update the live demo: `cd bookshelf/source && npm install && npm run build:pages`, then copy `dist/*` into `bookshelf/` (replace the old `assets/`).
+The Pages build uses hash URLs (`#/product/...`) because GitHub Pages can't rewrite sub-folder routes; the normal `npm run build` keeps clean URLs for the real domain.
