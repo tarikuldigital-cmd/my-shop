@@ -1,5 +1,7 @@
 import { ORDER_STATUSES } from '../../services/orderService'
 import { formatDate, formatPrice } from '../../utils/format'
+import { Link } from 'react-router-dom'
+import { trackCode } from '../../store/db'
 
 const FLOW = ['pending', 'confirmed', 'processing', 'shipped', 'delivered']
 
@@ -17,7 +19,7 @@ export default function OrderStatusCard({ order, showItems = true }) {
           <p className="font-bold">Invoice: {order.invoice}</p>
           <p className="text-xs text-muted">{formatDate(order.createdAt)}</p>
         </div>
-        <StatusPill status={order.status} />
+        <div className="flex items-center gap-3"><StatusPill status={order.status} /><Link to={`/track/${order.trackCode || trackCode(order)}`} className="text-sm font-semibold text-brand hover:underline">বিস্তারিত ট্র্যাকিং →</Link></div>
       </div>
       {order.status !== 'cancelled' && (
         <ol className="mt-4 grid grid-cols-5 gap-1 text-center text-[11px]">

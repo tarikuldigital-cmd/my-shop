@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, HashRouter } from 'react-router-dom'
 import './index.css'
+import './lib/sms' // automatic order SMS
 import App from './App'
 import { SiteProvider } from './context/SiteContext'
 import { AuthProvider } from './context/AuthContext'

@@ -12,6 +12,7 @@ import Categories from './Categories'
 import HomeEditor from './HomeEditor'
 import { Coupons, Customers, Messages, Reviews, Pages } from './Misc'
 import Settings from './Settings'
+import Sms from './Sms'
 import { storeUrl } from '../config/env'
 
 /* Demo login only — the Laravel phase replaces this with a server session (Sanctum) + roles. */
@@ -43,7 +44,7 @@ function Login({ onOk }) {
 
 const NAV = [
   ['Orders', [['', 'Dashboard'], ['orders', 'Orders', () => S.orders.filter((o) => o.status === 'pending').length], ['incomplete', 'Incomplete orders', () => S.incomplete.filter((x) => x.status === 'new').length]]],
-  ['Customers', [['customers', 'Customers'], ['messages', 'Messages', () => S.messages.filter((m) => !m.read).length], ['reviews', 'Reviews', () => S.reviews.filter((r) => !r.approved).length]]],
+  ['Customers', [['customers', 'Customers'], ['sms', 'SMS', () => S.smsLog.filter((x) => x.status !== 'sent' && Date.now() - x.at < 864e5).length], ['messages', 'Messages', () => S.messages.filter((m) => !m.read).length], ['reviews', 'Reviews', () => S.reviews.filter((r) => !r.approved).length]]],
   ['Catalogue', [['products', 'Books / Products'], ['categories', 'Categories'], ['homepage', 'Homepage & banners'], ['coupons', 'Coupons'], ['pages', 'Info pages']]],
   ['Store', [['settings', 'Settings, Pixel & SEO']]],
 ]
@@ -93,6 +94,7 @@ export default function AdminApp() {
             <Route path="incomplete" element={<Incomplete />} />
             <Route path="customers" element={<Customers />} />
             <Route path="messages" element={<Messages />} />
+            <Route path="sms" element={<Sms />} />
             <Route path="reviews" element={<Reviews />} />
             <Route path="products" element={<Products />} />
             <Route path="categories" element={<Categories />} />

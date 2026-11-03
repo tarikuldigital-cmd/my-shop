@@ -23,6 +23,7 @@ npm run build            # production build in dist/
 | `/customer/order-success/:invoice` | Order confirmation |
 | `/customer/login`, `/customer/register`, `/customer/forgot-password` | Auth (mobile + password, OTP reset) |
 | `/customer/order-track` | Track by phone (+ optional invoice) |
+| `/t/:code` (also `/track/:code`) | Order tracking page linked in the customer's SMS (timeline, courier link) |
 | `/customer/account`, `/customer/orders`, `/customer/orders/:invoice` | Customer dashboard & order history (login required) |
 | `/site/contact-us`, `/page/:slug` | Contact form and CMS pages |
 
@@ -40,6 +41,7 @@ src/
   components/  layout/ (Header, nav, mobile menu, mini-cart, Footer) · product/ · common/
   pages/       Home, ProductList, ProductDetail, Checkout, customer/*, info/*
 scripts/       raw-products.txt (data captured from the live site) → build-mock-data.py → products.json
+server/        SMS relay (Node `sms-relay.mjs` or PHP `sms-relay.php`) — same gateways as Bachelor Home; see server/README.md
 docs/          PHASE1_SITE_ANALYSIS.md (page inventory + what could not be verified)
 ```
 UI components never import mock files; they call services only.

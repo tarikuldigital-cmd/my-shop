@@ -1,0 +1,7 @@
+{
+  "name": "bookshelf-sms-relay",
+  "private": true,
+  "type": "module",
+  "scripts": { "start": "node --env-file=.env sms-relay.mjs" },
+  "engines": { "node": ">=20.6" }
+}

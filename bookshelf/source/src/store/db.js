@@ -58,6 +58,19 @@ function defaultSettings() {
       titleSuffix: ' - Bookshelf',
     },
     courier: { steadfastApiKey: '', steadfastSecret: '', bdCourierKey: '' },
+    sms: {
+      enabled: true,
+      relayUrl: '',
+      siteUrl: '',
+      events: { placed: true, confirmed: true, shipped: true, delivered: true, cancelled: false },
+      templates: {
+        placed: '{name}, Bookshelf-এ অর্ডার {invoice} গ্রহণ হয়েছে। মোট {total}৳। ট্র্যাক: {link}',
+        confirmed: 'অর্ডার {invoice} কনফার্ম হয়েছে। ট্র্যাক: {link}',
+        shipped: 'অর্ডার {invoice} {courier} কুরিয়ারে পাঠানো হয়েছে ({tracking})। {link}',
+        delivered: 'অর্ডার {invoice} ডেলিভারি হয়েছে। Bookshelf থেকে কেনার জন্য ধন্যবাদ!',
+        cancelled: '{invoice} অর্ডারটি বাতিল হয়েছে। কোনো প্রশ্ন থাকলে কল করুন {hotline}',
+      },
+    },
     staff: ['Admin', 'Moderator 1', 'Moderator 2'],
   }
 }
@@ -120,6 +133,7 @@ function seed() {
     messages: [],
     nextInvoice: 100101,
     fraud: {},
+    smsLog: [],
     lastSeen: now,
   }
 }
@@ -131,7 +145,8 @@ function load() {
     if (raw?.version === 1) {
       // merge new default keys added after the user's data was first saved
       const d = defaultSettings()
-      raw.settings = { ...d, ...raw.settings, tracking: { ...d.tracking, ...raw.settings?.tracking }, seo: { ...d.seo, ...raw.settings?.seo }, courier: { ...d.courier, ...raw.settings?.courier } }
+      raw.settings = { ...d, ...raw.settings, tracking: { ...d.tracking, ...raw.settings?.tracking }, seo: { ...d.seo, ...raw.settings?.seo }, courier: { ...d.courier, ...raw.settings?.courier }, sms: { ...d.sms, ...raw.settings?.sms, events: { ...d.sms.events, ...raw.settings?.sms?.events }, templates: { ...d.sms.templates, ...raw.settings?.sms?.templates } } }
+      raw.smsLog ||= []
       return raw
     }
   } catch { /* corrupted or unavailable */ }
@@ -164,6 +179,17 @@ export function importDb(json) {
   Object.assign(S, data)
   save()
 }
+
+/* ---------------- hooks (SMS module subscribes; avoids circular imports) ---------------- */
+export const hooks = { orderEvent: null }
+const emitOrderEvent = (o, event) => { try { hooks.orderEvent?.(o, event) } catch { /* never block an order */ } }
+
+/** Public tracking code used in SMS links: /track/BS100101-K7Q2 */
+export function trackCode(o) {
+  if (!o.trackCode) o.trackCode = `${o.invoice}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`
+  return o.trackCode
+}
+export const orderByTrackCode = (code) => S.orders.find((o) => o.trackCode && o.trackCode.toUpperCase() === String(code).toUpperCase())
 
 /* ---------------- domain helpers ---------------- */
 export const product = (slug) => S.products.find((p) => p.slug === slug)
@@ -210,6 +236,7 @@ export function createOrder({ name, phone, address, shippingArea, items, couponC
   if (cc.coupon) cc.coupon.used = (cc.coupon.used || 0) + 1
   adjustStock(items, -1)
   if (status !== 'pending') { o.status = status; o.history.push({ s: status, by, at: now + 1, note: '' }) }
+  trackCode(o)
   S.orders.unshift(o)
   // an incomplete checkout from the same phone in the last 3 days is now recovered
   S.incomplete.forEach((x) => {
@@ -219,6 +246,8 @@ export function createOrder({ name, phone, address, shippingArea, items, couponC
     }
   })
   save()
+  emitOrderEvent(o, 'placed')
+  if (o.status === 'confirmed') emitOrderEvent(o, 'confirmed')
   return o
 }
 
@@ -232,6 +261,7 @@ export function setStatus(o, s, by, note = '') {
   if (s === 'returned') o.returnReason = note
   if (s === 'delivered' && o.payment?.method === 'cod') o.payment.status = 'paid'
   o.history.push({ s, by, at: Date.now(), note })
+  if (['confirmed', 'delivered', 'cancelled'].includes(s)) emitOrderEvent(o, s)
 }
 
 export function sendToCourier(o, c, by) {
@@ -243,6 +273,7 @@ export function sendToCourier(o, c, by) {
     o.status = 'ready'
     o.history.push({ s: 'ready', by, at: Date.now() + 1, note: `Sent to ${COURIERS[c].t}` })
   }
+  emitOrderEvent(o, 'shipped')
 }
 
 export const trackUrl = (o) => !o.tracking ? '' : o.courier === 'steadfast' ? `https://steadfast.com.bd/t/${o.tracking}` : o.courier === 'redx' ? `https://redx.com.bd/track-parcel/?trackingId=${o.tracking}` : o.courier === 'pathao' ? `https://merchant.pathao.com/tracking?consignment_id=${o.tracking}&phone=${o.phone}` : ''

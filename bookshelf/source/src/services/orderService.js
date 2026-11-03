@@ -1,7 +1,7 @@
 import api, { ENDPOINTS, TOKEN_KEY } from '../config/api'
 import { USE_MOCK } from '../config/env'
 import { delay, ApiError } from './mockStore'
-import { S, STATUS, createOrder, normPhone, upsertIncomplete, removeIncomplete } from '../store/db'
+import { S, STATUS, createOrder, normPhone, upsertIncomplete, removeIncomplete, orderByTrackCode } from '../store/db'
 
 const unwrap = (d) => (d && 'data' in d && !('meta' in d) ? d.data : d)
 
@@ -52,4 +52,13 @@ export async function saveCheckoutDraft(draftId, data) {
 export async function discardCheckoutDraft(draftId) {
   if (!USE_MOCK) return
   removeIncomplete(draftId)
+}
+
+/** Public tracking page (/track/:code) — the code comes from the order SMS. Laravel: GET /orders/track/{code} */
+export async function getTracking(code) {
+  if (!USE_MOCK) return unwrap(await api.get(`/orders/track/${encodeURIComponent(code)}`))
+  await delay(200)
+  const o = orderByTrackCode(code)
+  if (!o) throw new ApiError('এই ট্র্যাকিং লিংকে কোনো অর্ডার পাওয়া যায়নি', 404)
+  return o
 }

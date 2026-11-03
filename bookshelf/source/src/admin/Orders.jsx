@@ -6,6 +6,7 @@ import {
 import { Empty, Field, Modal, Pill, tk, fdate, startOfDay, toast } from './ui'
 import { WhatsAppIcon } from '../components/common/Icon'
 import { busy, fraudCheck, getKey, ratioTone } from './fraud'
+import { trackLink, renderSms, sendSms, SMS_EVENTS } from '../lib/sms'
 
 const PER_PAGE = 20
 const TABS = [['all', 'All Orders'], ...ST_KEYS.map((k) => [k, STATUS[k].t])]
@@ -143,6 +144,25 @@ function OrderDrawer({ order: o, onClose }) {
               {extra === 'courier' && <p className="text-xs text-muted">Demo creates a tracking code. With the Laravel backend this calls the Steadfast API and saves the real consignment ID.</p>}
             </div>
           )}
+        </div>
+
+        <div className="rounded-md border border-line p-3">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <p className="font-semibold">SMS & tracking</p>
+            <button className="text-brand" onClick={() => { navigator.clipboard?.writeText(trackLink(o)); toast('Tracking link copied') }}>Copy tracking link</button>
+          </div>
+          <a href={trackLink(o)} target="_blank" rel="noreferrer" className="block truncate text-xs text-brand">{trackLink(o)}</a>
+          <ul className="mt-2 space-y-1 text-xs">
+            {S.smsLog.filter((x) => x.invoice === o.invoice).map((x) => (
+              <li key={x.id} className="flex gap-2"><Pill tone={x.status === 'sent' ? 'green' : x.status === 'sending' ? 'sky' : 'amber'}>{x.status === 'sent' ? 'Sent' : x.status === 'sending' ? '…' : 'Not sent'}</Pill><span className="text-muted">{fdate(x.at)}</span><span className="flex-1">{x.text}</span></li>
+            ))}
+            {!S.smsLog.some((x) => x.invoice === o.invoice) && <li className="text-muted">No SMS for this order yet{o.demo ? ' (sample orders never send SMS)' : ''}.</li>}
+          </ul>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {Object.keys(SMS_EVENTS).filter((k) => k !== 'shipped' || o.tracking).map((k) => (
+              <button key={k} className="btn-outline px-2 py-1 text-xs" onClick={async () => { const r = await sendSms({ to: o.phone, text: renderSms(S.settings.sms.templates[k], o), event: k === 'placed' ? 'resend' : k, order: o }); toast(r.status === 'sent' ? 'SMS sent ✓' : r.info) }}>Send “{SMS_EVENTS[k].split(' (')[0]}”</button>
+            ))}
+          </div>
         </div>
 
         <div>

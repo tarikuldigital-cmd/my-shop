@@ -57,10 +57,16 @@ Dashboard: `GET /dashboard?range=` returns the KPIs the React dashboard computes
 - Optional: GA4 Measurement Protocol `purchase` for ad-blocked browsers.
 - Server-render `<title>`, meta description, Open Graph tags and JSON-LD for `/product/{slug}` and `/category/{slug}` (Blade wrapper around the React `index.html`) so Facebook/WhatsApp link previews and Google show the right book.
 
-## 5. Payments
+## 5. Order SMS & tracking
+- Same gateways as Bachelor Home (`server/sms.js`: Muthofun default, BulkSMSBD, URL template) with the key in `.env`.
+- Send on: order placed, confirmed, sent to courier (with tracking code), delivered, cancelled — templates and on/off per step come from `settings.sms` (Admin → SMS). Log every SMS in an `sms_log` table (to, event, text, parts, status, gateway reply).
+- Every order gets a random `track_code` (`BS100101-K7Q2`); public `GET /orders/track/{code}` returns status timeline, courier + tracking code, items, masked phone — the React page is `/t/{code}`.
+- Until Laravel is live, `server/sms-relay.mjs` (or `sms-relay.php`) does the sending.
+
+## 6. Payments
 - COD: default.
 - Manual bKash/Nagad: TrxID + sender saved, `payment_status = pending` until staff verifies (already in the admin UI).
 - Later: bKash Tokenized Checkout (PGW) — create/execute/query endpoints on the server; never expose app key/secret to the browser.
 
-## 6. Security checklist
+## 7. Security checklist
 Server-side validation of every price/stock; rate-limit draft/order/OTP endpoints; Bangladeshi phone validation; CSRF for cookie auth; staff roles (moderator can't see settings/keys); audit log via `order_events`; daily DB backup.

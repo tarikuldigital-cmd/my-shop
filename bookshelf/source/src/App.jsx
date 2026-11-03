@@ -16,6 +16,7 @@ import OrderDetail from './pages/customer/OrderDetail'
 import Contact from './pages/info/Contact'
 import InfoPage from './pages/info/InfoPage'
 import NotFound from './pages/NotFound'
+import TrackOrder from './pages/TrackOrder'
 import { lazy, Suspense } from 'react'
 import { Spinner } from './components/common/ui'
 
@@ -39,6 +40,8 @@ export default function App() {
         <Route path="customer/register" element={<Register />} />
         <Route path="customer/forgot-password" element={<ForgotPassword />} />
         <Route path="customer/order-track" element={<OrderTrack />} />
+        <Route path="track/:code" element={<TrackOrder />} />
+        <Route path="t/:code" element={<TrackOrder />} />
         <Route element={<RequireAuth />}>
           <Route path="customer/account" element={<Account />} />
           <Route path="customer/orders" element={<Orders />} />
