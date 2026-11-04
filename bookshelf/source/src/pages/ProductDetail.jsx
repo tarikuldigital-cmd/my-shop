@@ -145,7 +145,7 @@ export default function ProductDetail() {
 
   useSeo(product ? {
     title: product.seoTitle || product.name,
-    description: product.seoDescription || product.description || `${product.name} — ${formatPrice(product.price)}। ক্যাশ অন ডেলিভারি, সারাদেশে হোম ডেলিভারি।`,
+    description: product.seoDescription || product.shortDescription ||  `${product.name} — ${formatPrice(product.price)}। ক্যাশ অন ডেলিভারি, সারাদেশে হোম ডেলিভারি।`,
     image: product.images[0] && (product.images[0].includes('/') ? product.images[0] : `product/${product.images[0]}`),
     jsonLd: bookJsonLd(product, location.href),
   } : {})
@@ -185,6 +185,8 @@ export default function ProductDetail() {
           <p className={`mt-2 text-sm font-semibold ${available ? 'text-green-700' : 'text-red-600'}`}>
             {!available ? '✕ স্টকে নেই' : typeof product.stock === 'number' && product.stock <= 5 ? `● মাত্র ${product.stock}টি বাকি আছে` : '● স্টকে আছে'}
           </p>
+
+          {product.shortDescription && <p className="mt-3 rounded-md bg-surface p-3 text-sm leading-relaxed text-ink/80">{product.shortDescription}</p>}
 
           <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
             <dt className="text-muted">Product Code</dt><dd>{product.sku || 'N/A'}</dd>

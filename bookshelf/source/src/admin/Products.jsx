@@ -9,7 +9,7 @@ import ImageUploader from './ImageUploader'
 const slugify = (s) => s.toLowerCase().trim().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '')
 const lines = (s) => s.split('\n').map((x) => x.trim()).filter(Boolean)
 
-const BLANK = { name: '', slug: '', price: 0, oldPrice: null, stock: null, images: [], categories: [], subcategories: [], author: '', publisher: '', isbn: '', pages: null, edition: '', language: 'Bangla', coverType: 'Paperback', lookInside: [], comboItems: [], sku: '', brand: '', description: '', seoTitle: '', seoDescription: '', active: true, featured: false, sold: 0, variations: [], productType: 'Physical' }
+const BLANK = { name: '', slug: '', price: 0, oldPrice: null, stock: null, images: [], categories: [], subcategories: [], author: '', publisher: '', isbn: '', pages: null, edition: '', language: 'Bangla', coverType: 'Paperback', lookInside: [], comboItems: [], sku: '', brand: '', shortDescription: '', descSource: '', description: '', seoTitle: '', seoDescription: '', active: true, featured: false, sold: 0, variations: [], productType: 'Physical' }
 
 function ProductForm({ product, onDone }) {
   const [f, setF] = useState(() => ({ ...BLANK, ...product, images: [...(product?.images || [])], lookInside: [...(product?.lookInside || [])], comboText: (product?.comboItems || []).join('\n') }))
@@ -82,7 +82,8 @@ function ProductForm({ product, onDone }) {
           <p className="mt-1 text-xs text-muted">ছবি দিলে বইয়ের পেজে "📖 একটু পড়ে দেখুন" বাটন আসবে।</p>
         </div>
         <Field label="Combo / package contents (one book per line)" hint="Shown as a checklist on combo products" className="sm:col-span-2"><textarea rows={3} className="field" value={f.comboText} onChange={set('comboText')} /></Field>
-        <Field label="Description (HTML allowed)" className="sm:col-span-2"><textarea rows={6} className="field font-mono text-xs" value={f.description || ''} onChange={set('description')} /></Field>
+        <Field label="Short description (shown near the price)" hint={f.descSource === 'written' ? 'This text was written from the title/category — please check it against the book.' : undefined} className="sm:col-span-2"><textarea rows={2} className="field" value={f.shortDescription || ''} onChange={set('shortDescription')} /></Field>
+        <Field label="Full description (HTML allowed)" className="sm:col-span-2"><textarea rows={6} className="field font-mono text-xs" value={f.description || ''} onChange={set('description')} /></Field>
       </section>
 
       <section className="grid gap-3 sm:grid-cols-2">
@@ -107,7 +108,7 @@ export default function Products() {
   const all = S.products.filter((p) => (!cat || p.categories.includes(cat)) && (!term || `${p.name} ${p.author} ${p.sku} ${p.isbn}`.toLowerCase().includes(term)))
   const pages = Math.max(1, Math.ceil(all.length / 25))
   const list = all.slice((Math.min(page, pages) - 1) * 25, Math.min(page, pages) * 25)
-  const missing = (p) => [!p.images.length && 'image', !p.description && 'description', !p.author && 'author'].filter(Boolean)
+  const missing = (p) => [!p.images.length && 'image', !p.description && 'description', p.descSource === 'written' && 'review text', !p.author && 'author'].filter(Boolean)
 
   return (
     <div className="space-y-4">

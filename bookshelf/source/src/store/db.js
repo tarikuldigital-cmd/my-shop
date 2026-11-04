@@ -41,7 +41,7 @@ export const normPhone = (p = '') => String(p).replace(/[^\d]/g, '').replace(/^8
 export const validPhone = (p) => /^01[3-9]\d{8}$/.test(normPhone(p))
 
 /* ---------------- seed ---------------- */
-const BOOK_FIELDS = { author: '', publisher: '', isbn: '', pages: null, edition: '', language: '', coverType: '', lookInside: [], comboItems: [], stock: null, featured: false, seoTitle: '', seoDescription: '', active: true }
+const BOOK_FIELDS = { shortDescription: '', descSource: '', author: '', publisher: '', isbn: '', pages: null, edition: '', language: '', coverType: '', lookInside: [], comboItems: [], stock: null, featured: false, seoTitle: '', seoDescription: '', active: true }
 
 function defaultSettings() {
   return {
@@ -147,6 +147,18 @@ function load() {
       const d = defaultSettings()
       raw.settings = { ...d, ...raw.settings, tracking: { ...d.tracking, ...raw.settings?.tracking }, seo: { ...d.seo, ...raw.settings?.seo }, courier: { ...d.courier, ...raw.settings?.courier }, sms: { ...d.sms, ...raw.settings?.sms, events: { ...d.sms.events, ...raw.settings?.sms?.events }, templates: { ...d.sms.templates, ...raw.settings?.sms?.templates } } }
       raw.smsLog ||= []
+      // v2 (book details): fill the descriptive fields for products saved before they existed,
+      // without overwriting anything the admin has already written.
+      if (raw.products && !raw.detailsV2) {
+        const bySlug = new Map(seedProducts.map((x) => [x.slug, x]))
+        raw.products.forEach((p) => {
+          const sd = bySlug.get(p.slug)
+          if (!sd) return
+          ;['shortDescription', 'description', 'descSource', 'sku', 'author', 'publisher', 'pages', 'edition', 'language', 'coverType'].forEach((k) => { if (!p[k] && sd[k]) p[k] = sd[k] })
+          if (!p.comboItems?.length && sd.comboItems?.length) p.comboItems = sd.comboItems
+        })
+        raw.detailsV2 = true
+      }
       return raw
     }
   } catch { /* corrupted or unavailable */ }

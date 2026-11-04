@@ -63,9 +63,4 @@ UI components never import mock files; they call services only.
 - Mock auth/orders are stored in the browser's localStorage (demo OTP: `123456`).
 
 ## Live demo on GitHub Pages
-This project lives in the `bookshelf/` folder of the `my-shop` repo:
-- `bookshelf/source/` — source code (this folder)
-- `bookshelf/index.html` + `bookshelf/assets/` — built site: https://tarikuldigital-cmd.github.io/my-shop/bookshelf/ · admin: `…/bookshelf/#/admin`
-
-To update the live demo: `cd bookshelf/source && npm install && npm run build:pages`, then copy `dist/*` into `bookshelf/` (replace the old `assets/`).
-The Pages build uses hash URLs (`#/product/...`) because GitHub Pages can't rewrite sub-folder routes; the normal `npm run build` keeps clean URLs for the real domain.
+The built site is in the parent folder (`bookshelf/`). Rebuild with `npm run build:pages`.
