@@ -70,3 +70,8 @@ Dashboard: `GET /dashboard?range=` returns the KPIs the React dashboard computes
 
 ## 7. Security checklist
 Server-side validation of every price/stock; rate-limit draft/order/OTP endpoints; Bangladeshi phone validation; CSRF for cookie auth; staff roles (moderator can't see settings/keys); audit log via `order_events`; daily DB backup.
+
+## Landing pages (admin-built)
+`landing_pages`: id, slug (unique), product_id, active, theme, headline, subheadline, badge, cta_text, form_title, urgency_text, ends_at, video_url, bullets[], features[], testimonials[], faq[], show_specs, show_combo, sticky_cta, views, orders.
+Public: `GET /landing/{slug}` (landing + product; 404 if inactive), `POST /landing/{slug}/view`; orders use the normal `POST /orders` with `source: "Landing page"`.
+Admin: CRUD `/admin/landing-pages`.

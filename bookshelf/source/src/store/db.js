@@ -34,7 +34,7 @@ export const PAY_ST = { unpaid: 'Collect on delivery', pending: 'To verify', pai
 export const CANCEL_REASONS = ['Did not answer the phone', 'Customer changed their mind', 'Duplicate order', 'Delivery charge too high', 'Fake order', 'Out of stock']
 export const RETURN_REASONS = ['Wrong book sent', 'Damaged / printing defect', 'Missing books in package', 'Customer refused the parcel']
 export const INC_ST = { new: 'New, follow-up pending', contacted: 'Contacted', converted: 'Converted to order', dropped: 'Dropped' }
-export const SOURCES = ['Website', 'Facebook', 'Phone', 'WhatsApp', 'Messenger']
+export const SOURCES = ['Website', 'Landing page', 'Facebook', 'Phone', 'WhatsApp', 'Messenger']
 
 export const meName = () => S.settings.staff[S.me ?? 0] || 'Admin'
 export const normPhone = (p = '') => String(p).replace(/[^\d]/g, '').replace(/^88/, '')
@@ -102,7 +102,7 @@ function demoOrders(products, now) {
       name: pick(names), phone: `017${String(10000000 + Math.floor(rnd() * 89999999))}`, address,
       shippingArea: inside ? 'inside_dhaka' : 'outside_dhaka', items, subtotal, shippingCharge, discount: 0, total: subtotal + shippingCharge,
       payment: { method: 'cod', status: status === 'delivered' ? 'paid' : 'unpaid' },
-      status, courier, tracking: courier ? COURIERS[courier].p + (10000000 + i * 7919) : '', source: pick(SOURCES), note: '',
+      status, courier, tracking: courier ? COURIERS[courier].p + (10000000 + i * 7919) : '', source: pick(SOURCES.filter((x) => x !== 'Landing page')), note: '',
       cancelReason: status === 'cancelled' ? history[history.length - 1].note : '', createdAt: at, history,
     })
   }
@@ -130,6 +130,7 @@ function seed() {
     incomplete: demoIncomplete(products, now),
     coupons: [{ code: 'IELTS50', type: 'flat', value: 50, min: 500, active: true, used: 0, expires: '' }],
     reviews: [],
+    landings: [],
     messages: [],
     nextInvoice: 100101,
     fraud: {},
@@ -147,6 +148,7 @@ function load() {
       const d = defaultSettings()
       raw.settings = { ...d, ...raw.settings, tracking: { ...d.tracking, ...raw.settings?.tracking }, seo: { ...d.seo, ...raw.settings?.seo }, courier: { ...d.courier, ...raw.settings?.courier }, sms: { ...d.sms, ...raw.settings?.sms, events: { ...d.sms.events, ...raw.settings?.sms?.events }, templates: { ...d.sms.templates, ...raw.settings?.sms?.templates } } }
       raw.smsLog ||= []
+      raw.landings ||= []
       // v2 (book details): fill the descriptive fields for products saved before they existed,
       // without overwriting anything the admin has already written.
       if (raw.products && !raw.detailsV2) {

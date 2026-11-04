@@ -62,5 +62,8 @@ UI components never import mock files; they call services only.
 - Live checkout page was blocked from inspection — current checkout follows the site's own "Order procedure" page.
 - Mock auth/orders are stored in the browser's localStorage (demo OTP: `123456`).
 
+## Landing pages
+Admin → Catalogue → **Landing pages**: pick any book/product, content is auto-filled from the product, edit text/theme/FAQ/video/countdown, publish at `/lp/<slug>`. Orders arrive in Orders with source "Landing page"; incomplete orders, Pixel/GTM/GA4/TikTok events and SMS work the same as the normal checkout. Data lives in `S.landings` (Laravel phase: `landing_pages` table, see docs/BACKEND_API_SPEC.md).
+
 ## Live demo on GitHub Pages
 The built site is in the parent folder (`bookshelf/`). Rebuild with `npm run build:pages`.

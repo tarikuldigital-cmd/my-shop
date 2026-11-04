@@ -17,6 +17,7 @@ import Contact from './pages/info/Contact'
 import InfoPage from './pages/info/InfoPage'
 import NotFound from './pages/NotFound'
 import TrackOrder from './pages/TrackOrder'
+import LandingPage from './pages/LandingPage'
 import { lazy, Suspense } from 'react'
 import { Spinner } from './components/common/ui'
 
@@ -28,6 +29,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="admin/*" element={<Suspense fallback={<Spinner className="py-24" />}><AdminApp /></Suspense>} />
+      <Route path="lp/:slug" element={<LandingPage />} />
       <Route element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="category/:slug" element={<ProductList mode="category" />} />
