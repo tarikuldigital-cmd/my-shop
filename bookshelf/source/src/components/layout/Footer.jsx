@@ -35,7 +35,7 @@ export default function Footer() {
       <div className="border-t border-white/10">
         <div className="container-x flex flex-col items-center justify-between gap-1 py-4 text-xs sm:flex-row">
           <p>{settings.copyright}</p>
-          <p>Developed by <a href={settings.developer.url} target="_blank" rel="noreferrer" className="font-semibold hover:text-white">{settings.developer.name}</a></p>
+          <p>Developed by <span className="font-semibold">Tarikul Islam</span></p>
         </div>
       </div>
     </footer>
