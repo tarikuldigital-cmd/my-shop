@@ -4,7 +4,7 @@ import { Chips, Empty, Field, Panel, Pill, fdate, toast } from './ui'
 import { SMS_EVENTS, SMS_VARS, getSmsSecret, setSmsSecret, renderSms, resendSms, sendSms, smsParts } from '../lib/sms'
 
 const ST = { sent: ['green', 'Sent'], sending: ['sky', 'Sending'], failed: ['red', 'Failed'], not_configured: ['amber', 'Not sent — SMS server not set'] }
-const SAMPLE = { name: 'Rahim Uddin', invoice: 'BS100123', total: 870, courier: 'steadfast', tracking: 'SF12345678', trackCode: 'BS100123-AB12', phone: '01700000000' }
+const SAMPLE = { name: 'Rahim Uddin', invoice: 'BS100123', total: 350, subtotal: 280, items: [{ name: 'Makkar IELTS Speaking and Writing Task 1 & 2 (2026 Edition)', price: 280, quantity: 1 }], courier: 'steadfast', tracking: 'SF12345678', trackCode: 'BS100123-AB12', phone: '01700000000' }
 
 export default function Sms() {
   useDb()

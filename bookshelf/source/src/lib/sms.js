@@ -20,12 +20,21 @@ export const SMS_EVENTS = {
   delivered: 'ডেলিভারি সম্পন্ন',
   cancelled: 'অর্ডার বাতিল',
 }
-export const SMS_VARS = ['{name}', '{invoice}', '{total}', '{link}', '{courier}', '{tracking}', '{hotline}', '{shop}']
+export const SMS_VARS = ['{name}', '{invoice}', '{total}', '{link}', '{courier}', '{tracking}', '{product}', '{price}', '{hotline}', '{shop}']
 
 export function trackLink(o) {
   const code = trackCode(o)
   const site = S.settings.sms.siteUrl?.trim()
   return site ? `${site.replace(/\/$/, '')}/t/${code}` : `${location.origin}${storeUrl(`/t/${code}`)}`
+}
+
+/** "Product name" or "Product name ও আরও 2টি বই" — shortened so the SMS stays within a few parts. */
+export function productLabel(o) {
+  const items = o.items || []
+  if (!items.length) return ''
+  const n = items[0].name.trim()
+  const name = [...n].length > 32 ? `${[...n].slice(0, 31).join('').trim()}…` : n
+  return items.length > 1 ? `${name} ও আরও ${items.length - 1}টি` : items[0].quantity > 1 ? `${name} × ${items[0].quantity}` : name
 }
 
 export function renderSms(template, o) {
@@ -34,6 +43,8 @@ export function renderSms(template, o) {
     .replaceAll('{name}', first)
     .replaceAll('{invoice}', o.invoice)
     .replaceAll('{total}', String(o.total))
+    .replaceAll('{product}', productLabel(o))
+    .replaceAll('{price}', String(o.subtotal ?? o.total))
     .replaceAll('{link}', trackLink(o))
     .replaceAll('{courier}', o.courier ? COURIERS[o.courier].t : '')
     .replaceAll('{tracking}', o.tracking || '')

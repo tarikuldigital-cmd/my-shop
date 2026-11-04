@@ -64,7 +64,7 @@ function defaultSettings() {
       siteUrl: '',
       events: { placed: true, confirmed: true, shipped: true, delivered: true, cancelled: false },
       templates: {
-        placed: '{name}, Bookshelf-এ অর্ডার {invoice} গ্রহণ হয়েছে। মোট {total}৳। ট্র্যাক: {link}',
+        placed: 'সম্মানিত {name}, Bookshelf-এ আপনার অর্ডার ({invoice}) পেয়েছি। পণ্য: {product}, মূল্য {price}৳, মোট {total}৳ (ডেলিভারিসহ)। ধন্যবাদ! আমাদের প্রতিনিধি কল করে অর্ডার কনফার্ম করবেন। ট্র্যাক: {link}',
         confirmed: 'অর্ডার {invoice} কনফার্ম হয়েছে। ট্র্যাক: {link}',
         shipped: 'অর্ডার {invoice} {courier} কুরিয়ারে পাঠানো হয়েছে ({tracking})। {link}',
         delivered: 'অর্ডার {invoice} ডেলিভারি হয়েছে। Bookshelf থেকে কেনার জন্য ধন্যবাদ!',
@@ -149,6 +149,8 @@ function load() {
       raw.settings = { ...d, ...raw.settings, tracking: { ...d.tracking, ...raw.settings?.tracking }, seo: { ...d.seo, ...raw.settings?.seo }, courier: { ...d.courier, ...raw.settings?.courier }, sms: { ...d.sms, ...raw.settings?.sms, events: { ...d.sms.events, ...raw.settings?.sms?.events }, templates: { ...d.sms.templates, ...raw.settings?.sms?.templates } } }
       raw.smsLog ||= []
       raw.landings ||= []
+      // the first, shorter order-received text is replaced by the new formal one (edited texts are left alone)
+      if (['সম্মানিত {name}, Bookshelf থেকে আপনার অর্ডার ({invoice}) পেয়েছি। পণ্য: {product}, মূল্য {price}৳, ডেলিভারিসহ মোট {total}৳। অর্ডার করার জন্য ধন্যবাদ! আমাদের প্রতিনিধি কল করে অর্ডারটি কনফার্ম করবেন। ট্র্যাক: {link}'].includes(raw.settings.sms?.templates?.placed) || raw.settings.sms?.templates?.placed === '{name}, Bookshelf-এ অর্ডার {invoice} গ্রহণ হয়েছে। মোট {total}৳। ট্র্যাক: {link}') raw.settings.sms.templates.placed = defaultSettings().sms.templates.placed
       // v2 (book details): fill the descriptive fields for products saved before they existed,
       // without overwriting anything the admin has already written.
       if (raw.products && !raw.detailsV2) {
