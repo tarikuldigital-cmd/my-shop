@@ -3,9 +3,11 @@
 //
 //   POST /sms/order-placed   public  — order confirmation from the customer's browser (strict checks + rate limits)
 //   POST /sms/send           private — any SMS from the admin panel, header X-Admin-Secret: <ADMIN_SECRET>
+//   POST /chat               public  — AI live-chat reply (rate limited);  GET/POST /chat/config  admin — provider + key
 //   GET  /health
 import http from 'node:http'
 import { sendSms, normalizeBdNumber } from './sms.js'
+import { reply as chatReply, saveConfig as chatSave, publicConfig as chatPublic, loadConfig as chatLoad } from './chat.js'
 
 const PORT = Number(process.env.PORT || 4100)
 const SECRET = process.env.ADMIN_SECRET || ''
@@ -35,9 +37,9 @@ function cors(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Admin-Secret')
 }
 const json = (res, code, data) => { res.writeHead(code, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(data)) }
-const body = (req) => new Promise((resolve) => {
+const body = (req, max = 4000) => new Promise((resolve) => {
   let raw = ''
-  req.on('data', (c) => { raw += c; if (raw.length > 4000) req.destroy() })
+  req.on('data', (c) => { raw += c; if (raw.length > max) req.destroy() })
   req.on('end', () => { try { resolve(JSON.parse(raw || '{}')) } catch { resolve({}) } })
 })
 
@@ -46,6 +48,29 @@ http.createServer(async (req, res) => {
   if (req.method === 'OPTIONS') return res.writeHead(204).end()
   const url = new URL(req.url, 'http://x')
   if (url.pathname === '/health') return json(res, 200, { ok: true, provider: process.env.SMS_PROVIDER || 'muthofun' })
+  const isAdmin = () => SECRET && req.headers['x-admin-secret'] === SECRET
+
+  // ---- AI live chat -------------------------------------------------------------------------
+  if (url.pathname === '/chat/config') {           // admin only: read (key masked) / save the AI provider + key
+    if (!isAdmin()) return json(res, 403, { ok: false, error: 'Wrong admin secret' })
+    if (req.method === 'GET') return json(res, 200, { ok: true, ...chatPublic() })
+    if (req.method === 'POST') {
+      try { chatSave(await body(req, 8000)); return json(res, 200, { ok: true, ...chatPublic() }) } catch (e) { return json(res, 400, { ok: false, error: e.message }) }
+    }
+  }
+  if (url.pathname === '/chat' && req.method === 'POST') {  // public: customer chat
+    const ip0 = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim()
+    const b = await body(req, 20000)
+    if (b.test) {                                  // admin "test" bypasses the visitor rate limit
+      if (!isAdmin()) return json(res, 403, { ok: false, error: 'Wrong admin secret' })
+    } else if (limited(`c10:${ip0}`, 12, 600e3) || limited(`c1h:${ip0}`, 40, 3600e3) || limited('cday', Number(process.env.CHAT_DAILY_CAP || 1500), 864e5)) {
+      return json(res, 429, { ok: false, error: 'Too many messages, please try again later' })
+    }
+    const r = await chatReply(b.messages, b.context)
+    console.log(`[chat] ${r.ok ? 'ok' : 'FAILED ' + r.error}`)
+    return json(res, r.status, r.ok ? { ok: true, reply: r.reply } : { ok: false, error: r.error })
+  }
+  if (url.pathname === '/chat/health') return json(res, 200, { ok: true, configured: !!chatLoad().apiKey })
   if (req.method !== 'POST') return json(res, 404, { ok: false, error: 'Not found' })
 
   const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim()

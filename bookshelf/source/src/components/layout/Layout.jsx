@@ -5,6 +5,7 @@ import Footer from './Footer'
 import { MessengerIcon, WhatsAppIcon } from '../common/Icon'
 import { useSite } from '../../context/SiteContext'
 import { track } from '../../lib/tracking'
+import LiveChat from '../chat/LiveChat'
 
 function FloatingContact() {
   const { settings } = useSite()
@@ -29,6 +30,7 @@ export default function Layout() {
       <main className="flex-1"><Outlet /></main>
       <Footer />
       <FloatingContact />
+      <LiveChat />
     </div>
   )
 }

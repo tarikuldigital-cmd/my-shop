@@ -75,3 +75,7 @@ Server-side validation of every price/stock; rate-limit draft/order/OTP endpoint
 `landing_pages`: id, slug (unique), product_id, active, theme, headline, subheadline, badge, cta_text, form_title, urgency_text, ends_at, video_url, bullets[], features[], testimonials[], faq[], show_specs, show_combo, sticky_cta, views, orders.
 Public: `GET /landing/{slug}` (landing + product; 404 if inactive), `POST /landing/{slug}/view`; orders use the normal `POST /orders` with `source: "Landing page"`.
 Admin: CRUD `/admin/landing-pages`.
+
+## AI live chat
+`POST /chat` {messages[≤10], context?} → {reply}. Laravel phase: build the SHOP DATA context server-side (full-text/embedding search over products + settings + pages) instead of trusting the browser's `context`, keep the provider key in `.env`/settings table, rate-limit per IP + daily cap, store conversations in `chat_conversations` / `chat_messages`.
+Admin: `GET/PUT /admin/chat-settings` (provider base_url, model, api_key write-only, greeting, instructions, suggestions, mode).

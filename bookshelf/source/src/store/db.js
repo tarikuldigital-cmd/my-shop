@@ -4,6 +4,7 @@
  * storefront in the same browser only. In production these functions map 1:1 to the
  * Laravel API described in docs/BACKEND_API_SPEC.md.
  */
+import { defaultChat } from '../lib/chatDefaults'
 import { useSyncExternalStore } from 'react'
 import seedProducts from '../mocks/products.json'
 import seedCategories from '../mocks/categories.json'
@@ -71,6 +72,7 @@ function defaultSettings() {
         cancelled: '{invoice} অর্ডারটি বাতিল হয়েছে। কোনো প্রশ্ন থাকলে কল করুন {hotline}',
       },
     },
+    chat: defaultChat(),
     staff: ['Admin', 'Moderator 1', 'Moderator 2'],
   }
 }
@@ -131,6 +133,7 @@ function seed() {
     coupons: [{ code: 'IELTS50', type: 'flat', value: 50, min: 500, active: true, used: 0, expires: '' }],
     reviews: [],
     landings: [],
+    chats: [],
     messages: [],
     nextInvoice: 100101,
     fraud: {},
@@ -146,9 +149,10 @@ function load() {
     if (raw?.version === 1) {
       // merge new default keys added after the user's data was first saved
       const d = defaultSettings()
-      raw.settings = { ...d, ...raw.settings, tracking: { ...d.tracking, ...raw.settings?.tracking }, seo: { ...d.seo, ...raw.settings?.seo }, courier: { ...d.courier, ...raw.settings?.courier }, sms: { ...d.sms, ...raw.settings?.sms, events: { ...d.sms.events, ...raw.settings?.sms?.events }, templates: { ...d.sms.templates, ...raw.settings?.sms?.templates } } }
+      raw.settings = { ...d, ...raw.settings, tracking: { ...d.tracking, ...raw.settings?.tracking }, seo: { ...d.seo, ...raw.settings?.seo }, courier: { ...d.courier, ...raw.settings?.courier }, chat: { ...d.chat, ...raw.settings?.chat }, sms: { ...d.sms, ...raw.settings?.sms, events: { ...d.sms.events, ...raw.settings?.sms?.events }, templates: { ...d.sms.templates, ...raw.settings?.sms?.templates } } }
       raw.smsLog ||= []
       raw.landings ||= []
+      raw.chats ||= []
       // the first, shorter order-received text is replaced by the new formal one (edited texts are left alone)
       if (['সম্মানিত {name}, Bookshelf থেকে আপনার অর্ডার ({invoice}) পেয়েছি। পণ্য: {product}, মূল্য {price}৳, ডেলিভারিসহ মোট {total}৳। অর্ডার করার জন্য ধন্যবাদ! আমাদের প্রতিনিধি কল করে অর্ডারটি কনফার্ম করবেন। ট্র্যাক: {link}'].includes(raw.settings.sms?.templates?.placed) || raw.settings.sms?.templates?.placed === '{name}, Bookshelf-এ অর্ডার {invoice} গ্রহণ হয়েছে। মোট {total}৳। ট্র্যাক: {link}') raw.settings.sms.templates.placed = defaultSettings().sms.templates.placed
       // v2 (book details): fill the descriptive fields for products saved before they existed,

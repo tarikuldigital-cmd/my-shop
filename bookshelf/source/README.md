@@ -65,5 +65,8 @@ UI components never import mock files; they call services only.
 ## Landing pages
 Admin → Catalogue → **Landing pages**: pick any book/product, content is auto-filled from the product, edit text/theme/FAQ/video/countdown, publish at `/lp/<slug>`. Orders arrive in Orders with source "Landing page"; incomplete orders, Pixel/GTM/GA4/TikTok events and SMS work the same as the normal checkout. Data lives in `S.landings` (Laravel phase: `landing_pages` table, see docs/BACKEND_API_SPEC.md).
 
+## Live chat (AI support agent)
+Admin → Store → **Live chat**. A "💬 লাইভ চ্যাট" button on every storefront page opens a chat that answers from the live catalogue (names, prices, stock, combo contents, delivery charges, policies). Modes: Auto (no AI, free) · AI via your server (key stays on the server) · AI direct (test only). Works with any OpenAI-compatible provider — Groq, Google Gemini and OpenRouter have free tiers. See `server/README.md`. Code: `src/lib/chat.js` (retrieval + prompt), `src/components/chat/LiveChat.jsx`, `src/admin/LiveChat.jsx`, `server/chat.js`.
+
 ## Live demo on GitHub Pages
 The built site is in the parent folder (`bookshelf/`). Rebuild with `npm run build:pages`.
