@@ -169,6 +169,12 @@ function load() {
         })
         raw.detailsV2 = true
       }
+      // v3 (cover images): books saved without any image get the cover from the seed list (admin-set images are kept)
+      if (raw.products && !raw.imagesV3) {
+        const bySlug = new Map(seedProducts.map((x) => [x.slug, x]))
+        raw.products.forEach((p) => { const sd = bySlug.get(p.slug); if (!p.images?.length && sd?.images?.length) p.images = [...sd.images] })
+        raw.imagesV3 = true
+      }
       return raw
     }
   } catch { /* corrupted or unavailable */ }

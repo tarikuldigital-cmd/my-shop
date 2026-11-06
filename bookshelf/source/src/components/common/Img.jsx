@@ -31,5 +31,5 @@ export default function Img({ src, alt = '', className = '', folder = 'product',
     )
   }
   if (!url) return <div className={`animate-pulse bg-gray-100 ${className}`} aria-hidden="true" />
-  return <img src={url} alt={alt} loading="lazy" onError={() => setFailed(true)} className={className} {...rest} />
+  return <img src={url} alt={alt} loading="lazy" referrerPolicy="no-referrer" onError={() => setFailed(true)} className={className} {...rest} />
 }
