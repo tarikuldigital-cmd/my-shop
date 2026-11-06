@@ -1,3 +1,5 @@
+import { LIVE } from '../config/env'
+import { courierLive } from '../lib/live'
 import { useMemo, useState } from 'react'
 import {
   S, STATUS, ST_KEYS, COURIERS, PAY, PAY_ST, CANCEL_REASONS, RETURN_REASONS, SOURCES, DAY,
@@ -87,8 +89,10 @@ function OrderDrawer({ order: o, onClose }) {
     if (['courier', 'cancelled', 'returned', 'partial'].includes(s)) { setExtra(s); setReason(s === 'cancelled' ? CANCEL_REASONS[0] : RETURN_REASONS[0]); return }
     setStatus(o, s, meName()); save(); toast(`${o.invoice}: ${STATUS[s].t}`)
   }
-  const confirmExtra = () => {
-    if (extra === 'courier') { sendToCourier(o, courier, meName()); toast(`${o.invoice} sent to ${COURIERS[courier].t}`) }
+  const confirmExtra = async () => {
+    if (extra === 'courier') {
+      try { await (LIVE ? courierLive(o, courier, meName()) : sendToCourier(o, courier, meName())); toast(`${o.invoice} sent to ${COURIERS[courier].t}`) } catch (e) { return toast(e.message) }
+    }
     else { setStatus(o, extra, meName(), reason); toast(`${o.invoice}: ${STATUS[extra].t}`) }
     save(); setExtra(null)
   }
@@ -267,7 +271,7 @@ export default function Orders() {
   const today = S.orders.filter((o) => o.createdAt >= t0)
   const filt = (fn) => { fn(); setPage(1); setSel(new Set()) }
 
-  const applyBulk = () => {
+  const applyBulk = async () => {
     if (!bulk) return toast('Choose a bulk action')
     if (bulk === 'csv') return exportCSV(sel.size ? all.filter((o) => sel.has(o.id)) : all)
     if (!sel.size) return toast('Select orders first')
@@ -275,9 +279,12 @@ export default function Orders() {
     if (bulk === 'print') return printInvoices(chosen)
     if (bulk.startsWith('st:')) { const s = bulk.slice(3); chosen.forEach((o) => setStatus(o, s, meName(), s === 'cancelled' ? 'Bulk cancelled' : '')); toast(`${chosen.length} orders → ${STATUS[s].t}`) }
     if (bulk.startsWith('c:')) {
-      const c = bulk.slice(2); let n = 0
-      chosen.forEach((o) => { if (['pending', 'confirmed', 'hold'].includes(o.status) && !o.tracking) { sendToCourier(o, c, meName()); n++ } })
-      toast(`${n} orders sent to ${COURIERS[c].t}${chosen.length - n ? `, ${chosen.length - n} skipped` : ''}`)
+      const c = bulk.slice(2); let n = 0, err = ''
+      for (const o of chosen) {
+        if (!['pending', 'confirmed', 'hold'].includes(o.status) || o.tracking) continue
+        try { await (LIVE ? courierLive(o, c, meName()) : sendToCourier(o, c, meName())); n++ } catch (e) { err = e.message; if (LIVE && c !== 'steadfast') break }
+      }
+      toast(`${n} orders sent to ${COURIERS[c].t}${chosen.length - n ? `, ${chosen.length - n} skipped` : ''}${err ? ` — ${err}` : ''}`)
     }
     save(); setSel(new Set())
   }

@@ -8,7 +8,8 @@
  *  The AI is told to answer only from SHOP DATA, so prices/names always come from the catalogue.
  */
 import { S, save, inStock } from '../store/db'
-import { storeUrl } from '../config/env'
+import { storeUrl, LIVE, API_BASE_URL } from '../config/env'
+import { liveLogChat, adminHeaders } from './live'
 export { PRESETS, defaultChat } from './chatDefaults'
 
 export const BASE_RULES = `You are the live-chat assistant of an online bookshop in Bangladesh (IELTS, spoken English, grammar, vocabulary, SAT, GRE books and combo packages).
@@ -101,6 +102,7 @@ export function localAnswer(query) {
 
 /* ---------------- AI call ---------------- */
 export function serverEndpoint(cfg, name) {
+  if (LIVE) return `${API_BASE_URL.replace(/\/$/, '')}/${name}`
   const base = (cfg.relayUrl || S.settings.sms?.relayUrl || '').trim()
   if (!base) return ''
   return base.endsWith('=') ? `${base}${name}` : `${base.replace(/\/+$/, '')}/${name}`
@@ -131,7 +133,7 @@ export async function ask(history, cfg = S.settings.chat, { test = false, secret
     if (cfg.mode === 'relay') {
       const url = serverEndpoint(cfg, 'chat')
       if (!url) throw new Error('AI server URL is not set (Admin → Live chat)')
-      const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(test && secret ? { 'X-Admin-Secret': secret } : {}) }, body: JSON.stringify({ messages: msgs, context: ctx.text, ...(test ? { test: true } : {}) }) })
+      const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(test && LIVE ? adminHeaders() : test && secret ? { 'X-Admin-Secret': secret } : {}) }, body: JSON.stringify({ messages: msgs, context: ctx.text, ...(test ? { test: true } : {}) }) })
       const j = await r.json().catch(() => ({}))
       if (!r.ok || !j.ok) throw new Error(j.error || `HTTP ${r.status}`)
       text = j.reply
@@ -148,6 +150,7 @@ export async function ask(history, cfg = S.settings.chat, { test = false, secret
 
 /* ---------------- conversation log (admin → Live chat → Conversations) ---------------- */
 export function logChat(chatId, page, ...entries) {
+  if (LIVE && !adminHeaders().Authorization) { liveLogChat(chatId, page, entries); return }
   let c = S.chats.find((x) => x.id === chatId)
   if (!c) { c = { id: chatId, at: Date.now(), page, messages: [] }; S.chats.unshift(c); S.chats = S.chats.slice(0, 200) }
   c.messages.push(...entries.map((e) => ({ ...e, at: Date.now() })))

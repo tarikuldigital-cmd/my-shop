@@ -4,13 +4,14 @@
  * storefront in the same browser only. In production these functions map 1:1 to the
  * Laravel API described in docs/BACKEND_API_SPEC.md.
  */
-import { defaultChat } from '../lib/chatDefaults'
 import { useSyncExternalStore } from 'react'
 import seedProducts from '../mocks/products.json'
 import seedCategories from '../mocks/categories.json'
 import seedHome from '../mocks/home.json'
 import seedPages from '../mocks/pages.json'
-import seedSettings from '../mocks/settings.json'
+import { BOOK_FIELDS, defaultSettings } from './defaults'
+import { LIVE } from '../config/env'
+export { defaultSettings }
 
 const KEY = 'bookshelf_db_v1'
 export const DAY = 864e5
@@ -42,41 +43,6 @@ export const normPhone = (p = '') => String(p).replace(/[^\d]/g, '').replace(/^8
 export const validPhone = (p) => /^01[3-9]\d{8}$/.test(normPhone(p))
 
 /* ---------------- seed ---------------- */
-const BOOK_FIELDS = { shortDescription: '', descSource: '', author: '', publisher: '', isbn: '', pages: null, edition: '', language: '', coverType: '', lookInside: [], comboItems: [], stock: null, featured: false, seoTitle: '', seoDescription: '', active: true }
-
-function defaultSettings() {
-  return {
-    ...seedSettings,
-    freeShippingMin: 0,
-    bkashNumber: '',
-    nagadNumber: '',
-    tracking: { metaPixelId: '', metaCapiToken: '', metaTestCode: '', gtmId: '', ga4Id: '', googleAdsId: '', googleAdsLabel: '', tiktokPixelId: '', fbDomainVerify: '', googleSiteVerify: '', headCode: '', bodyCode: '' },
-    seo: {
-      title: 'Bookshelf | Online Book Shop in Bangladesh - Bookshelf',
-      description: 'Bookshelf (bookshelf.com.bd) — original IELTS, Spoken English, Grammar, Vocabulary, SAT and GRE books in Bangladesh. Cash on delivery, 3–5 days nationwide home delivery.',
-      keywords: 'IELTS book, Cambridge IELTS, Spoken English book, SAT book, GRE book, online book shop Bangladesh',
-      ogImage: 'settings/1789803454-whatsapp-image-2026-09-19-at-1.02.21-am.webp',
-      titleSuffix: ' - Bookshelf',
-    },
-    courier: { steadfastApiKey: '', steadfastSecret: '', bdCourierKey: '' },
-    sms: {
-      enabled: true,
-      relayUrl: '',
-      siteUrl: '',
-      events: { placed: true, confirmed: true, shipped: true, delivered: true, cancelled: false },
-      templates: {
-        placed: 'সম্মানিত {name}, Bookshelf-এ আপনার অর্ডার ({invoice}) পেয়েছি। পণ্য: {product}, মূল্য {price}৳, মোট {total}৳ (ডেলিভারিসহ)। ধন্যবাদ! আমাদের প্রতিনিধি কল করে অর্ডার কনফার্ম করবেন। ট্র্যাক: {link}',
-        confirmed: 'অর্ডার {invoice} কনফার্ম হয়েছে। ট্র্যাক: {link}',
-        shipped: 'অর্ডার {invoice} {courier} কুরিয়ারে পাঠানো হয়েছে ({tracking})। {link}',
-        delivered: 'অর্ডার {invoice} ডেলিভারি হয়েছে। Bookshelf থেকে কেনার জন্য ধন্যবাদ!',
-        cancelled: '{invoice} অর্ডারটি বাতিল হয়েছে। কোনো প্রশ্ন থাকলে কল করুন {hotline}',
-      },
-    },
-    chat: defaultChat(),
-    staff: ['Admin', 'Moderator 1', 'Moderator 2'],
-  }
-}
-
 function demoOrders(products, now) {
   // Clearly-marked sample orders so the dashboard is not empty in the demo. "Clear demo data" removes them.
   const names = ['Rahim Uddin', 'Nusrat Jahan', 'Tanvir Ahmed', 'Sadia Islam', 'Mahmudul Hasan', 'Farhana Akter', 'Arif Hossain', 'Jannatul Ferdous', 'Shakil Khan', 'Tasnim Rahman']
@@ -123,13 +89,13 @@ function seed() {
   const products = seedProducts.map((p) => ({ ...BOOK_FIELDS, ...p }))
   return {
     version: 1,
-    products,
-    categories: seedCategories,
+    products: LIVE ? [] : products,
+    categories: LIVE ? [] : seedCategories,
     home: { ...seedHome, flash: { on: true, title: 'Flash Sales', endsAt: now + 3 * DAY }, sections: { flashSale: true, hotDeal: true, allProducts: true, categories: true, reviews: true, recentlyViewed: true } },
     pages: Object.fromEntries(Object.entries(seedPages).filter(([k]) => !k.startsWith('_'))),
     settings: defaultSettings(),
-    orders: demoOrders(products, now),
-    incomplete: demoIncomplete(products, now),
+    orders: LIVE ? [] : demoOrders(products, now),
+    incomplete: LIVE ? [] : demoIncomplete(products, now),
     coupons: [{ code: 'IELTS50', type: 'flat', value: 50, min: 500, active: true, used: 0, expires: '' }],
     reviews: [],
     landings: [],
@@ -144,6 +110,7 @@ function seed() {
 
 /* ---------------- persistence + subscription ---------------- */
 function load() {
+  if (LIVE) return seed() // live mode: the server is the source of truth — nothing is read from or written to localStorage
   try {
     const raw = JSON.parse(localStorage.getItem(KEY))
     if (raw?.version === 1) {
@@ -184,11 +151,17 @@ function load() {
 export const S = load()
 const subs = new Set()
 let version = 0
+export const liveHooks = { onSave: null }
 export function save() {
   version++
-  try { localStorage.setItem(KEY, JSON.stringify(S)) } catch { /* quota */ }
+  if (LIVE) liveHooks.onSave?.()
+  else { try { localStorage.setItem(KEY, JSON.stringify(S)) } catch { /* quota */ } }
   subs.forEach((f) => f())
 }
+/** re-render subscribers without saving (used after data arrives from the server) */
+export function refresh() { version++; subs.forEach((f) => f()) }
+/** back to an empty live skeleton (after admin logout) */
+export function resetState() { const s = seed(); Object.keys(S).forEach((k) => delete S[k]); Object.assign(S, s); refresh() }
 export function useDb() {
   useSyncExternalStore((f) => { subs.add(f); return () => subs.delete(f) }, () => version)
   return S
@@ -214,7 +187,7 @@ const emitOrderEvent = (o, event) => { try { hooks.orderEvent?.(o, event) } catc
 
 /** Public tracking code used in SMS links: /track/BS100101-K7Q2 */
 export function trackCode(o) {
-  if (!o.trackCode) o.trackCode = `${o.invoice}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`
+  if (!o.trackCode) o.trackCode = `${o.invoice}-${Math.random().toString(36).slice(2, 8).toUpperCase().padEnd(6, 'X')}`
   return o.trackCode
 }
 export const orderByTrackCode = (code) => S.orders.find((o) => o.trackCode && o.trackCode.toUpperCase() === String(code).toUpperCase())
@@ -292,10 +265,10 @@ export function setStatus(o, s, by, note = '') {
   if (['confirmed', 'delivered', 'cancelled'].includes(s)) emitOrderEvent(o, s)
 }
 
-export function sendToCourier(o, c, by) {
+export function sendToCourier(o, c, by, tracking = '') {
   // Demo: generates a tracking code. Live: POST to Steadfast /create_order from the Laravel backend.
   o.courier = c
-  o.tracking = COURIERS[c].p + Math.floor(10000000 + Math.random() * 89999999)
+  o.tracking = tracking || COURIERS[c].p + Math.floor(10000000 + Math.random() * 89999999)
   if (['pending', 'confirmed', 'hold'].includes(o.status)) {
     if (o.status !== 'confirmed') o.history.push({ s: 'confirmed', by, at: Date.now(), note: '' })
     o.status = 'ready'

@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { S, save, useDb } from '../store/db'
 import { Chips, Empty, Field, Panel, Pill, fdate, toast } from './ui'
 import { PRESETS, ask, buildContext, serverEndpoint } from '../lib/chat'
+import { LIVE } from '../config/env'
+import { adminHeaders } from '../lib/live'
 import { getSmsSecret, setSmsSecret } from '../lib/sms'
 
 const MODES = [
@@ -36,10 +38,10 @@ export default function LiveChat() {
   const serverCall = async (method, body) => {
     const url = serverEndpoint(cfg, 'chat/config')
     if (!url) throw new Error('AI server URL দিন (অথবা SMS settings-এ SMS server URL দিন — একই server)')
-    if (!secret.trim()) throw new Error('Admin secret দিন')
-    const r = await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'X-Admin-Secret': secret.trim() }, ...(body ? { body: JSON.stringify(body) } : {}) })
+    if (!LIVE && !secret.trim()) throw new Error('Admin secret দিন')
+    const r = await fetch(url, { method, headers: { 'Content-Type': 'application/json', ...(LIVE ? adminHeaders() : { 'X-Admin-Secret': secret.trim() }) }, ...(body ? { body: JSON.stringify(body) } : {}) })
     const j = await r.json().catch(() => ({}))
-    if (!r.ok || !j.ok) throw new Error(j.error || `HTTP ${r.status}`)
+    if (!r.ok || !j.ok) throw new Error(j.error || j.message || `HTTP ${r.status}`)
     return j
   }
   const run = (name, fn) => async () => { setBusy(name); try { await fn() } catch (e) { toast(e.message) } finally { setBusy('') } }
@@ -92,10 +94,11 @@ export default function LiveChat() {
             {cfg.mode === 'relay' ? (
               <div className="mt-3 space-y-3 rounded-lg border border-line bg-surface p-3">
                 <p className="text-sm font-semibold">AI server (আপনার হোস্টিংয়ে — <code>server/README.md</code>)</p>
-                <div className="grid gap-3 sm:grid-cols-2">
+                {LIVE && <p className="rounded-md bg-green-50 p-2 text-xs text-green-800">✓ AI আপনার ব্যাকএন্ড দিয়েই চলবে — URL বা secret লাগবে না। শুধু নিচে Base URL, Model ও API key দিয়ে "Save key to server" চাপুন।</p>}
+                {!LIVE && <div className="grid gap-3 sm:grid-cols-2">
                   <Field label="AI server URL" hint="খালি রাখলে SMS server URL-ই ব্যবহার হবে (একই server)"><input className="field" value={cfg.relayUrl} onChange={set('relayUrl')} placeholder={S.settings.sms.relayUrl || 'https://sms.bookshelf.com.bd'} /></Field>
                   <Field label="Admin secret" hint="server-এর ADMIN_SECRET — SMS-এর মতোই"><input type="password" className="field" value={secret} onChange={(e) => setSecret(e.target.value)} autoComplete="off" /></Field>
-                </div>
+                </div>}
                 <div className="flex flex-wrap gap-2">
                   <button className="btn-accent" disabled={!!busy} onClick={saveServer}>{busy === 'server' ? 'Saving…' : 'Save key to server'}</button>
                   <button className="btn-outline" disabled={!!busy} onClick={checkServer}>Check server</button>

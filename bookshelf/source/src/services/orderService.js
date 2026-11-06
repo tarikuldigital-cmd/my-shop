@@ -50,7 +50,7 @@ export async function saveCheckoutDraft(draftId, data) {
   upsertIncomplete(draftId, data)
 }
 export async function discardCheckoutDraft(draftId) {
-  if (!USE_MOCK) return
+  if (!USE_MOCK) return api.post('/checkout/draft/discard', { draft_id: draftId }).catch(() => {})
   removeIncomplete(draftId)
 }
 

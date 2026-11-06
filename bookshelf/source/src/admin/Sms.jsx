@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { S, save, useDb, validPhone } from '../store/db'
 import { Chips, Empty, Field, Panel, Pill, fdate, toast } from './ui'
+import { LIVE } from '../config/env'
 import { SMS_EVENTS, SMS_VARS, getSmsSecret, setSmsSecret, renderSms, resendSms, sendSms, smsParts } from '../lib/sms'
 
 const ST = { sent: ['green', 'Sent'], sending: ['sky', 'Sending'], failed: ['red', 'Failed'], not_configured: ['amber', 'Not sent — SMS server not set'] }
@@ -32,7 +33,7 @@ export default function Sms() {
         <Chips items={[['log', 'SMS log', S.smsLog.length], ['settings', 'Settings & messages']]} value={tab} onChange={setTab} />
       </div>
 
-      {!S.settings.sms.relayUrl && (
+      {!LIVE && !S.settings.sms.relayUrl && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
           SMS server এখনো যুক্ত করা হয়নি, তাই SMS তৈরি হয়ে লগে জমা হচ্ছে কিন্তু কাস্টমারের ফোনে যাচ্ছে না। <button className="font-semibold underline" onClick={() => setTab('settings')}>Settings & messages</button> এ SMS server-এর URL দিন (সেটআপ: <code>server/README.md</code>)।
         </div>
@@ -72,12 +73,13 @@ export default function Sms() {
           <Panel title="SMS server (gateway)">
             <div className="space-y-3 text-sm">
               <label className="flex items-center gap-2"><input type="checkbox" checked={cfg.enabled} onChange={(e) => setCfg({ ...cfg, enabled: e.target.checked })} />Send order SMS automatically</label>
-              <Field label="SMS server URL" hint="The relay from server/ on your hosting, e.g. https://sms.bookshelf.com.bd — it holds the Muthofun / BulkSMSBD key in its .env (same gateway setup as Bachelor Home).">
+              {LIVE && <p className="rounded-md bg-green-50 p-2 text-xs text-green-800">✓ SMS সরাসরি আপনার ব্যাকএন্ড থেকে যাচ্ছে। গেটওয়ে (Muthofun / BulkSMSBD) ও API key বসে <b>api/config.php</b>-এর <code>sms</code> অংশে — এখানে কিছু বসাতে হবে না।</p>}
+              {!LIVE && <><Field label="SMS server URL" hint="The relay from server/ on your hosting, e.g. https://sms.bookshelf.com.bd — it holds the Muthofun / BulkSMSBD key in its .env (same gateway setup as Bachelor Home).">
                 <input className="field" value={cfg.relayUrl} onChange={(e) => setCfg({ ...cfg, relayUrl: e.target.value.trim() })} placeholder="https://…" />
               </Field>
               <Field label="Admin secret" hint="Same as ADMIN_SECRET in the server .env. Saved only in this browser — needed for status-change SMS sent by staff.">
                 <input type="password" className="field" value={secret} onChange={(e) => setSecret(e.target.value)} autoComplete="off" />
-              </Field>
+              </Field></>}
               <Field label="Website address for tracking links" hint="Leave empty to use this site's current address. On the live domain: https://bookshelf.com.bd">
                 <input className="field" value={cfg.siteUrl} onChange={(e) => setCfg({ ...cfg, siteUrl: e.target.value.trim() })} placeholder="https://bookshelf.com.bd" />
               </Field>

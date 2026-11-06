@@ -9,6 +9,8 @@ import { useSite } from '../context/SiteContext'
 import { useAuth } from '../context/AuthContext'
 import { placeOrder, saveCheckoutDraft, discardCheckoutDraft } from '../services/orderService'
 import { validPhone, couponCalc, shippingFor } from '../store/db'
+import { LIVE } from '../config/env'
+import { liveValidateCoupon } from '../lib/live'
 import { track } from '../lib/tracking'
 import { useSeo } from '../lib/seo'
 import { formatPrice } from '../utils/format'
@@ -49,14 +51,23 @@ export default function Checkout() {
 
   const area = settings.shipping.find((s) => s.id === form.shippingArea)
   const shippingCharge = items.length ? shippingFor(form.shippingArea, subtotal) : 0
-  const cc = couponCalc(coupon, subtotal)
+  // live mode: coupon codes never leave the server — it validates and returns the discount
+  const [srvDiscount, setSrvDiscount] = useState(0)
+  useEffect(() => {
+    if (!LIVE || !coupon) { setSrvDiscount(0); return }
+    let off = false
+    liveValidateCoupon(coupon, subtotal).then((r) => { if (!off) { if (r.error) { setCoupon(''); setSrvDiscount(0); setCouponMsg({ type: 'error', text: r.error }) } else setSrvDiscount(r.discount) } }).catch(() => {})
+    return () => { off = true }
+  }, [coupon, subtotal])
+  const cc = LIVE ? { discount: srvDiscount } : couponCalc(coupon, subtotal)
   const total = subtotal + shippingCharge - (cc.discount || 0)
   const freeMin = settings.freeShippingMin
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
   const payMethods = [['cod', 'ক্যাশ অন ডেলিভারি', 'বই হাতে পেয়ে টাকা দিন'], settings.bkashNumber && ['bkash', 'bKash', `Send Money: ${settings.bkashNumber}`], settings.nagadNumber && ['nagad', 'Nagad', `Send Money: ${settings.nagadNumber}`]].filter(Boolean)
 
-  const applyCoupon = () => {
-    const r = couponCalc(couponInput, subtotal)
+  const applyCoupon = async () => {
+    let r
+    if (LIVE) { try { r = await liveValidateCoupon(couponInput, subtotal) } catch (e) { r = { error: e.message } } } else r = couponCalc(couponInput, subtotal)
     if (r.error) { setCoupon(''); setCouponMsg({ type: 'error', text: r.error }) }
     else { setCoupon(couponInput); setCouponMsg({ type: 'success', text: `কুপন যোগ হয়েছে — ${formatPrice(r.discount)} ছাড়` }) }
   }

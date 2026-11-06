@@ -1,5 +1,7 @@
 // Single place where environment variables are read.
 export const USE_MOCK = String(import.meta.env.VITE_USE_MOCK ?? 'true') === 'true'
+/** Live mode = the real PHP + MySQL backend (api/). */
+export const LIVE = !USE_MOCK
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1'
 export const ASSET_BASE_URL = (import.meta.env.VITE_ASSET_BASE_URL || 'https://bookshelf.com.bd/public/uploads').replace(/\/$/, '')
 
@@ -7,6 +9,7 @@ export const ASSET_BASE_URL = (import.meta.env.VITE_ASSET_BASE_URL || 'https://b
 export function assetUrl(path) {
   if (!path) return null
   if (/^https?:\/\//.test(path)) return path
+  if (path.startsWith('/')) return `${location.origin}${path}` // files stored on this same site, e.g. /uploads/product/x.webp
   return `${ASSET_BASE_URL}/${path.replace(/^\//, '')}`
 }
 

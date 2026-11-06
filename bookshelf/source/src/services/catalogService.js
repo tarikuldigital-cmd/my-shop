@@ -1,5 +1,8 @@
 import api, { ENDPOINTS } from '../config/api'
-import { USE_MOCK } from '../config/env'
+import { LIVE } from '../config/env'
+
+// Reads always come from the in-memory store: bundled sample data in demo mode, server-hydrated data in live mode.
+const USE_MOCK = true
 import { delay } from './mockStore'
 import { S, save, product as findProduct, flashOn } from '../store/db'
 
@@ -119,6 +122,7 @@ export async function getPage(slug) {
 }
 
 export async function sendContactMessage(payload) {
+  if (LIVE) return api.post(ENDPOINTS.contact, payload)
   if (USE_MOCK) {
     await delay(300)
     S.messages.unshift({ id: Date.now(), ...payload, at: Date.now(), read: false })
@@ -138,7 +142,7 @@ export async function getReviews(slug) {
 
 /** Reviews are held for admin approval. */
 export async function submitReview(slug, { name, phone, rating, text }) {
-  if (!USE_MOCK) return api.post(ENDPOINTS.reviews(slug), { rating, text })
+  if (LIVE) return api.post(ENDPOINTS.reviews(slug), { name, phone, rating, text })
   await delay(200)
   S.reviews.unshift({ id: Date.now(), slug, name, phone, rating, text, approved: false, at: Date.now() })
   save()

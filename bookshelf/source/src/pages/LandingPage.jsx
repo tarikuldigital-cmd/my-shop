@@ -6,6 +6,8 @@ import { placeOrder, saveCheckoutDraft, discardCheckoutDraft } from '../services
 import { track } from '../lib/tracking'
 import { useSeo, bookJsonLd } from '../lib/seo'
 import { THEMES, embedUrl } from '../lib/landing'
+import { LIVE } from '../config/env'
+import { liveLandingView } from '../lib/live'
 import { formatPrice } from '../utils/format'
 import NotFound from './NotFound'
 
@@ -76,7 +78,7 @@ export default function LandingPage() {
     window.scrollTo(0, 0)
     const t = setTimeout(() => { track('PageView', { path: `/lp/${lp.slug}`, title: lp.headline }); track('ViewContent', { items: [{ ...product, productId: product.id, quantity: 1 }], value: product.price }) }, 60)
     const k = `lp_seen_${lp.id}`
-    if (!sessionStorage.getItem(k)) { sessionStorage.setItem(k, '1'); lp.views = (lp.views || 0) + 1; save() }
+    if (!sessionStorage.getItem(k)) { sessionStorage.setItem(k, '1'); if (LIVE) liveLandingView(lp.slug); else { lp.views = (lp.views || 0) + 1; save() } }
     return () => clearTimeout(t)
   }, [lp?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -123,9 +125,9 @@ export default function LandingPage() {
       done.current = true
       track('InitiateCheckout', { items: [item], value: subtotal })
       const eventId = `${Date.now()}.${Math.random().toString(36).slice(2, 9)}`
-      const order = await placeOrder({ ...form, paymentMethod: 'cod', eventId, source: 'Landing page', note: `Landing page: /lp/${lp.slug}`, items: [item] })
+      const order = await placeOrder({ ...form, paymentMethod: 'cod', eventId, source: 'Landing page', landing: lp.slug, note: `Landing page: /lp/${lp.slug}`, items: [item] })
       await discardCheckoutDraft(draftId.current)
-      lp.orders = (lp.orders || 0) + 1; save()
+      if (!LIVE) { lp.orders = (lp.orders || 0) + 1; save() }
       track('Purchase', { items: order.items, value: order.total, orderId: order.invoice, eventId })
       navigate(`/customer/order-success/${order.invoice}`, { state: { order } })
     } catch (err) { done.current = false; setServerError(err.message) } finally { setBusy(false) }

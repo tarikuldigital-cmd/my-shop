@@ -7,11 +7,12 @@
  *   admin status change    → POST {relay}/sms/send           (needs the admin secret, saved only in the admin's browser)
  */
 import { S, save, hooks, trackCode, COURIERS, normPhone } from '../store/db'
-import { storeUrl } from '../config/env'
+import { storeUrl, LIVE, API_BASE_URL } from '../config/env'
+import { adminToken } from './live'
 
 const SECRET_LS = 'bookshelf_sms_secret'
-export const getSmsSecret = () => localStorage.getItem(SECRET_LS) || ''
-export const setSmsSecret = (v) => (v ? localStorage.setItem(SECRET_LS, v) : localStorage.removeItem(SECRET_LS))
+export const getSmsSecret = () => (LIVE ? adminToken() : localStorage.getItem(SECRET_LS) || '')
+export const setSmsSecret = (v) => { if (!LIVE) (v ? localStorage.setItem(SECRET_LS, v) : localStorage.removeItem(SECRET_LS)) }
 
 export const SMS_EVENTS = {
   placed: 'অর্ডার গ্রহণ (কাস্টমার অর্ডার করলেই)',
@@ -65,6 +66,16 @@ export function smsParts(text) {
 
 async function deliver(entry) {
   const cfg = S.settings.sms
+  if (LIVE) {
+    // live: the backend holds the gateway key (api/config.php); the logged-in admin's token authorises the call
+    try {
+      const r = await fetch(`${API_BASE_URL.replace(/\/$/, '')}/sms/send`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminToken()}` }, body: JSON.stringify({ to: entry.to, message: entry.text, invoice: entry.invoice }) })
+      const j = await r.json().catch(() => ({}))
+      entry.status = r.ok && j.ok ? 'sent' : /not configured/i.test(j.info || '') ? 'not_configured' : 'failed'
+      entry.info = j.info || j.message || `HTTP ${r.status}`
+    } catch (e) { entry.status = 'failed'; entry.info = `Could not reach the server (${e.message})` }
+    return
+  }
   if (!cfg.relayUrl) { entry.status = 'not_configured'; entry.info = 'SMS server URL is not set (Settings → SMS)'; return }
   const isPublic = entry.event === 'placed'
   const secret = getSmsSecret()

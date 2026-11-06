@@ -1,4 +1,5 @@
 import api from '../config/api'
+import { adminHeaders } from '../lib/live'
 import { USE_MOCK } from '../config/env'
 import { putImage, resizeImage } from '../lib/imageStore'
 
@@ -19,7 +20,7 @@ export async function uploadImage(file, kind = 'product') {
     const body = new FormData()
     body.append('file', blob, file.name.replace(/\.\w+$/, '.webp'))
     body.append('kind', kind)
-    const res = await api.post('/admin/uploads', body)
+    const res = await api.post('/admin/uploads', body, { headers: adminHeaders(), timeout: 60000 })
     return { ref: res.path, width, height }
   }
   const id = `${kind}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`

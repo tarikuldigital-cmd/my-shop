@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { S, save, useDb } from '../store/db'
-import { Toasts } from './ui'
+import { Toasts, toast } from './ui'
 import Img from '../components/common/Img'
 import Icon from '../components/common/Icon'
 import Dashboard from './Dashboard'
@@ -15,20 +15,23 @@ import Settings from './Settings'
 import Sms from './Sms'
 import Landings from './Landings'
 import LiveChat from './LiveChat'
-import { storeUrl } from '../config/env'
+import { storeUrl, LIVE } from '../config/env'
+import { adminLogin, adminLogout, resumeAdmin, syncState, onSyncState, flush } from '../lib/live'
 
 /* Demo login only — the Laravel phase replaces this with a server session (Sanctum) + roles. */
 const DEMO = { email: 'admin@bookshelf.com.bd', pass: '123456' }
 const AUTH_KEY = 'bookshelf_admin'
 
 function Login({ onOk }) {
-  const [email, setEmail] = useState(DEMO.email)
-  const [pass, setPass] = useState(DEMO.pass)
+  const [email, setEmail] = useState(LIVE ? '' : DEMO.email)
+  const [pass, setPass] = useState(LIVE ? '' : DEMO.pass)
   const [err, setErr] = useState('')
+  const [busy, setBusy] = useState(false)
   return (
     <div className="flex min-h-screen items-center justify-center bg-surface p-4">
-      <form className="card w-full max-w-sm space-y-4 p-6" onSubmit={(e) => {
+      <form className="card w-full max-w-sm space-y-4 p-6" onSubmit={async (e) => {
         e.preventDefault()
+        if (LIVE) { setBusy(true); setErr(''); try { await adminLogin(email.trim(), pass); onOk() } catch (x) { setErr(x.message) } finally { setBusy(false) } return }
         if (email.trim() === DEMO.email && pass === DEMO.pass) { sessionStorage.setItem(AUTH_KEY, '1'); onOk() } else setErr('Wrong email or password')
       }}>
         <Img src={S.settings.logoDark} alt="Bookshelf" className="mx-auto h-24" />
@@ -36,8 +39,8 @@ function Login({ onOk }) {
         <label className="block"><span className="field-label">Email</span><input className="field" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" /></label>
         <label className="block"><span className="field-label">Password</span><input className="field" type="password" value={pass} onChange={(e) => setPass(e.target.value)} autoComplete="current-password" /></label>
         {err && <p className="text-sm text-red-600">{err}</p>}
-        <button className="btn-brand w-full py-2.5">Log in</button>
-        <p className="rounded bg-amber-50 p-2 text-xs text-amber-800">Demo login: {DEMO.email} / {DEMO.pass}. Not real security — the live site gets a server-side login.</p>
+        <button className="btn-brand w-full py-2.5" disabled={busy}>{busy ? 'Logging in…' : 'Log in'}</button>
+        {!LIVE && <p className="rounded bg-amber-50 p-2 text-xs text-amber-800">Demo login: {DEMO.email} / {DEMO.pass}. Not real security — the live site gets a server-side login.</p>}
         <Link to="/" className="block text-center text-sm text-brand">← Back to the store</Link>
       </form>
     </div>
@@ -52,11 +55,26 @@ const NAV = [
 ]
 
 export default function AdminApp() {
-  const [ok, setOk] = useState(() => sessionStorage.getItem(AUTH_KEY) === '1')
+  const [ok, setOk] = useState(() => !LIVE && sessionStorage.getItem(AUTH_KEY) === '1')
+  const [checking, setChecking] = useState(LIVE)
+  useEffect(() => { if (LIVE) resumeAdmin().then(setOk).finally(() => setChecking(false)) }, [])
+  const [, setTick] = useState(0)
+  useEffect(() => onSyncState(() => setTick((n) => n + 1)), [])
+  // a customer just ordered → toast + short beep + tab title
+  useEffect(() => {
+    const on = (e) => {
+      toast(`🛒 নতুন অর্ডার ${e.detail.invoice} — ${e.detail.name} · ৳${e.detail.total}`)
+      document.title = `🛒 নতুন অর্ডার! | Admin`
+      try { const a = new (window.AudioContext || window.webkitAudioContext)(), o = a.createOscillator(); o.frequency.value = 880; o.connect(a.destination); o.start(); setTimeout(() => { o.stop(); a.close() }, 250) } catch { /* no audio */ }
+    }
+    window.addEventListener('bookshelf:new-order', on)
+    return () => window.removeEventListener('bookshelf:new-order', on)
+  }, [])
   const [menu, setMenu] = useState(false)
   const loc = useLocation()
   useDb()
   useEffect(() => { setMenu(false); window.scrollTo(0, 0); document.title = 'Admin | Bookshelf' }, [loc.pathname])
+  if (checking) return <div className="flex min-h-screen items-center justify-center text-muted">Loading…</div>
   if (!ok) return <Login onOk={() => setOk(true)} />
 
   const link = ({ isActive }) => `flex items-center justify-between rounded-md px-3 py-2 text-sm ${isActive ? 'bg-white/15 font-semibold text-white' : 'text-white/80 hover:bg-white/10'}`
@@ -79,8 +97,9 @@ export default function AdminApp() {
               {S.settings.staff.map((s, i) => <option key={s} value={i} className="text-ink">{s}</option>)}
             </select>
           </label>
+          {LIVE && <p className={`mx-3 rounded px-2 py-1 text-xs ${syncState.status === 'error' ? 'bg-red-500/30 text-red-100' : 'bg-white/10 text-white/70'}`}>{syncState.status === 'saving' ? '⏳ Saving…' : syncState.status === 'error' ? `⚠ Not saved: ${syncState.error} — retrying` : '✓ All changes saved'}</p>}
           <a href={storeUrl('/')} target="_blank" rel="noreferrer" className="block px-3 text-sm text-white/80 hover:text-white">View store ↗</a>
-          <button onClick={() => { sessionStorage.removeItem(AUTH_KEY); setOk(false) }} className="block px-3 text-sm text-white/80 hover:text-white">Log out</button>
+          <button onClick={async () => { if (LIVE) { await flush(); await adminLogout() } else sessionStorage.removeItem(AUTH_KEY); setOk(false) }} className="block px-3 text-sm text-white/80 hover:text-white">Log out</button>
         </div>
       </aside>
       {menu && <div className="fixed inset-0 z-30 bg-black/40 lg:hidden" onClick={() => setMenu(false)} />}

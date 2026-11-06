@@ -8,7 +8,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "build:pages": "VITE_BASE=./ VITE_ROUTER=hash vite build",
-    "data": "python3 scripts/build-mock-data.py"
+    "data": "python3 scripts/build-mock-data.py",
+    "build:cpanel": "node scripts/export-seed.mjs && VITE_USE_MOCK=false VITE_API_BASE_URL=/api/v1 vite build",
+    "seed": "node scripts/export-seed.mjs"
   },
   "dependencies": {
     "axios": "^1.21.0",

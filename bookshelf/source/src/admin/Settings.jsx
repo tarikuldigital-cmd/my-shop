@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { LIVE } from '../config/env'
+import { liveApi, refreshAfterMirror } from '../lib/live'
 import { S, save, useDb, exportDb, importDb, resetDb } from '../store/db'
 import { Chips, Field, Panel, toast } from './ui'
 import { getKey, setKey } from './fraud'
@@ -190,17 +192,69 @@ export default function Settings() {
             {f.staff.map((s, i) => <div key={i} className="mb-2 flex gap-2"><input className="field" value={s} onChange={set(`staff.${i}`)} aria-label="Staff name" /><button className="px-2 text-red-600" onClick={() => setF({ ...f, staff: f.staff.filter((_, k) => k !== i) })} disabled={f.staff.length < 2}>×</button></div>)}
             <button className="text-sm text-brand" onClick={() => setF({ ...f, staff: [...f.staff, 'New staff'] })}>+ Add staff</button>
           </Panel>
+          {LIVE && <MirrorPanel />}
+          {LIVE && <PasswordPanel />}
           <Panel title="Backup & restore">
-            <p className="mb-3 text-sm text-muted">This demo keeps everything in this browser. Download a backup before clearing the browser or moving to another computer. Note: photos uploaded in this demo stay in this browser and are not inside the backup file — with the Laravel backend they are saved on the server.</p>
+            {LIVE && <p className="mb-3 text-sm text-muted">সব ডেটা সার্ভারের MySQL ডাটাবেসে আছে। নিয়মিত ব্যাকআপের জন্য cPanel → <b>Backup</b> বা phpMyAdmin → <b>Export</b> ব্যবহার করুন। নিচের বাটনে বর্তমান ডেটার একটি JSON কপি নামানো যায়।</p>}
+            {!LIVE && <p className="mb-3 text-sm text-muted">This demo keeps everything in this browser. Download a backup before clearing the browser or moving to another computer. Note: photos uploaded in this demo stay in this browser and are not inside the backup file — with the Laravel backend they are saved on the server.</p>}
             <div className="flex flex-wrap gap-2">
               <button className="btn-brand" onClick={() => download(`bookshelf-backup-${new Date().toISOString().slice(0, 10)}.json`, exportDb(), 'application/json')}>Download backup</button>
-              <label className="btn-outline cursor-pointer">Restore backup<input type="file" accept="application/json" className="hidden" onChange={async (e) => { try { importDb(await e.target.files[0].text()); toast('Backup restored'); setF(JSON.parse(JSON.stringify(S.settings))) } catch (err) { toast(err.message) } }} /></label>
-              <button className="btn-outline text-red-600" onClick={() => confirm('Reset everything to the original data? Orders and changes will be lost.') && resetDb()}>Reset all data</button>
+              {!LIVE && <label className="btn-outline cursor-pointer">Restore backup<input type="file" accept="application/json" className="hidden" onChange={async (e) => { try { importDb(await e.target.files[0].text()); toast('Backup restored'); setF(JSON.parse(JSON.stringify(S.settings))) } catch (err) { toast(err.message) } }} /></label>}
+              {!LIVE && <button className="btn-outline text-red-600" onClick={() => confirm('Reset everything to the original data? Orders and changes will be lost.') && resetDb()}>Reset all data</button>}
             </div>
             <a className="mt-3 block text-sm text-brand" href={storeUrl('/')} target="_blank" rel="noreferrer">Open storefront ↗</a>
           </Panel>
         </div>
       )}
     </div>
+  )
+}
+
+/** Live mode: copy every image that lives on another website (old shop, publisher site) onto this server. */
+function MirrorPanel() {
+  const [st, setSt] = useState(null)
+  const [busy, setBusy] = useState(false)
+  const run = async (retry = false) => {
+    setBusy(true)
+    try {
+      let r = await liveApi('admin/mirror-images', { method: 'POST', admin: true, body: { retry } })
+      setSt(r)
+      for (let i = 0; i < 80 && r.remaining > 0; i++) { r = await liveApi('admin/mirror-images', { method: 'POST', admin: true, body: {} }); setSt(r) }
+      await refreshAfterMirror()
+      toast(r.remaining ? 'কিছু ছবি কপি করা যায়নি — নিচে দেখুন' : 'সব ছবি এই সার্ভারে কপি হয়েছে ✓')
+    } catch (e) { toast(e.message) } finally { setBusy(false) }
+  }
+  return (
+    <Panel title="Images — copy to this server">
+      <p className="mb-3 text-sm text-muted">বইয়ের ছবি এখন অন্য ওয়েবসাইট (পুরনো সাইট / confidentpublications.com) থেকে আসছে। সেই সাইট বন্ধ হলে বা ছবি সরালে আপনার দোকানের ছবিও চলে যাবে। নিচের বাটনে সব ছবি আপনার নিজের সার্ভারে কপি হয়ে যাবে — একবার করলেই হবে। <b>পুরনো সাইট বন্ধ করার আগে অবশ্যই করুন।</b></p>
+      <div className="flex flex-wrap items-center gap-2">
+        <button className="btn-brand" disabled={busy} onClick={() => run(false)}>{busy ? 'Copying… (অপেক্ষা করুন)' : 'Copy all images now'}</button>
+        {st?.failed_count > 0 && <button className="btn-outline" disabled={busy} onClick={() => run(true)}>Retry failed</button>}
+      </div>
+      {st && <p className="mt-3 text-sm">Copied: <b>{st.total_copied}</b> · Remaining: <b>{st.remaining}</b> · Failed: <b className={st.failed_count ? 'text-red-600' : ''}>{st.failed_count}</b></p>}
+      {st?.failed?.length > 0 && <details className="mt-2 text-xs text-muted"><summary>Failed images ({st.failed_count})</summary><ul className="mt-1 max-h-40 overflow-auto break-all">{st.failed.map((u) => <li key={u}>{u}</li>)}</ul></details>}
+    </Panel>
+  )
+}
+
+/** Live mode: change the admin login password (stored hashed on the server). */
+function PasswordPanel() {
+  const [f, setF] = useState({ current: '', password: '', again: '' })
+  const [busy, setBusy] = useState(false)
+  const go = async (e) => {
+    e.preventDefault()
+    if (f.password !== f.again) return toast('নতুন পাসওয়ার্ড দুইবার একই হয়নি')
+    setBusy(true)
+    try { await liveApi('admin/password', { method: 'POST', admin: true, body: { current: f.current, password: f.password } }); setF({ current: '', password: '', again: '' }); toast('পাসওয়ার্ড বদলেছে ✓') } catch (x) { toast(x.message) } finally { setBusy(false) }
+  }
+  return (
+    <Panel title="Admin password">
+      <form onSubmit={go} className="space-y-3">
+        <Field label="Current password"><input type="password" className="field" value={f.current} onChange={(e) => setF({ ...f, current: e.target.value })} autoComplete="current-password" /></Field>
+        <Field label="New password (কমপক্ষে ৮ অক্ষর)"><input type="password" className="field" value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} autoComplete="new-password" minLength={8} /></Field>
+        <Field label="New password again"><input type="password" className="field" value={f.again} onChange={(e) => setF({ ...f, again: e.target.value })} autoComplete="new-password" /></Field>
+        <button className="btn-brand" disabled={busy || !f.current || f.password.length < 8}>{busy ? 'Saving…' : 'Change password'}</button>
+      </form>
+    </Panel>
   )
 }

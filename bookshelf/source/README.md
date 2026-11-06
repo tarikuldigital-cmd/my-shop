@@ -67,6 +67,3 @@ Admin → Catalogue → **Landing pages**: pick any book/product, content is aut
 
 ## Live chat (AI support agent)
 Admin → Store → **Live chat**. A "💬 লাইভ চ্যাট" button on every storefront page opens a chat that answers from the live catalogue (names, prices, stock, combo contents, delivery charges, policies). Modes: Auto (no AI, free) · AI via your server (key stays on the server) · AI direct (test only). Works with any OpenAI-compatible provider — Groq, Google Gemini and OpenRouter have free tiers. See `server/README.md`. Code: `src/lib/chat.js` (retrieval + prompt), `src/components/chat/LiveChat.jsx`, `src/admin/LiveChat.jsx`, `server/chat.js`.
-
-## Live demo on GitHub Pages
-The built site is in the parent folder (`bookshelf/`). Rebuild with `npm run build:pages`.
