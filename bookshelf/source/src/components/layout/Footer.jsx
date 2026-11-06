@@ -10,7 +10,7 @@ export default function Footer() {
     <footer className="mt-12 bg-brand-dark text-white/85">
       <div className="container-x grid gap-8 py-10 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <Link to="/"><Img src={settings.logoWhite} alt="Bookshelf" className="h-11 w-auto" /></Link>
+          <Link to="/" className="inline-block rounded-lg bg-white p-2"><Img src={settings.logoWhite} alt="Bookshelf" className="h-14 w-auto" /></Link>
           <p className="mt-4 flex gap-2 text-sm leading-6"><Icon name="location" className="mt-0.5 h-4 w-4 shrink-0" />{settings.address}</p>
           <p className="mt-2 flex items-center gap-2 text-sm"><Icon name="phone" className="h-4 w-4" />Cell: <a href={`tel:${settings.phone}`} className="hover:text-white">{settings.phone}</a></p>
         </div>

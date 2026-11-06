@@ -137,7 +137,7 @@ export default function Header() {
       <div className="container-x flex items-center gap-3 py-3">
         <button className="lg:hidden" onClick={() => setMenuOpen(true)} aria-label="Open menu"><Icon name="menu" className="h-6 w-6" /></button>
         <Link to="/" className="shrink-0" aria-label="Bookshelf home">
-          <Img src={settings.logoDark} alt="Bookshelf" className="h-9 w-auto sm:h-11" />
+          <Img src={settings.logoDark} alt="Bookshelf" className="h-11 w-auto sm:h-14" />
         </Link>
         <SearchBox className="mx-auto hidden max-w-xl md:block" />
         <div className="ml-auto flex items-center gap-4 md:ml-0">

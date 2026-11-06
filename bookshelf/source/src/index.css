@@ -1,17 +1,13 @@
 @import "tailwindcss";
 
-/*
- * Brand tokens — the ONLY place colours/fonts are defined.
- * The live site's CSS could not be read during analysis, so these are provisional.
- * Replace the hex values with the exact ones from bookshelf.com.bd's stylesheet.
- */
+/* Brand tokens — the ONLY place colours/fonts are defined. Green + orange come from the Bookshelf logo. */
 @theme {
   --font-sans: "Hind Siliguri", ui-sans-serif, system-ui, sans-serif;
 
-  --color-brand: #1e3a5f;        /* primary (header nav, headings) */
-  --color-brand-dark: #142a46;
-  --color-accent: #f26722;       /* buttons, badges, prices */
-  --color-accent-dark: #d4541a;
+  --color-brand: #15803d;        /* logo green: header nav, headings */
+  --color-brand-dark: #0f5e2c;
+  --color-accent: #ee6a1f;       /* logo orange: buttons, badges, prices */
+  --color-accent-dark: #cf5510;
   --color-sale: #e11d48;         /* discount badge */
   --color-surface: #f5f6f8;      /* page background */
   --color-ink: #1f2937;

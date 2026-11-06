@@ -151,6 +151,8 @@ function load() {
       const d = defaultSettings()
       raw.settings = { ...d, ...raw.settings, tracking: { ...d.tracking, ...raw.settings?.tracking }, seo: { ...d.seo, ...raw.settings?.seo }, courier: { ...d.courier, ...raw.settings?.courier }, chat: { ...d.chat, ...raw.settings?.chat }, sms: { ...d.sms, ...raw.settings?.sms, events: { ...d.sms.events, ...raw.settings?.sms?.events }, templates: { ...d.sms.templates, ...raw.settings?.sms?.templates } } }
       raw.smsLog ||= []
+      // the new Bookshelf logo replaces the old remote logo files (a logo the admin typed in is left alone)
+      for (const k of ['logoDark', 'logoWhite']) if (/^settings\/bookshelf-logo/.test(raw.settings[k] || '')) raw.settings[k] = d[k]
       raw.landings ||= []
       raw.chats ||= []
       // the first, shorter order-received text is replaced by the new formal one (edited texts are left alone)

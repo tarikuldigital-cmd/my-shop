@@ -149,7 +149,7 @@ export default function LandingPage() {
       </div>
       <header className="border-b border-gray-100 bg-white">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          <Link to="/"><Img src={settings.logoDark} alt="Bookshelf" className="h-8" /></Link>
+          <Link to="/"><Img src={settings.logoDark} alt="Bookshelf" className="h-11" /></Link>
           <a href={`tel:${settings.phone}`} className="text-sm font-semibold" style={{ color: th.c }}>📞 {settings.phone}</a>
         </div>
       </header>

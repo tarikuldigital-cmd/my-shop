@@ -31,7 +31,7 @@ function Login({ onOk }) {
         e.preventDefault()
         if (email.trim() === DEMO.email && pass === DEMO.pass) { sessionStorage.setItem(AUTH_KEY, '1'); onOk() } else setErr('Wrong email or password')
       }}>
-        <Img src={S.settings.logoDark} alt="Bookshelf" className="mx-auto h-10" />
+        <Img src={S.settings.logoDark} alt="Bookshelf" className="mx-auto h-24" />
         <h1 className="text-center text-xl font-bold">Admin login</h1>
         <label className="block"><span className="field-label">Email</span><input className="field" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" /></label>
         <label className="block"><span className="field-label">Password</span><input className="field" type="password" value={pass} onChange={(e) => setPass(e.target.value)} autoComplete="current-password" /></label>
@@ -63,7 +63,7 @@ export default function AdminApp() {
   return (
     <div className="min-h-screen bg-surface lg:grid lg:grid-cols-[240px_1fr]">
       <aside className={`fixed inset-y-0 left-0 z-40 w-60 overflow-y-auto bg-brand-dark p-3 transition-transform lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 ${menu ? 'translate-x-0' : '-translate-x-full'}`}>
-        <Link to="/admin" className="mb-4 block rounded bg-white p-2"><Img src={S.settings.logoDark} alt="Bookshelf" className="mx-auto h-8" /></Link>
+        <Link to="/admin" className="mb-4 block rounded bg-white p-2"><Img src={S.settings.logoDark} alt="Bookshelf" className="mx-auto h-12" /></Link>
         {NAV.map(([group, items]) => (
           <div key={group} className="mb-3">
             <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-white/50">{group}</p>

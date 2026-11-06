@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react'
 import { assetUrl } from '../../config/env'
+
+// "local:logo.webp" = a file shipped with the site (public/), not the upload folder
+const localUrl = (p) => `${import.meta.env.BASE_URL}${p.slice(6)}`
 import { idbUrl } from '../../lib/imageStore'
 
 /**
@@ -19,7 +22,7 @@ export default function Img({ src, alt = '', className = '', folder = 'product',
     return () => { alive = false }
   }, [src, isIdb])
 
-  const url = isIdb ? idb : src ? assetUrl(src.includes('/') ? src : `${folder}/${src}`) : null
+  const url = isIdb ? idb : src?.startsWith?.('local:') ? localUrl(src) : src ? assetUrl(src.includes('/') ? src : `${folder}/${src}`) : null
   if (!src || failed || (!url && !isIdb)) {
     return (
       <div className={`flex items-center justify-center bg-gray-100 text-center text-xs text-muted ${className}`} role="img" aria-label={alt}>

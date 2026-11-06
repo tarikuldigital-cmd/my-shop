@@ -1,7 +1,7 @@
 {
   "siteName": "Bookshelf",
-  "logoDark": "settings/bookshelf-logo-dark.svg",
-  "logoWhite": "settings/bookshelf-logo-white.svg",
+  "logoDark": "local:logo.webp",
+  "logoWhite": "local:logo.webp",
   "phone": "01776363309",
   "phoneIntl": "+8801776363309",
   "email": null,
