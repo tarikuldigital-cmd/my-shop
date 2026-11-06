@@ -29,8 +29,7 @@ export default function Layout() {
       <Header />
       <main className="flex-1"><Outlet /></main>
       <Footer />
-      <FloatingContact />
-      <LiveChat />
+      {!/^\/customer\/checkout/.test(pathname) && <><FloatingContact /><LiveChat /></>}
     </div>
   )
 }

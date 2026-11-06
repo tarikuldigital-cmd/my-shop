@@ -10,8 +10,9 @@ export function assetUrl(path) {
   return `${ASSET_BASE_URL}/${path.replace(/^\//, '')}`
 }
 
-/** Absolute link to a storefront route that works in both router modes (used by the admin panel). */
+/** Absolute link to a storefront route that works in both router modes and any sub-folder
+ *  (admin panel, SMS tracking links, chat). Always a full https://… URL. */
 export function storeUrl(path = '/') {
-  const base = import.meta.env.BASE_URL
-  return import.meta.env.VITE_ROUTER === 'hash' ? `${base}#${path}` : `${base.replace(/\/$/, '')}${path}`
+  const root = new URL(import.meta.env.BASE_URL || '/', `${location.origin}${location.pathname}`).href
+  return import.meta.env.VITE_ROUTER === 'hash' ? `${root}#${path}` : `${root.replace(/\/$/, '')}${path}`
 }

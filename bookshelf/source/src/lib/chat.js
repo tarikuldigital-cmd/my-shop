@@ -49,7 +49,7 @@ export function searchProducts(query, n = 6) {
 }
 
 const strip = (h = '') => h.replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim()
-const abs = (path) => `${location.origin}${storeUrl(path)}`
+const abs = (path) => storeUrl(path)
 export const productUrl = (p) => storeUrl(`/product/${p.slug}`)
 
 export function buildContext(query) {

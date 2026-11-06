@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /admin
+Disallow: /customer/
+Disallow: /track/
+Disallow: /t/
+Allow: /

@@ -25,7 +25,7 @@ export const SMS_VARS = ['{name}', '{invoice}', '{total}', '{link}', '{courier}'
 export function trackLink(o) {
   const code = trackCode(o)
   const site = S.settings.sms.siteUrl?.trim()
-  return site ? `${site.replace(/\/$/, '')}/t/${code}` : `${location.origin}${storeUrl(`/t/${code}`)}`
+  return site ? `${site.replace(/\/$/, '')}/t/${code}` : storeUrl(`/t/${code}`)
 }
 
 /** "Product name" or "Product name ও আরও 2টি বই" — shortened so the SMS stays within a few parts. */

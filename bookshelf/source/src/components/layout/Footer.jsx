@@ -5,6 +5,7 @@ import { useSite } from '../../context/SiteContext'
 
 export default function Footer() {
   const { settings } = useSite()
+  const socials = settings.socials.filter((s) => /^https?:\/\//.test(s.url || ''))
   return (
     <footer className="mt-12 bg-brand-dark text-white/85">
       <div className="container-x grid gap-8 py-10 sm:grid-cols-2 lg:grid-cols-4">
@@ -21,16 +22,16 @@ export default function Footer() {
           <h3 className="mb-3 font-semibold text-white">Links</h3>
           <ul className="space-y-2 text-sm">{settings.footerLinks.map((l) => <li key={l.to}><Link to={l.to} className="hover:text-white">{l.label}</Link></li>)}</ul>
         </div>
-        <div>
+        {socials.length > 0 && <div>
           <h3 className="mb-3 font-semibold text-white">Follow Us</h3>
           <ul className="flex flex-wrap gap-2">
-            {settings.socials.map((s) => (
+            {socials.map((s) => (
               <li key={s.name}>
-                <a href={s.url} aria-label={s.name} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-xs font-bold hover:bg-accent">{s.name.slice(0, 2)}</a>
+                <a href={s.url} target="_blank" rel="noreferrer" aria-label={s.name} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-xs font-bold hover:bg-accent">{s.name.slice(0, 2)}</a>
               </li>
             ))}
           </ul>
-        </div>
+        </div>}
       </div>
       <div className="border-t border-white/10">
         <div className="container-x flex flex-col items-center justify-between gap-1 py-4 text-xs sm:flex-row">

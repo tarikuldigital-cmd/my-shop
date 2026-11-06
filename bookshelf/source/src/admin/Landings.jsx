@@ -117,7 +117,7 @@ export default function Landings() {
   useDb()
   const [edit, setEdit] = useState(null)
   const link = (l) => storeUrl(`/lp/${l.slug}`)
-  const full = (l) => `${location.origin}${link(l)}`
+  const full = (l) => link(l)
   const copy = (l) => { navigator.clipboard?.writeText(full(l)); toast('Link copied') }
   const del = (l) => { if (confirm(`Delete "${l.headline}"?`)) { S.landings = S.landings.filter((x) => x.id !== l.id); save() } }
   const dup = (l) => { const c = { ...structuredClone(l), id: `lp${Date.now()}`, slug: `${l.slug}-copy`, views: 0, orders: 0, createdAt: Date.now(), active: false }; S.landings.unshift(c); save(); toast('Duplicated (hidden until you turn it live)') }
