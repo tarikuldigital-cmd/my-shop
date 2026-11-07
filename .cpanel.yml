@@ -1,0 +1,5 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/greenpro/bookshelf.com.bd/
+    - /bin/cp -R bookshelf/deploy/. $DEPLOYPATH
