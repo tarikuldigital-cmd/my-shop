@@ -14,6 +14,7 @@ import { Coupons, Customers, Messages, Reviews, Pages } from './Misc'
 import Settings from './Settings'
 import Sms from './Sms'
 import Landings from './Landings'
+import Blog from './Blog'
 import LiveChat from './LiveChat'
 import { storeUrl, LIVE } from '../config/env'
 import { adminLogin, adminLogout, resumeAdmin, syncState, onSyncState, flush } from '../lib/live'
@@ -50,7 +51,7 @@ function Login({ onOk }) {
 const NAV = [
   ['Orders', [['', 'Dashboard'], ['orders', 'Orders', () => S.orders.filter((o) => o.status === 'pending').length], ['incomplete', 'Incomplete orders', () => S.incomplete.filter((x) => x.status === 'new').length]]],
   ['Customers', [['customers', 'Customers'], ['chat', 'Live chat', () => S.chats.filter((c) => Date.now() - (c.updated || c.at) < 864e5).length], ['sms', 'SMS', () => S.smsLog.filter((x) => x.status !== 'sent' && Date.now() - x.at < 864e5).length], ['messages', 'Messages', () => S.messages.filter((m) => !m.read).length], ['reviews', 'Reviews', () => S.reviews.filter((r) => !r.approved).length]]],
-  ['Catalogue', [['products', 'Books / Products'], ['categories', 'Categories'], ['landing-pages', 'Landing pages'], ['homepage', 'Homepage & banners'], ['coupons', 'Coupons'], ['pages', 'Info pages']]],
+  ['Catalogue', [['products', 'Books / Products'], ['categories', 'Categories'], ['landing-pages', 'Landing pages'], ['blog', 'IELTS Blog'], ['homepage', 'Homepage & banners'], ['coupons', 'Coupons'], ['pages', 'Info pages']]],
   ['Store', [['settings', 'Settings, Pixel & SEO']]],
 ]
 
@@ -71,6 +72,20 @@ export default function AdminApp() {
     return () => window.removeEventListener('bookshelf:new-order', on)
   }, [])
   const [menu, setMenu] = useState(false)
+  // installable admin app (PWA): manifest + service worker + "Install" button
+  const [installEv, setInstallEv] = useState(null)
+  useEffect(() => {
+    const add = (tag, attrs) => { const el = document.createElement(tag); Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v)); el.dataset.adminPwa = '1'; document.head.appendChild(el); return el }
+    add('link', { rel: 'manifest', href: '/admin-manifest.json' })
+    add('link', { rel: 'apple-touch-icon', href: '/admin-icon-192.png' })
+    add('meta', { name: 'apple-mobile-web-app-capable', content: 'yes' })
+    add('meta', { name: 'mobile-web-app-capable', content: 'yes' })
+    add('meta', { name: 'apple-mobile-web-app-title', content: 'BS Admin' })
+    if (LIVE && 'serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('/admin-sw.js', { scope: '/admin' }).catch(() => {})
+    const onPrompt = (e) => { e.preventDefault(); setInstallEv(e) }
+    window.addEventListener('beforeinstallprompt', onPrompt)
+    return () => { window.removeEventListener('beforeinstallprompt', onPrompt); document.querySelectorAll('[data-admin-pwa]').forEach((n) => n.remove()) }
+  }, [])
   const loc = useLocation()
   useDb()
   useEffect(() => { setMenu(false); window.scrollTo(0, 0); document.title = 'Admin | Bookshelf' }, [loc.pathname])
@@ -98,6 +113,7 @@ export default function AdminApp() {
             </select>
           </label>
           {LIVE && <p className={`mx-3 rounded px-2 py-1 text-xs ${syncState.status === 'error' ? 'bg-red-500/30 text-red-100' : 'bg-white/10 text-white/70'}`}>{syncState.status === 'saving' ? '⏳ Saving…' : syncState.status === 'error' ? `⚠ Not saved: ${syncState.error} — retrying` : '✓ All changes saved'}</p>}
+          {installEv && <button onClick={async () => { installEv.prompt(); await installEv.userChoice; setInstallEv(null) }} className="mx-3 block rounded bg-accent px-3 py-1.5 text-sm font-semibold text-white">📲 ফোনে অ্যাপ ইনস্টল করুন</button>}
           <a href={storeUrl('/')} target="_blank" rel="noreferrer" className="block px-3 text-sm text-white/80 hover:text-white">View store ↗</a>
           <button onClick={async () => { if (LIVE) { await flush(); await adminLogout() } else sessionStorage.removeItem(AUTH_KEY); setOk(false) }} className="block px-3 text-sm text-white/80 hover:text-white">Log out</button>
         </div>
@@ -121,6 +137,7 @@ export default function AdminApp() {
             <Route path="products" element={<Products />} />
             <Route path="categories" element={<Categories />} />
             <Route path="landing-pages" element={<Landings />} />
+            <Route path="blog" element={<Blog />} />
             <Route path="homepage" element={<HomeEditor />} />
             <Route path="coupons" element={<Coupons />} />
             <Route path="pages" element={<Pages />} />

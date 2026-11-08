@@ -11,6 +11,7 @@ ini_set('log_errors', '1');
 require __DIR__ . '/lib/core.php';
 require __DIR__ . '/lib/sms.php';
 require __DIR__ . '/lib/orders.php';
+require __DIR__ . '/lib/blog.php';
 require __DIR__ . '/lib/handlers.php';
 require __DIR__ . '/lib/mirror.php';
 

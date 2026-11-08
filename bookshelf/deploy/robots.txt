@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /admin
+Disallow: /customer/
+Disallow: /track/
+Disallow: /t/
+Allow: /
+
+Sitemap: https://bookshelf.com.bd/api/v1/sitemap

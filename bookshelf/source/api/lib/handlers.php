@@ -6,6 +6,7 @@ function objectify($v) { return is_array($v) && !$v ? new stdClass() : $v; }
 
 function routes(): array {
   return [
+    ...blog_routes(),
     ['GET', 'health', fn() => out(['ok' => true, 'time' => time(), 'db' => (bool)q('SELECT 1')->fetch()])],
     ['GET', 'bootstrap', 'h_bootstrap'],
     ['POST', 'orders', 'h_place_order'],
@@ -350,7 +351,7 @@ function h_upload(): void {
   $f = $_FILES['file'] ?? null;
   if (!$f || $f['error'] !== UPLOAD_ERR_OK) fail(422, 'ফাইল আপলোড হয়নি (সাইজ সীমা: ' . ini_get('upload_max_filesize') . ')');
   if ($f['size'] > 10 * 1024 * 1024) fail(422, 'ছবির সাইজ ১০MB এর কম হতে হবে');
-  $kind = (string)($_POST['kind'] ?? 'product'); if (!in_array($kind, ['product', 'page', 'banner', 'category', 'landing'], true)) $kind = 'product';
+  $kind = (string)($_POST['kind'] ?? 'product'); if (!in_array($kind, ['product', 'page', 'banner', 'category', 'landing', 'blog'], true)) $kind = 'product';
   $info = @getimagesize($f['tmp_name']);
   $ext = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp', 'image/gif' => 'gif'][$info['mime'] ?? ''] ?? null;
   if (!$ext) fail(422, 'শুধু JPG, PNG, WebP বা GIF ছবি দেওয়া যাবে');

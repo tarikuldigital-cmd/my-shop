@@ -18,6 +18,9 @@ import InfoPage from './pages/info/InfoPage'
 import NotFound from './pages/NotFound'
 import TrackOrder from './pages/TrackOrder'
 import LandingPage from './pages/LandingPage'
+import BlogHome from './pages/blog/BlogHome'
+import BlogPost from './pages/blog/BlogPost'
+import IeltsGuide from './pages/blog/IeltsGuide'
 import { lazy, Suspense } from 'react'
 import { Spinner } from './components/common/ui'
 
@@ -50,6 +53,10 @@ export default function App() {
           <Route path="customer/orders/:invoice" element={<OrderDetail />} />
         </Route>
         <Route path="site/contact-us" element={<Contact />} />
+        <Route path="blog" element={<BlogHome />} />
+        <Route path="blog/category/:cat" element={<BlogHome />} />
+        <Route path="blog/:slug" element={<BlogPost />} />
+        <Route path="ielts-guide" element={<IeltsGuide />} />
         <Route path="page/:slug" element={<InfoPage />} />
         <Route path="*" element={<NotFound />} />
       </Route>

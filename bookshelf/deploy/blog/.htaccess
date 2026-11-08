@@ -1,0 +1,5 @@
+# Blog pages are rendered by the API (SEO tags + article text for Google/Facebook); React takes over in the browser.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^(.*)$ /api/index.php?r=blogpage/$1 [QSA,L]
+</IfModule>
