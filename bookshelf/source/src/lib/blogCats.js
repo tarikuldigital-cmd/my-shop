@@ -8,6 +8,7 @@ export const CATS = [
   { slug: 'university', bn: 'বিশ্ববিদ্যালয় ও ভর্তি আবেদন', en: 'University & Admission', dBn: 'বিশ্ববিদ্যালয় নির্বাচন, SOP, LOR ও আবেদন প্রক্রিয়া', dEn: 'Choosing a university, SOP, LOR and the application process' },
   { slug: 'country', bn: 'দেশভিত্তিক তথ্য', en: 'Country Insights', dBn: 'বিভিন্ন দেশের ভাষাগত যোগ্যতার প্রয়োজনীয়তা ও আবেদন প্রক্রিয়ার সাম্প্রতিক চিত্র', dEn: 'Language requirements and how each country processes applications' },
   { slug: 'abroad', bn: 'ভিসা ও প্রবাস প্রস্তুতি', en: 'Visa & Relocation', dBn: 'স্টুডেন্ট ভিসা, আর্থিক সক্ষমতার প্রমাণ ও যাত্রার প্রস্তুতি', dEn: 'Student visa, proof of funds and travel preparation' },
+  { slug: 'news', bn: 'সাম্প্রতিক সংবাদ', en: 'Latest News', dBn: 'আইইএলটিএস, বিশ্ববিদ্যালয় ও আন্তর্জাতিক শিক্ষা সংক্রান্ত সাম্প্রতিক খবর, নির্ভরযোগ্য সূত্র থেকে', dEn: 'Recent news on IELTS, universities and international education from reputable sources' },
 ]
 export const catOf = (slug) => CATS.find((c) => c.slug === slug) || CATS[0]
 

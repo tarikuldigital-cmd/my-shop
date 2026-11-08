@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { LIVE } from '../config/env'
 import { liveApi } from './live'
+import { assetUrl } from '../config/env'
 
 /* Posts come from the API in live mode; the demo (GitHub Pages) build shows the bundled starter articles. */
 const demoPosts = async () => (await import('../../api/seed/posts.json')).default.posts.map((p) => ({ ...p, at: p.at || 1793491200000 })).sort((a, b) => b.at - a.at)
@@ -37,5 +38,15 @@ export function useLang() {
 }
 /** Text in the chosen language, falling back to the other one when it is empty. */
 export const tr = (v, lang) => (v && typeof v === 'object' ? (v[lang]?.trim() ? v[lang] : v.bn || v.en || '') : v || '')
-export const readMin = (text) => Math.max(1, Math.round((text || '').trim().split(/\s+/).length / 180))
+export const readMin = (text) => { const t = (text || '').trim(); const bn = (t.match(/[\u0980-\u09FF]/g) || []).length; return Math.max(1, Math.round(bn > t.length / 3 ? bn / 900 : t.split(/\s+/).length / 200)) }
 export const fmtDate = (ms, lang) => new Date(ms).toLocaleDateString(lang === 'en' ? 'en-GB' : 'bn-BD', { year: 'numeric', month: 'long', day: 'numeric' })
+
+/** Cover image of a post; falls back to its category illustration. */
+export const coverOf = (post) => post?.cover || `local:blog-img/cat-${post?.cat || 'guide'}.webp`
+/** Absolute URL for SEO / social cards. */
+export const coverUrl = (post) => {
+  const c = coverOf(post)
+  if (/^https?:/.test(c)) return c
+  if (c.startsWith('local:')) return `${location.origin}/${c.slice(6)}`
+  return assetUrl(c.includes('/') ? c : `blog/${c}`)
+}

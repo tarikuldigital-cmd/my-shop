@@ -1,14 +1,13 @@
 import { Link } from 'react-router-dom'
 import { useSeo } from '../../lib/seo'
 import { useLang, tr } from '../../lib/blog'
-import { STAGES, topicSlugs } from '../../lib/blogCats'
+import { STAGES } from '../../lib/blogCats'
 import { postTitles } from '../../lib/blogTitles'
 const postTitle = (slug, lang) => postTitles[slug]?.[lang] || slug.replace(/-/g, ' ')
 import { CatBar, LangToggle } from './parts'
-import { WhyBuyStrip, BookMarquee, StickyCta, EndPromo, usePromoBooks } from '../../components/blog/BlogPromo'
+import PackagePromo from '../../components/blog/BlogPromo'
 
 function Stage({ s, lang }) {
-  const books = usePromoBooks({ slugs: topicSlugs(s.topics), limit: 6 })
   return (
     <section className="relative pl-12 sm:pl-16">
       <span className="absolute left-0 top-0 flex h-9 w-9 items-center justify-center rounded-full bg-brand font-serif text-base font-bold text-white sm:h-12 sm:w-12 sm:text-xl" aria-hidden="true">{s.n}</span>
@@ -16,7 +15,6 @@ function Stage({ s, lang }) {
       <h2 className="font-serif text-xl font-bold">{tr(s.title, lang)}</h2>
       <p className="mt-1 text-[15px] leading-7 text-ink/85">{tr(s.text, lang)}</p>
       {s.posts.length > 0 && <p className="mt-2 flex flex-wrap gap-2 text-xs">{s.posts.map((p) => <Link key={p} to={`/blog/${p}`} className="rounded-full bg-green-50 px-2.5 py-1 font-semibold text-brand hover:bg-green-100"> {p.replace(/-/g, ' ')}</Link>)}</p>}
-      {books.length > 0 && <BookMarquee books={books} title={lang === 'en' ? 'Recommended for this stage' : 'এই ধাপের জন্য প্রস্তাবিত বই'} />}
     </section>
   )
 }
@@ -28,7 +26,6 @@ export default function IeltsGuide() {
     description: 'কীভাবে IELTS প্রস্তুতি শুরু করবেন, কোন বই কখন পড়বেন, কম্বো প্যাকেজের সুবিধা, রেজিস্ট্রেশন, ইউনিভার্সিটি আবেদন ও ভিসা — ধাপে ধাপে বাংলা গাইড।',
     jsonLd: { '@context': 'https://schema.org', '@type': 'HowTo', name: 'IELTS A–Z roadmap', step: STAGES.map((s) => ({ '@type': 'HowToStep', name: s.title.en, text: s.text.en })) },
   })
-  const all = usePromoBooks({ slugs: topicSlugs(['combo']), limit: 8 })
   return (
     <div className="container-x space-y-5 py-4 pb-24">
       <header className="flex flex-wrap items-center justify-between gap-3">
@@ -39,7 +36,6 @@ export default function IeltsGuide() {
         <LangToggle lang={lang} setLang={setLang} />
       </header>
       <CatBar lang={lang} />
-      <WhyBuyStrip lang={lang} />
       <div className="space-y-8 border-l-2 border-dashed border-brand/30 pl-0 ml-4 sm:ml-6">
         {STAGES.map((s) => <Stage key={s.n} s={s} lang={lang} />)}
       </div>
@@ -52,8 +48,7 @@ export default function IeltsGuide() {
           ).map((t) => <li key={t}>{t}</li>)}
         </ul>
       </section>
-      <EndPromo books={all} lang={lang} />
-      <StickyCta books={all} lang={lang} />
+      <PackagePromo lang={lang} />
     </div>
   )
 }

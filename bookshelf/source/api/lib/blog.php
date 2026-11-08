@@ -16,6 +16,7 @@ const BLOG_CATS = [
   'university' => ['bn' => 'বিশ্ববিদ্যালয় ও ভর্তি আবেদন', 'en' => 'University & Admission'],
   'country' => ['bn' => 'দেশভিত্তিক তথ্য', 'en' => 'Country Insights'],
   'abroad' => ['bn' => 'ভিসা ও প্রবাস প্রস্তুতি', 'en' => 'Visa & Relocation'],
+  'news' => ['bn' => 'সাম্প্রতিক সংবাদ', 'en' => 'Latest News'],
 ];
 
 function blog_routes(): array {
@@ -27,6 +28,9 @@ function blog_routes(): array {
     ['GET', 'admin/posts', 'h_admin_posts'],
     ['POST', 'admin/posts', 'h_admin_post_save'],
     ['DELETE', 'admin/posts/([a-zA-Z0-9_-]{1,60})', 'h_admin_post_delete'],
+    ['GET', 'admin/news', 'h_admin_news'],
+    ['POST', 'admin/news', 'h_admin_news_save'],
+    ['POST', 'admin/news/refresh', 'h_admin_news_refresh'],
   ];
 }
 
@@ -83,8 +87,9 @@ function h_posts(): void {
     }
     return true;
   }));
+  if ($cat === '' || $cat === 'news') blog_news_schedule();
   header('Cache-Control: public, max-age=60');
-  out(['posts' => array_map('post_summary', array_slice($list, 0, 200)), 'total' => count($list)]);
+  out(['posts' => array_map('post_summary', array_slice($list, 0, 300)), 'total' => count($list)]);
 }
 function h_post(string $slug): void {
   $slug = urldecode($slug);
@@ -127,6 +132,7 @@ function h_admin_post_save(): void {
     'books' => array_slice(array_values(array_filter(array_map(fn($t) => $clip($t, 200), (array)($b['books'] ?? [])))), 0, 12),
     'published' => ($b['published'] ?? true) !== false,
     'featured' => !empty($b['featured']),
+    'level' => in_array(($b['level'] ?? ''), ['beginner', 'advanced'], true) ? $b['level'] : '',
     'source' => $clip($b['source'] ?? '', 300),
     'at' => (int)($b['at'] ?? ($old['at'] ?? now_ms())) ?: now_ms(),
     'updated' => now_ms(),
@@ -144,6 +150,92 @@ function h_admin_post_delete(string $id): void {
   out(['ok' => true]);
 }
 
+/* ---------------- news aggregator (RSS) ----------------
+ * Pulls headline + short excerpt + link from licensed/public RSS feeds and lists them under "Latest News".
+ * Each item links to the original publisher (credited); full articles are never copied. */
+const NEWS_DEFAULT_FEEDS = [
+  ['name' => 'ICEF Monitor', 'url' => 'https://monitor.icef.com/feed/', 'enabled' => true],
+  ['name' => 'The PIE News', 'url' => 'https://thepienews.com/feed/', 'enabled' => true],
+];
+function news_feeds(): array {
+  $f = kv_get('newsFeeds', null);
+  return is_array($f) ? $f : NEWS_DEFAULT_FEEDS;
+}
+function blog_news_schedule(): void {
+  static $on = false;
+  if ($on || (now_ms() - (int)kv_get('newsLast', 0)) < 6 * 3600 * 1000) return;
+  $on = true;
+  ignore_user_abort(true);
+  register_shutdown_function(function () {
+    if (function_exists('fastcgi_finish_request')) @fastcgi_finish_request();
+    elseif (function_exists('litespeed_finish_request')) @litespeed_finish_request();
+    try { blog_news_refresh(false); } catch (Throwable $e) { error_log('news refresh: ' . $e->getMessage()); }
+  });
+}
+function news_fetch(string $url): string {
+  if (!preg_match('#^https?://#i', $url)) return '';
+  if (function_exists('curl_init')) {
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_FOLLOWLOCATION => true, CURLOPT_MAXREDIRS => 3, CURLOPT_CONNECTTIMEOUT => 5, CURLOPT_TIMEOUT => 8, CURLOPT_USERAGENT => 'BookshelfNewsBot/1.0 (+https://bookshelf.com.bd)', CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS]);
+    $r = curl_exec($ch); curl_close($ch);
+    return is_string($r) ? $r : '';
+  }
+  return (string)@file_get_contents($url, false, stream_context_create(['http' => ['timeout' => 8, 'user_agent' => 'BookshelfNewsBot/1.0']]));
+}
+function blog_news_refresh(bool $force = false): int {
+  if (!$force && (now_ms() - (int)kv_get('newsLast', 0)) < 6 * 3600 * 1000) return 0;
+  kv_set('newsLast', now_ms());
+  $deleted = (array)kv_get('postsDeleted', []);
+  $added = 0;
+  foreach (news_feeds() as $feed) {
+    if (empty($feed['enabled']) || empty($feed['url'])) continue;
+    $xml = news_fetch((string)$feed['url']);
+    if ($xml === '') continue;
+    libxml_use_internal_errors(true);
+    $doc = @simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NONET | LIBXML_NOCDATA);
+    if (!$doc || !isset($doc->channel->item)) continue;
+    $n = 0;
+    foreach ($doc->channel->item as $it) {
+      if ($n++ >= 8) break;
+      $link = trim((string)$it->link); $title = trim(html_entity_decode((string)$it->title, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+      if ($link === '' || $title === '' || !preg_match('#^https?://#i', $link)) continue;
+      $id = 'n' . substr(md5($link), 0, 12);
+      if (in_array($id, $deleted, true) || doc_get('posts', $id)) continue;
+      $ns = $it->getNamespaces(true);
+      $content = isset($ns['content']) ? (string)$it->children($ns['content'])->encoded : '';
+      $desc = (string)$it->description;
+      $img = '';
+      if (isset($it->enclosure) && str_starts_with((string)$it->enclosure['type'], 'image')) $img = (string)$it->enclosure['url'];
+      if ($img === '' && isset($ns['media'])) { $m = $it->children($ns['media']); if (isset($m->content)) $img = (string)$m->content->attributes()['url']; }
+      if ($img === '' && preg_match('#<img[^>]+src=["\'](https?://[^"\']+)["\']#i', $content . $desc, $mm)) $img = $mm[1];
+      $ex = trim(preg_replace('/\s+/', ' ', html_entity_decode(strip_tags($desc !== '' ? $desc : $content), ENT_QUOTES | ENT_HTML5, 'UTF-8')));
+      $ex = preg_replace('/\s*(The post|Read more|Continue reading).*$/iu', '', $ex);
+      $ts = strtotime((string)$it->pubDate); $at = $ts ? $ts * 1000 : now_ms();
+      if ($at > now_ms()) $at = now_ms();
+      post_put(['id' => $id, 'slug' => 'news-' . substr($id, 1), 'cat' => 'news', 'external' => true, 'url' => $link,
+        'title' => ['bn' => '', 'en' => mb_substr($title, 0, 300)], 'excerpt' => ['bn' => '', 'en' => mb_substr($ex, 0, 320)], 'body' => ['bn' => '', 'en' => ''],
+        'cover' => preg_match('#^https?://#i', $img) ? mb_substr($img, 0, 500) : '', 'tags' => [], 'books' => [], 'published' => true, 'featured' => false,
+        'source' => (string)($feed['name'] ?? ''), 'at' => $at, 'updated' => now_ms()]);
+      $added++;
+    }
+  }
+  // keep the news shelf fresh: drop aggregated items older than 60 days
+  foreach (posts_all() as $p) if (!empty($p['external']) && ($p['at'] ?? 0) < now_ms() - 60 * 864e5) doc_del('posts', $p['id']);
+  return $added;
+}
+function h_admin_news(): void { require_admin(); out(['feeds' => news_feeds(), 'last' => (int)kv_get('newsLast', 0)]); }
+function h_admin_news_save(): void {
+  require_admin();
+  $b = body(); $feeds = [];
+  foreach (array_slice((array)($b['feeds'] ?? []), 0, 12) as $f) {
+    $url = trim((string)($f['url'] ?? '')); if (!preg_match('#^https?://#i', $url)) continue;
+    $feeds[] = ['name' => mb_substr(trim((string)($f['name'] ?? '')), 0, 80) ?: parse_url($url, PHP_URL_HOST), 'url' => mb_substr($url, 0, 400), 'enabled' => !empty($f['enabled'])];
+  }
+  kv_set('newsFeeds', $feeds);
+  out(['ok' => true, 'feeds' => $feeds]);
+}
+function h_admin_news_refresh(): void { require_admin(); $n = blog_news_refresh(true); out(['ok' => true, 'added' => $n]); }
+
 /* ---------------- sitemap.xml ---------------- */
 function site_base(): string { return rtrim((string)cfg('site_url', ''), '/') ?: ((isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . ($_SERVER['HTTP_HOST'] ?? 'localhost')); }
 function xe(string $s): string { return htmlspecialchars($s, ENT_XML1 | ENT_QUOTES, 'UTF-8'); }
@@ -156,7 +248,7 @@ function h_sitemap(): void {
   $add('/ielts-guide', null, 'weekly', '0.9');
   foreach (array_keys(BLOG_CATS) as $c) $add("/blog/category/$c", null, 'weekly', '0.6');
   foreach (doc_all('categories') as $c) if (!empty($c['slug'])) $add('/category/' . rawurlencode($c['slug']), null, 'weekly', '0.7');
-  foreach (posts_all() as $p) if (post_live($p)) $add('/blog/' . rawurlencode($p['slug']), (int)($p['updated'] ?? $p['at'] ?? 0), 'monthly', '0.8', ['bn' => "$base/blog/" . rawurlencode($p['slug']), 'en' => "$base/blog/" . rawurlencode($p['slug']) . '?lang=en']);
+  foreach (posts_all() as $p) if (post_live($p) && empty($p['external'])) $add('/blog/' . rawurlencode($p['slug']), (int)($p['updated'] ?? $p['at'] ?? 0), 'monthly', '0.8', ['bn' => "$base/blog/" . rawurlencode($p['slug']), 'en' => "$base/blog/" . rawurlencode($p['slug']) . '?lang=en']);
   foreach (doc_all('products') as $p) if (($p['active'] ?? true) !== false && !empty($p['slug'])) $add('/product/' . rawurlencode($p['slug']), null, 'weekly', '0.7');
   header('Content-Type: application/xml; charset=utf-8');
   header('Cache-Control: public, max-age=600');
@@ -198,6 +290,7 @@ function md_html(string $md): string {
 function blog_abs_img(string $c, string $base): string {
   if ($c === '') return '';
   if (preg_match('#^https?://#', $c)) return $c;
+  if (str_starts_with($c, 'local:')) return $base . '/' . ltrim(substr($c, 6), '/');
   if ($c[0] === '/') return $base . $c;
   return $base . '/public/uploads/' . ltrim($c, '/');
 }

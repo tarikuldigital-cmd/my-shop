@@ -2,6 +2,7 @@
 import json, time, os
 from seed_a import post, P
 import seed_b
+import seed_d
 
 DISC_BN = "> তথ্যটি সাধারণ গাইডলাইন। শর্ত, ডেডলাইন ও ফান্ডিং প্রতি বছর বদলায় — আবেদনের আগে অবশ্যই অফিসিয়াল ওয়েবসাইটে যাচাই করুন।"
 DISC_EN = "> General guidance only. Rules, deadlines and funding change every year — always verify on the official website before applying."
@@ -269,6 +270,14 @@ Build confidence for interviews with the [Speaking guide](/blog/ielts-speaking-t
  ['speaking-for-ielts-by-liz-bangla-translated', 'makkar-ielts-speaking-latest-edition-may-to-august-2026'], ['student visa', 'visa checklist', 'abroad'])
 
 # ---- write seed ----
+import re as _re
+KICK = {'ielts-a-to-z-guideline-for-beginners':'THE COMPLETE IELTS GUIDE','what-is-ielts-academic-vs-general':'ACADEMIC OR GENERAL TRAINING','ielts-test-format-band-score-explained':'TEST FORMAT & BAND SCORES','how-to-register-for-ielts-bangladesh':'REGISTRATION','ielts-3-month-study-plan':'THREE-MONTH STUDY PLAN','ielts-listening-tips-band-7':'LISTENING','ielts-reading-tips-time-management':'READING','ielts-writing-task-1-task-2-guide':'WRITING','ielts-speaking-tips-cue-card':'SPEAKING','which-ielts-book-to-read-when':'STUDY MATERIALS','ielts-combo-package-benefits':'COMBO PACKAGES','monthly-ielts-book-update-guide':'UPDATED EDITIONS','study-abroad-scholarships-overview':'SCHOLARSHIPS','ielts-score-requirements-by-country':'SCORES BY COUNTRY','how-to-apply-to-foreign-university-step-by-step':'UNIVERSITY APPLICATIONS','sop-lor-documents-checklist':'SOP, LOR & DOCUMENTS','student-visa-process-overview-and-checklist':'STUDENT VISA','ielts-requirements-uk-universities':'UNITED KINGDOM','ielts-requirements-canada-universities':'CANADA','ielts-requirements-australia-universities':'AUSTRALIA','ielts-requirements-usa-universities':'UNITED STATES','ielts-requirements-germany-europe':'GERMANY & EUROPE','skills-required-by-field-of-study':'SKILLS BY FIELD','applying-for-jobs-abroad-ielts-and-work-visa':'WORKING ABROAD','how-to-find-university-ielts-requirement':'ENTRY REQUIREMENTS','ielts-test-day-checklist-and-rules':'TEST DAY'}
+for p in P:
+    for l in ('bn','en'):
+        p['body'][l] = _re.sub(r'(?m)^\{\{[^}]*\}\}\s*$\n?', '', p['body'][l]).rstrip() + "\n"
+    p['cover'] = 'local:blog-img/%s.webp' % p['slug']
+json.dump(KICK, open('tools/kickers.json','w'), ensure_ascii=False)
+
 base = 1793491200000  # fixed so the demo order is stable; the server uses it as publish date
 day = 86400000
 for i, p in enumerate(P):
