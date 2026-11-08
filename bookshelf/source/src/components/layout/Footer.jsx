@@ -16,7 +16,7 @@ export default function Footer() {
         </div>
         <div>
           <h3 className="mb-3 font-semibold text-white">Useful Links</h3>
-          <ul className="space-y-2 text-sm">{[{ to: '/blog', label: 'IELTS ব্লগ' }, { to: '/ielts-guide', label: 'IELTS A–Z গাইড' }, ...settings.footerUsefulLinks].map((l) => <li key={l.to}><Link to={l.to} className="hover:text-white">{l.label}</Link></li>)}</ul>
+          <ul className="space-y-2 text-sm">{[{ to: '/blog', label: 'IELTS জ্ঞানকেন্দ্র' }, { to: '/ielts-guide', label: 'আইইএলটিএস রোডম্যাপ' }, ...settings.footerUsefulLinks].map((l) => <li key={l.to}><Link to={l.to} className="hover:text-white">{l.label}</Link></li>)}</ul>
         </div>
         <div>
           <h3 className="mb-3 font-semibold text-white">Links</h3>

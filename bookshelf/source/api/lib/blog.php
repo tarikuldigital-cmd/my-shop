@@ -8,14 +8,14 @@
  */
 
 const BLOG_CATS = [
-  'guide' => ['bn' => 'IELTS গাইডলাইন (A–Z)', 'en' => 'IELTS Guide A–Z'],
-  'exam' => ['bn' => 'পরীক্ষার তথ্য', 'en' => 'Exam Info'],
-  'study' => ['bn' => 'পড়াশোনার সাজেশন', 'en' => 'Study Tips'],
-  'books' => ['bn' => 'আমাদের বই গাইড', 'en' => 'Our Books Guide'],
-  'scholarship' => ['bn' => 'স্কলারশিপ', 'en' => 'Scholarships'],
-  'university' => ['bn' => 'বিশ্ববিদ্যালয় ও আবেদন', 'en' => 'University & Admission'],
-  'country' => ['bn' => 'দেশভিত্তিক আপডেট', 'en' => 'Country Updates'],
-  'abroad' => ['bn' => 'ভিসা ও বিদেশযাত্রা', 'en' => 'Visa & Going Abroad'],
+  'guide' => ['bn' => 'IELTS পূর্ণাঙ্গ গাইডলাইন', 'en' => 'IELTS A–Z Guide'],
+  'exam' => ['bn' => 'পরীক্ষা সম্পর্কিত তথ্য', 'en' => 'Exam Information'],
+  'study' => ['bn' => 'প্রস্তুতি কৌশল', 'en' => 'Preparation Strategies'],
+  'books' => ['bn' => 'গ্রন্থ নির্দেশিকা', 'en' => 'Book Guide'],
+  'scholarship' => ['bn' => 'বৃত্তি ও স্কলারশিপ', 'en' => 'Scholarships'],
+  'university' => ['bn' => 'বিশ্ববিদ্যালয় ও ভর্তি আবেদন', 'en' => 'University & Admission'],
+  'country' => ['bn' => 'দেশভিত্তিক তথ্য', 'en' => 'Country Insights'],
+  'abroad' => ['bn' => 'ভিসা ও প্রবাস প্রস্তুতি', 'en' => 'Visa & Relocation'],
 ];
 
 function blog_routes(): array {
@@ -220,7 +220,7 @@ function h_blog_page(string $rest = ''): void {
   };
   $path = '/blog/'; $img = $ogDefault;
   if ($rest === '') {
-    $title = $lang === 'en' ? 'IELTS Blog — guides, tips, scholarships & study abroad' : 'IELTS ব্লগ — গাইডলাইন, টিপস, স্কলারশিপ ও বিদেশে পড়াশোনা';
+    $title = $lang === 'en' ? 'IELTS Knowledge Centre — guides, scholarships & study abroad' : 'IELTS জ্ঞানকেন্দ্র — নির্দেশিকা, বৃত্তি ও বিদেশে উচ্চশিক্ষা';
     $desc = $lang === 'en' ? 'Free IELTS preparation guides from beginner to advanced, exam information, scholarships, university applications and visa guidance for Bangladeshi students.' : 'বিগিনার থেকে অ্যাডভান্স IELTS প্রস্তুতি, পরীক্ষার তথ্য, স্কলারশিপ, বিশ্ববিদ্যালয়ে আবেদন ও ভিসা — বাংলাদেশি শিক্ষার্থীদের জন্য ফ্রি গাইড।';
     $live = array_values(array_filter(posts_all(), 'post_live'));
     $content = '<h1>' . htmlspecialchars($title) . '</h1><p>' . htmlspecialchars($desc) . '</p>' . $listHtml($live);
@@ -229,7 +229,7 @@ function h_blog_page(string $rest = ''): void {
     $c = substr($rest, 9); $path = '/blog/category/' . rawurlencode($c);
     if (!isset(BLOG_CATS[$c])) { $status = 404; $noindex = true; $title = 'Not found'; $desc = ''; }
     else {
-      $title = BLOG_CATS[$c][$lang] . ' — ' . ($lang === 'en' ? 'IELTS Blog' : 'IELTS ব্লগ');
+      $title = BLOG_CATS[$c][$lang] . ' — ' . ($lang === 'en' ? 'IELTS Knowledge Centre' : 'IELTS জ্ঞানকেন্দ্র');
       $desc = $lang === 'en' ? 'Articles in this category for IELTS & study-abroad students.' : 'IELTS ও বিদেশে পড়াশোনা সংক্রান্ত এই বিভাগের সব লেখা।';
       $live = array_values(array_filter(posts_all(), fn($p) => post_live($p) && ($p['cat'] ?? '') === $c));
       $content = '<h1>' . htmlspecialchars($title) . '</h1>' . $listHtml($live);

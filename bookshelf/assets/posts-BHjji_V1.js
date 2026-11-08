@@ -1,11 +1,11 @@
-var e={version:1,posts:[{id:`ielts-a-to-z-guideline-for-beginners`,slug:`ielts-a-to-z-guideline-for-beginners`,cat:`guide`,title:{bn:`IELTS A–Z গাইডলাইন: একদম বিগিনার থেকে বিদেশ যাওয়া পর্যন্ত`,en:`IELTS A–Z Guide: From Absolute Beginner to Studying Abroad`},excerpt:{bn:`কীভাবে IELTS প্রস্তুতি শুরু করবেন, কোন বই কখন পড়বেন, কম্বো প্যাকেজ কেন কাজে লাগে এবং বিদেশে পৌঁছানো পর্যন্ত পুরো ধাপের সহজ রোডম্যাপ।`,en:`A simple roadmap: how to start IELTS, which books to read when, why combo packages help, and every step until you land abroad.`},body:{bn:`IELTS মানে শুধু একটি পরীক্ষা নয় — এটি বিদেশে পড়াশোনা, স্কলারশিপ ও ভিসার প্রথম ধাপ। এই লেখায় একদম শুরু থেকে বিদেশে পৌঁছানো পর্যন্ত পুরো পথটা সাজিয়ে দিলাম।
+var e={version:1,posts:[{id:`ielts-a-to-z-guideline-for-beginners`,slug:`ielts-a-to-z-guideline-for-beginners`,cat:`guide`,title:{bn:`আইইএলটিএস পূর্ণাঙ্গ নির্দেশিকা: প্রস্তুতির সূচনা থেকে বিদেশে উচ্চশিক্ষা পর্যন্ত`,en:`The Complete IELTS Guide: From First Preparation to Studying Abroad`},excerpt:{bn:`আইইএলটিএস প্রস্তুতি কীভাবে শুরু করবেন, কোন পর্যায়ে কোন বই অনুসরণ করবেন এবং বিদেশে উচ্চশিক্ষা শুরু পর্যন্ত প্রতিটি ধাপের একটি সুসংগঠিত রূপরেখা।`,en:`A structured outline covering how to begin IELTS preparation, which study materials to follow at each stage, and every step until you commence study abroad.`},body:{bn:`IELTS মানে শুধু একটি পরীক্ষা নয় — এটি বিদেশে পড়াশোনা, স্কলারশিপ ও ভিসার প্রথম ধাপ। এই লেখায় একদম শুরু থেকে বিদেশে পৌঁছানো পর্যন্ত পুরো পথটা সাজিয়ে দিলাম।
 
 ## ধাপ ১: লক্ষ্য ঠিক করুন
 কোন দেশে, কোন বিষয়ে পড়বেন এবং সেই বিশ্ববিদ্যালয়ে কত ব্যান্ড স্কোর লাগে — আগে এটা দেখুন। সাধারণত ব্যাচেলরে ৬.০ ও মাস্টার্সে ৬.৫ চাওয়া হয়, তবে **প্রতিটি বিশ্ববিদ্যালয়ের নিজস্ব শর্ত আলাদা**। এরপর ঠিক করুন Academic নাকি General Training দিবেন। বিস্তারিত: [Academic বনাম General Training](/blog/what-is-ielts-academic-vs-general)।
 
 ## ধাপ ২: ভিত্তি তৈরি করুন (মাস ১)
-গ্রামার ও ভোকাবুলারি দুর্বল থাকলে চার মডিউলেই স্কোর আটকে যায়। প্রথম মাসটা গ্রামার ও শব্দভান্ডারে দিন।
-- গ্রামারের জন্য: [Essential Grammar in Use](/product/essential-grammar-in-use-4th-edition) অথবা বাংলায় বুঝতে [বাংলায় IELTS গ্রামার](/product/banglay-ielts-grammar-by-rashed-mujib-zaman)
+ব্যাকরণ ও শব্দভান্ডার দুর্বল থাকলে চার মডিউলেই স্কোর আটকে যায়। প্রথম মাসটা ব্যাকরণ ও শব্দভান্ডারে দিন।
+- ব্যাকরণের জন্য: [Essential Grammar in Use](/product/essential-grammar-in-use-4th-edition) অথবা বাংলায় বুঝতে [বাংলায় IELTS ব্যাকরণ](/product/banglay-ielts-grammar-by-rashed-mujib-zaman)
 - শব্দভান্ডারের জন্য: [Word Power Made Easy](/product/word-power-made-easy)
 
 {{books:foundation}}
@@ -19,7 +19,7 @@ Cambridge IELTS-এর টেস্ট সময় ধরে করুন। �
 {{books:practice}}
 
 ## ধাপ ৫: রেজিস্ট্রেশন ও পরীক্ষা
-আবেদনের ডেডলাইনের অন্তত ১–২ মাস আগে পরীক্ষার তারিখ রাখুন, যাতে ফলাফল সময়মতো হাতে আসে। বিস্তারিত: [বাংলাদেশে IELTS রেজিস্ট্রেশন](/blog/how-to-register-for-ielts-bangladesh)।
+আবেদনের ডেডলাইনের অন্তত ১–২ মাস আগে পরীক্ষার তারিখ রাখুন, যাতে ফলাফল সময়মতো হাতে পাওয়া যায়। বিস্তারিত: [বাংলাদেশে IELTS রেজিস্ট্রেশন](/blog/how-to-register-for-ielts-bangladesh)।
 
 ## ধাপ ৬: বিশ্ববিদ্যালয় ও স্কলারশিপ
 ৮–১০টি বিশ্ববিদ্যালয়ের তালিকা করুন এবং স্কলারশিপের ডেডলাইন লিখে রাখুন। পড়ুন: [বিদেশে পড়ার স্কলারশিপ](/blog/study-abroad-scholarships-overview) ও [আবেদনের ধাপ](/blog/how-to-apply-to-foreign-university-step-by-step)।
@@ -31,7 +31,7 @@ SOP নিজের কথায় লিখুন, LOR-এর জন্য শ
 অফার পাওয়ার পর টিউশন ডিপোজিট, ফান্ডের প্রমাণ ও ভিসা আবেদন — ধাপগুলো দেখুন: [স্টুডেন্ট ভিসা গাইড](/blog/student-visa-process-overview-and-checklist)।
 
 ## কম্বো প্যাকেজ কেন?
-একই বিষয়ের জন্য আলাদা আলাদা বই খুঁজে কেনার ঝামেলা এড়াতে চাইলে কম্বো সবচেয়ে সহজ। শুরুর জন্য [IELTS Beginner Combo (26 বই)](/product/ielts-beginner-combo-package-26-books) আর শুরু থেকে শেষ পর্যন্ত পুরো সেট চাইলে [Beginner to Advanced প্যাকেজ (42 কম্বো)](/product/ielts-beginner-to-advanced-package-42-combo)। আরও জানুন: [কম্বো প্যাকেজের সুবিধা](/blog/ielts-combo-package-benefits)।
+একই বিষয়ের জন্য আলাদা আলাদা বই খুঁজে কেনার জটিলতা এড়াতে চাইলে কম্বো সবচেয়ে সহজ। শুরুর জন্য [IELTS Beginner Combo (26 বই)](/product/ielts-beginner-combo-package-26-books) আর শুরু থেকে শেষ পর্যন্ত পুরো সেট চাইলে [Beginner to Advanced প্যাকেজ (42 কম্বো)](/product/ielts-beginner-to-advanced-package-42-combo)। আরও জানুন: [কম্বো প্যাকেজের সুবিধা](/blog/ielts-combo-package-benefits)।
 
 {{combo}}`,en:`IELTS is the first step towards studying abroad, scholarships and a student visa. Here is the whole path, from day one to landing abroad.
 
@@ -60,7 +60,7 @@ Shortlist universities and scholarships ([scholarships](/blog/study-abroad-schol
 ## Why a combo package?
 It gives you every module in one order. Start with the [IELTS Beginner Combo (26 books)](/product/ielts-beginner-combo-package-26-books) or take the full [Beginner to Advanced package](/product/ielts-beginner-to-advanced-package-42-combo). More: [combo package benefits](/blog/ielts-combo-package-benefits).
 
-{{combo}}`},cover:``,tags:[`ielts guide`,`ielts preparation`,`beginner`,`study abroad`],books:[`ielts-beginner-combo-package-26-books`,`ielts-beginner-to-advanced-package-42-combo`,`essential-grammar-in-use-4th-edition`,`word-power-made-easy`],published:!0,featured:!0,source:`Bookshelf BD`,at:179496e7,updated:179496e7},{id:`what-is-ielts-academic-vs-general`,slug:`what-is-ielts-academic-vs-general`,cat:`exam`,title:{bn:`IELTS Academic বনাম General Training: আপনার জন্য কোনটি?`,en:`IELTS Academic vs General Training: Which One Is for You?`},excerpt:{bn:`উচ্চশিক্ষার জন্য কোনটি, অভিবাসন বা চাকরির জন্য কোনটি — দুই ধরনের IELTS-এর পার্থক্য সহজ ভাষায়।`,en:`Which version for university and which for migration or work — the difference explained simply.`},body:{bn:`IELTS-এর দুটি ভার্সন আছে: **Academic** ও **General Training**। Listening ও Speaking দুটোতেই একই; পার্থক্য Reading ও Writing-এ।
+{{combo}}`},cover:``,tags:[`ielts guide`,`ielts preparation`,`beginner`,`study abroad`],books:[`ielts-beginner-combo-package-26-books`,`ielts-beginner-to-advanced-package-42-combo`,`essential-grammar-in-use-4th-edition`,`word-power-made-easy`],published:!0,featured:!0,source:`Bookshelf BD`,at:17934912e5,updated:17934912e5},{id:`what-is-ielts-academic-vs-general`,slug:`what-is-ielts-academic-vs-general`,cat:`exam`,title:{bn:`IELTS Academic ও General Training: কোনটি আপনার জন্য উপযুক্ত`,en:`IELTS Academic and General Training: Choosing the Right Version`},excerpt:{bn:`উচ্চশিক্ষা এবং অভিবাসন বা কর্মসংস্থানের ক্ষেত্রে কোন সংস্করণ প্রযোজ্য, এ বিষয়ে একটি স্পষ্ট তুলনামূলক আলোচনা।`,en:`A clear comparison of which version applies to higher education and which to migration or employment.`},body:{bn:`IELTS-এর দুটি ভার্সন আছে: **Academic** ও **General Training**। Listening ও Speaking দুটোতেই একই; পার্থক্য Reading ও Writing-এ।
 
 ## Academic কাদের জন্য?
 বিদেশে ব্যাচেলর, মাস্টার্স বা পিএইচডি করতে চাইলে সাধারণত Academic দিতে হয়। Reading-এ থাকে গবেষণাধর্মী বা একাডেমিক ধরনের লেখা। Writing Task 1-এ গ্রাফ, চার্ট, টেবিল বা প্রসেস ডায়াগ্রাম বর্ণনা করতে হয়।
@@ -88,13 +88,13 @@ Check the **university or immigration website** for the required version — tak
 
 Practise with [Cambridge IELTS 1–20 (Academic)](/product/cambridge-ielts-with-answer-1-to-20-book-academic) and learn the format with the [Official Guide](/product/cambridge-ielts-official-guide). See also: [test format and band scores](/blog/ielts-test-format-band-score-explained).
 
-{{books:practice}}`},cover:``,tags:[`academic`,`general training`,`ielts`],books:[`cambridge-ielts-with-answer-1-to-20-book-academic`,`cambridge-ielts-official-guide`],published:!0,featured:!1,source:`Bookshelf BD`,at:17948736e5,updated:17948736e5},{id:`ielts-test-format-band-score-explained`,slug:`ielts-test-format-band-score-explained`,cat:`exam`,title:{bn:`IELTS টেস্ট ফরম্যাট ও ব্যান্ড স্কোর: সহজ ভাষায় পুরো ব্যাখ্যা`,en:`IELTS Test Format and Band Scores Explained`},excerpt:{bn:`চার মডিউল, সময়, প্রশ্নসংখ্যা এবং ০–৯ ব্যান্ড স্কোর কীভাবে হিসাব হয় — এক লেখায়।`,en:`Four modules, timing, question counts and how the 0–9 band score works — in one post.`},body:{bn:`IELTS-এ চারটি মডিউল: Listening, Reading, Writing ও Speaking। প্রতিটির স্কোর ০ থেকে ৯ ব্যান্ডে দেওয়া হয় এবং চারটির গড় আপনার **Overall Band**।
+{{books:practice}}`},cover:``,tags:[`academic`,`general training`,`ielts`],books:[`cambridge-ielts-with-answer-1-to-20-book-academic`,`cambridge-ielts-official-guide`],published:!0,featured:!1,source:`Bookshelf BD`,at:17934048e5,updated:17934048e5},{id:`ielts-test-format-band-score-explained`,slug:`ielts-test-format-band-score-explained`,cat:`exam`,title:{bn:`IELTS পরীক্ষার কাঠামো ও ব্যান্ড স্কোর মূল্যায়ন পদ্ধতি`,en:`IELTS Test Structure and How Band Scores Are Assessed`},excerpt:{bn:`চারটি মডিউলের সময়সীমা, প্রশ্নসংখ্যা এবং ০ থেকে ৯ ব্যান্ড স্কোর নির্ধারণের পদ্ধতির সংক্ষিপ্ত বিবরণ।`,en:`An overview of the four modules, their timing and question counts, and how the 0–9 band score is determined.`},body:{bn:`IELTS-এ চারটি মডিউল: Listening, Reading, Writing ও Speaking। প্রতিটির স্কোর ০ থেকে ৯ ব্যান্ডে দেওয়া হয় এবং চারটির গড় আপনার **Overall Band**।
 
 ## মডিউল অনুযায়ী ফরম্যাট (সাধারণ ধারণা)
 - **Listening:** প্রায় ৩০ মিনিট, ৪০টি প্রশ্ন, ৪টি সেকশন। পেপার-বেসড পরীক্ষায় উত্তর ট্রান্সফারের জন্য অতিরিক্ত সময় থাকে।
 - **Reading:** ৬০ মিনিট, ৪০টি প্রশ্ন, ৩টি প্যাসেজ।
 - **Writing:** ৬০ মিনিট। Task 1-এ কমপক্ষে ১৫০ শব্দ, Task 2-এ কমপক্ষে ২৫০ শব্দ। Task 2-এর গুরুত্ব বেশি।
-- **Speaking:** ১১–১৪ মিনিটের মুখোমুখি ইন্টারভিউ — পার্ট ১ (পরিচিত বিষয়), পার্ট ২ (কিউ কার্ড) ও পার্ট ৩ (আলোচনা)।
+- **Speaking:** ১১–১৪ মিনিটের মুখোমুখি সাক্ষাৎকার — পার্ট ১ (পরিচিত বিষয়), পার্ট ২ (কিউ কার্ড) ও পার্ট ৩ (আলোচনা)।
 
 ## ব্যান্ড স্কোর কীভাবে আসে?
 Listening ও Reading-এ সঠিক উত্তরের সংখ্যা ব্যান্ডে রূপান্তরিত হয়। Writing ও Speaking-এ পরীক্ষক চারটি মানদণ্ডে নম্বর দেন (যেমন Task Response, Coherence, Vocabulary, Grammar; Speaking-এ Fluency, Vocabulary, Grammar, Pronunciation)।
@@ -124,10 +124,10 @@ Computer-delivered and paper-based have the same content and scoring.
 
 Start with the [Official Guide](/product/cambridge-ielts-official-guide) and [IELTS Trainer](/product/ielts-trainer), then follow the [3-month plan](/blog/ielts-3-month-study-plan).
 
-{{books:foundation}}`},cover:``,tags:[`ielts format`,`band score`],books:[`cambridge-ielts-official-guide`,`ielts-trainer`,`ielts-trainer-2`],published:!0,featured:!1,source:`Bookshelf BD`,at:17947872e5,updated:17947872e5},{id:`how-to-register-for-ielts-bangladesh`,slug:`how-to-register-for-ielts-bangladesh`,cat:`exam`,title:{bn:`বাংলাদেশে IELTS রেজিস্ট্রেশন: ধাপে ধাপে গাইড`,en:`How to Register for IELTS in Bangladesh: Step by Step`},excerpt:{bn:`British Council ও IDP-তে অনলাইনে রেজিস্ট্রেশন, প্রয়োজনীয় কাগজ ও পরীক্ষার তারিখ বাছাইয়ের টিপস।`,en:`Registering with British Council or IDP online, what you need and how to pick your test date.`},body:{bn:`বাংলাদেশে IELTS নেওয়ার অনুমোদিত প্রতিষ্ঠান সাধারণত **British Council** ও **IDP**। দুটোতেই অনলাইনে রেজিস্ট্রেশন করা যায়।
+{{books:foundation}}`},cover:``,tags:[`ielts format`,`band score`],books:[`cambridge-ielts-official-guide`,`ielts-trainer`,`ielts-trainer-2`],published:!0,featured:!1,source:`Bookshelf BD`,at:17933184e5,updated:17933184e5},{id:`how-to-register-for-ielts-bangladesh`,slug:`how-to-register-for-ielts-bangladesh`,cat:`exam`,title:{bn:`বাংলাদেশে IELTS নিবন্ধন প্রক্রিয়া: ধাপভিত্তিক নির্দেশিকা`,en:`IELTS Registration in Bangladesh: A Step-by-Step Guide`},excerpt:{bn:`British Council ও IDP-এর মাধ্যমে অনলাইনে নিবন্ধন, প্রয়োজনীয় নথি এবং উপযুক্ত পরীক্ষার তারিখ নির্বাচনের পরামর্শ।`,en:`Registering online through the British Council or IDP, the documents required and advice on choosing a suitable test date.`},body:{bn:`বাংলাদেশে IELTS নেওয়ার অনুমোদিত প্রতিষ্ঠান সাধারণত **British Council** ও **IDP**। দুটোতেই অনলাইনে রেজিস্ট্রেশন করা যায়।
 
 ## ধাপগুলো
-1. অফিসিয়াল ওয়েবসাইটে গিয়ে অ্যাকাউন্ট খুলুন (ভুয়া সাইট ও এজেন্ট থেকে সাবধান — সবসময় অফিসিয়াল ডোমেইন ব্যবহার করুন)।
+1. অফিসিয়াল ওয়েবসাইটে গিয়ে অ্যাকাউন্ট খুলুন (ভুয়া ওয়েবসাইট ও অননুমোদিত মধ্যস্থতাকারী থেকে সতর্ক থাকুন — সবসময় অফিসিয়াল ডোমেইন ব্যবহার করুন)।
 2. পরীক্ষার ধরন বাছুন: Academic বা General Training; এবং কম্পিউটার বা পেপার-বেসড।
 3. শহর ও পরীক্ষার তারিখ বেছে নিন।
 4. পাসপোর্টের তথ্য ঠিকঠাক দিন — **পরীক্ষার দিন একই পাসপোর্ট নিয়ে যেতে হবে**।
@@ -154,17 +154,17 @@ Sit the test 1–2 months before your application deadline so results arrive in 
 
 Practise with [Cambridge IELTS 20](/product/cambridge-ielts-20-with-solution-and-explanation) and the latest [question bank](/product/ielts-actual-question-bank-2026-last-6-months-digest).
 
-{{books:practice}}`},cover:``,tags:[`ielts registration`,`british council`,`idp`,`bangladesh`],books:[`cambridge-ielts-20-with-solution-and-explanation`,`ielts-actual-question-bank-2026-last-6-months-digest`],published:!0,featured:!1,source:`Bookshelf BD`,at:17947008e5,updated:17947008e5},{id:`ielts-3-month-study-plan`,slug:`ielts-3-month-study-plan`,cat:`study`,title:{bn:`IELTS ৩ মাসের স্টাডি প্ল্যান: সপ্তাহ ধরে ধরে রুটিন`,en:`IELTS 3-Month Study Plan: A Week-by-Week Routine`},excerpt:{bn:`মাত্র ৩ মাসে সুশৃঙ্খলভাবে IELTS প্রস্তুতির পরিকল্পনা — প্রতি সপ্তাহে কী করবেন ও কোন বই ব্যবহার করবেন।`,en:`A disciplined three-month plan — what to do each week and which books to use.`},body:{bn:`৩ মাসে ভালো স্কোর সম্ভব, যদি রুটিন মেনে চলেন। প্রতিদিন ২–৩ ঘণ্টা সময় দিতে পারলে এই প্ল্যান কাজে লাগবে।
+{{books:practice}}`},cover:``,tags:[`ielts registration`,`british council`,`idp`,`bangladesh`],books:[`cambridge-ielts-20-with-solution-and-explanation`,`ielts-actual-question-bank-2026-last-6-months-digest`],published:!0,featured:!1,source:`Bookshelf BD`,at:1793232e6,updated:1793232e6},{id:`ielts-3-month-study-plan`,slug:`ielts-3-month-study-plan`,cat:`study`,title:{bn:`IELTS প্রস্তুতির তিন মাসের পরিকল্পনা: সাপ্তাহিক রুটিনসহ`,en:`A Three-Month IELTS Study Plan with a Weekly Routine`},excerpt:{bn:`তিন মাসে নিয়মতান্ত্রিকভাবে প্রস্তুতি সম্পন্ন করার একটি পরিকল্পনা: প্রতি পর্যায়ে করণীয় ও উপযোগী বই।`,en:`A plan for completing your preparation methodically in three months: what to do at each stage and which books to use.`},body:{bn:`৩ মাসে ভালো স্কোর সম্ভব, যদি রুটিন মেনে চলেন। প্রতিদিন ২–৩ ঘণ্টা সময় দিতে পারলে এই প্ল্যান কাজে লাগবে।
 
 ## মাস ১ — ভিত্তি (সপ্তাহ ১–৪)
-- গ্রামারের বেসিক শেষ করুন এবং প্রতিদিন ১০–১৫টি নতুন শব্দ শিখুন।
+- ব্যাকরণের বেসিক শেষ করুন এবং প্রতিদিন ১০–১৫টি নতুন শব্দ শিখুন।
 - প্রতিদিন ১৫–২০ মিনিট ইংরেজি শুনুন ও পড়ুন।
 - বই: [Essential Grammar in Use](/product/essential-grammar-in-use-4th-edition), [Word Power Made Easy](/product/word-power-made-easy)।
 
 ## মাস ২ — কৌশল (সপ্তাহ ৫–৮)
 - সপ্তাহ ৫–৬: Listening ও Reading-এর প্রশ্নের ধরন ও কৌশল।
 - সপ্তাহ ৭: Writing Task 1 ও Task 2 কাঠামো।
-- সপ্তাহ ৮: Speaking-এর তিন পার্ট, রোজ ১৫ মিনিট রেকর্ড করে নিজের উত্তর শোনা।
+- সপ্তাহ ৮: Speaking-এর তিন পার্ট, প্রতিদিন ১৫ মিনিট রেকর্ড করে নিজের উত্তর শোনা।
 - বই: [Liz-এর Listening Strategies (বাংলা)](/product/lizs-ielts-listening-strategies-book-bangla-translated), [Liz-এর Reading Strategies (বাংলা)](/product/lis-ielts-reading-strategies-bangla-translated), [Liz-এর Writing (বাংলা)](/product/lizs-ielts-writing-task-1-and-2-bangla-translated), [Speaking for IELTS by Liz](/product/speaking-for-ielts-by-liz-bangla-translated)।
 
 ## মাস ৩ — মক টেস্ট (সপ্তাহ ৯–১২)
@@ -174,7 +174,7 @@ Practise with [Cambridge IELTS 20](/product/cambridge-ielts-20-with-solution-and
 - বই: [Cambridge IELTS 1–20](/product/cambridge-ielts-with-answer-1-to-20-book-academic), [Confident Mock Test 9–18](/product/confident-cambridge-ielts-mock-test-9-to-18)।
 
 ## একটি দৈনিক রুটিনের নমুনা
-৩০ মিনিট Listening · ৩০ মিনিট Reading · ৪৫ মিনিট Writing (একদিন Task 1, একদিন Task 2) · ২০ মিনিট Speaking · ২০ মিনিট ভোকাবুলারি।
+৩০ মিনিট Listening · ৩০ মিনিট Reading · ৪৫ মিনিট Writing (একদিন Task 1, একদিন Task 2) · ২০ মিনিট Speaking · ২০ মিনিট শব্দভান্ডার।
 
 সময় কম, পুরো সেট চান? [Beginner to Advanced প্যাকেজ](/product/ielts-beginner-to-advanced-package-42-combo) একসাথে সব দেয়।
 
@@ -191,7 +191,7 @@ One full timed mock a week, log every mistake and get your Writing checked. Book
 
 Short on time? The [Beginner to Advanced package](/product/ielts-beginner-to-advanced-package-42-combo) covers everything in one order.
 
-{{combo}}`},cover:``,tags:[`study plan`,`3 months`,`routine`],books:[`essential-grammar-in-use-4th-edition`,`word-power-made-easy`,`cambridge-ielts-with-answer-1-to-20-book-academic`,`confident-cambridge-ielts-mock-test-9-to-18`],published:!0,featured:!1,source:`Bookshelf BD`,at:17946144e5,updated:17946144e5},{id:`ielts-listening-tips-band-7`,slug:`ielts-listening-tips-band-7`,cat:`study`,title:{bn:`IELTS Listening: ব্যান্ড ৭+ পেতে ১০টি কার্যকর কৌশল`,en:`IELTS Listening: 10 Strategies for Band 7+`},excerpt:{bn:`প্রশ্ন আগে পড়া, ডিসট্র্যাক্টর চেনা, বানান ও সংখ্যার ফাঁদ — Listening-এ স্কোর বাড়ানোর হাতেকলমে টিপস।`,en:`Reading questions first, spotting distractors, spelling and number traps — practical ways to lift your Listening score.`},body:{bn:`Listening-এ স্কোর বাড়াতে সবচেয়ে কাজের জিনিস হলো **প্রতিদিনের অনুশীলন** ও ভুলের বিশ্লেষণ।
+{{combo}}`},cover:``,tags:[`study plan`,`3 months`,`routine`],books:[`essential-grammar-in-use-4th-edition`,`word-power-made-easy`,`cambridge-ielts-with-answer-1-to-20-book-academic`,`confident-cambridge-ielts-mock-test-9-to-18`],published:!0,featured:!1,source:`Bookshelf BD`,at:17931456e5,updated:17931456e5},{id:`ielts-listening-tips-band-7`,slug:`ielts-listening-tips-band-7`,cat:`study`,title:{bn:`IELTS Listening: ব্যান্ড ৭ ও তদূর্ধ্ব স্কোরের জন্য দশটি কৌশল`,en:`IELTS Listening: Ten Strategies for Band 7 and Above`},excerpt:{bn:`প্রশ্ন আগে পড়ার অভ্যাস, বিভ্রান্তিকর তথ্য শনাক্তকরণ এবং বানান ও সংখ্যার সতর্কতা — Listening-এ স্কোর উন্নয়নের ব্যবহারিক পদ্ধতি।`,en:`Reading questions in advance, recognising distractors and avoiding spelling and number errors: practical ways to improve your Listening score.`},body:{bn:`Listening-এ স্কোর বাড়াতে সবচেয়ে কাজের জিনিস হলো **প্রতিদিনের অনুশীলন** ও ভুলের বিশ্লেষণ।
 
 ## ১০টি কৌশল
 1. অডিও শুরুর আগে প্রশ্ন পড়ে কিওয়ার্ড দাগ দিন।
@@ -224,7 +224,7 @@ Short on time? The [Beginner to Advanced package](/product/ielts-beginner-to-adv
 
 Books: [Liz's Listening Strategies (Bangla)](/product/lizs-ielts-listening-strategies-book-bangla-translated), [Cambridge IELTS Listening for High Band Score](/product/cambridge-ielts-listening-for-high-band-score), [Khan's Monologue Listening](/product/khans-monologue-ielts-listening).
 
-{{books:listening}}`},cover:``,tags:[`listening`,`band 7`],books:[`lizs-ielts-listening-strategies-book-bangla-translated`,`cambridge-ielts-listening-for-high-band-score`,`khans-monologue-ielts-listening`],published:!0,featured:!1,source:`Bookshelf BD`,at:1794528e6,updated:1794528e6},{id:`ielts-reading-tips-time-management`,slug:`ielts-reading-tips-time-management`,cat:`study`,title:{bn:`IELTS Reading: সময় ব্যবস্থাপনা ও প্রশ্নের ধরন অনুযায়ী কৌশল`,en:`IELTS Reading: Time Management and Question-Type Strategies`},excerpt:{bn:`True/False/Not Given, Matching Headings ও Fill-in-the-blanks — প্রতিটির জন্য আলাদা কৌশল এবং ৬০ মিনিটে ৩ প্যাসেজ শেষ করার উপায়।`,en:`Strategies for True/False/Not Given, Matching Headings and gap-fill, plus finishing three passages in 60 minutes.`},body:{bn:`Reading-এ সবচেয়ে বড় সমস্যা সময়। ৬০ মিনিটে ৩টি প্যাসেজ ও ৪০টি প্রশ্ন, তাই কৌশল না জানলে শেষ প্যাসেজ অসমাপ্ত থেকে যায়।
+{{books:listening}}`},cover:``,tags:[`listening`,`band 7`],books:[`lizs-ielts-listening-strategies-book-bangla-translated`,`cambridge-ielts-listening-for-high-band-score`,`khans-monologue-ielts-listening`],published:!0,featured:!1,source:`Bookshelf BD`,at:17930592e5,updated:17930592e5},{id:`ielts-reading-tips-time-management`,slug:`ielts-reading-tips-time-management`,cat:`study`,title:{bn:`IELTS Reading: সময় ব্যবস্থাপনা ও প্রশ্নের ধরনভিত্তিক কৌশল`,en:`IELTS Reading: Time Management and Strategies by Question Type`},excerpt:{bn:`True/False/Not Given, Matching Headings ও গ্যাপ-ফিলিং প্রশ্নের জন্য আলাদা কৌশল এবং ৬০ মিনিটে তিনটি প্যাসেজ সম্পন্ন করার পদ্ধতি।`,en:`Separate strategies for True/False/Not Given, Matching Headings and gap-fill questions, and a method for completing three passages in 60 minutes.`},body:{bn:`Reading-এ সবচেয়ে বড় সমস্যা সময়। ৬০ মিনিটে ৩টি প্যাসেজ ও ৪০টি প্রশ্ন, তাই কৌশল না জানলে শেষ প্যাসেজ অসমাপ্ত থেকে যায়।
 
 ## সময়ের ভাগ
 প্রতি প্যাসেজে সর্বোচ্চ ২০ মিনিট। প্রথম প্যাসেজ সহজ, তাই ১৫–১৮ মিনিটে শেষ করে পরের জন্য সময় বাঁচান।
@@ -254,7 +254,7 @@ About 20 minutes per passage; finish the easier first passage in 15–18 minutes
 
 Practise one timed passage daily, review where the evidence was and grow your vocabulary. Books: [Liz's Reading Strategies (Bangla)](/product/lis-ielts-reading-strategies-bangla-translated), [Makkar Reading Vol. 1](/product/makkar-ielts-reading-volume-1), [IELTS Advantage Reading Skills](/product/ielts-advantage-reading-skills).
 
-{{books:reading}}`},cover:``,tags:[`reading`,`time management`],books:[`lis-ielts-reading-strategies-bangla-translated`,`makkar-ielts-reading-volume-1`,`ielts-advantage-reading-skills`],published:!0,featured:!1,source:`Bookshelf BD`,at:17944416e5,updated:17944416e5},{id:`ielts-writing-task-1-task-2-guide`,slug:`ielts-writing-task-1-task-2-guide`,cat:`study`,title:{bn:`IELTS Writing Task 1 ও Task 2: কাঠামো, সাধারণ ভুল ও নমুনা পদ্ধতি`,en:`IELTS Writing Task 1 and Task 2: Structure, Common Mistakes and a Method`},excerpt:{bn:`গ্রাফ বর্ণনা ও এসে লেখার কাঠামো, সময় ভাগ এবং স্কোর কমানো ভুলগুলো এড়ানোর কৌশল।`,en:`How to structure graph descriptions and essays, split your time and avoid the mistakes that cost bands.`},body:{bn:`Writing-এ ৬০ মিনিট — Task 1-এ প্রায় ২০ মিনিট ও Task 2-এ প্রায় ৪০ মিনিট দিন, কারণ Task 2-এর গুরুত্ব বেশি।
+{{books:reading}}`},cover:``,tags:[`reading`,`time management`],books:[`lis-ielts-reading-strategies-bangla-translated`,`makkar-ielts-reading-volume-1`,`ielts-advantage-reading-skills`],published:!0,featured:!1,source:`Bookshelf BD`,at:17929728e5,updated:17929728e5},{id:`ielts-writing-task-1-task-2-guide`,slug:`ielts-writing-task-1-task-2-guide`,cat:`study`,title:{bn:`IELTS Writing Task 1 ও Task 2: কাঠামো, সাধারণ ভুল ও অনুশীলন পদ্ধতি`,en:`IELTS Writing Tasks 1 and 2: Structure, Common Errors and Practice Method`},excerpt:{bn:`গ্রাফ বিবরণ ও প্রবন্ধ রচনার কাঠামো, সময় বণ্টন এবং স্কোর হ্রাসের সাধারণ ভুলগুলো এড়ানোর উপায়।`,en:`How to structure graph descriptions and essays, allocate your time and avoid the errors that most often lower a band score.`},body:{bn:`Writing-এ ৬০ মিনিট — Task 1-এ প্রায় ২০ মিনিট ও Task 2-এ প্রায় ৪০ মিনিট দিন, কারণ Task 2-এর গুরুত্ব বেশি।
 
 ## Task 1 (Academic): গ্রাফ/চার্ট বর্ণনা
 কাঠামো: **ভূমিকা** (প্রশ্নটি নিজের ভাষায় লিখুন) → **ওভারভিউ** (প্রধান প্রবণতা) → **বিস্তারিত দুই অনুচ্ছেদ** (মূল সংখ্যা তুলনা)। নিজের মতামত দেবেন না, শুধু তথ্য বর্ণনা করুন। সর্বনিম্ন ১৫০ শব্দ।
@@ -264,7 +264,7 @@ Practise one timed passage daily, review where the evidence was and grow your vo
 
 ## সাধারণ ভুল
 - প্রশ্নের সব অংশের উত্তর না দেওয়া।
-- মুখস্থ করা অপ্রাসঙ্গিক টেমপ্লেট।
+- মুখস্থ করা অপ্রাসঙ্গিক ছক।
 - ছোট ছোট বাক্যে সীমাবদ্ধ থাকা, আবার জটিল বাক্যে ব্যাকরণ ভুল।
 - শব্দসংখ্যা কম হওয়া।
 - সময়ের শেষে নিজের লেখা না পড়া।
@@ -288,7 +288,7 @@ Not answering every part of the question, memorised off-topic templates, grammar
 
 Write two Task 2s and one Task 1 weekly and get feedback. Books: [Liz's Writing (Bangla)](/product/lizs-ielts-writing-task-1-and-2-bangla-translated), [Makkar Writing Bundle](/product/makkar-ielts-writing-bundle-package-latest), [Task 1 Answers](/product/cambridge-ielts-writing-task-1-answers-developer-guide), [Task 2 Answers](/product/confidents-cambridge-ielts-writing-task-2-answers-developer).
 
-{{books:writing}}`},cover:``,tags:[`writing`,`task 1`,`task 2`],books:[`lizs-ielts-writing-task-1-and-2-bangla-translated`,`makkar-ielts-writing-bundle-package-latest`,`cambridge-ielts-writing-task-1-answers-developer-guide`,`confidents-cambridge-ielts-writing-task-2-answers-developer`],published:!0,featured:!1,source:`Bookshelf BD`,at:17943552e5,updated:17943552e5},{id:`ielts-speaking-tips-cue-card`,slug:`ielts-speaking-tips-cue-card`,cat:`study`,title:{bn:`IELTS Speaking: পার্ট ১, ২, ৩ ও কিউ কার্ডের কৌশল`,en:`IELTS Speaking: Strategies for Parts 1, 2 and 3 and the Cue Card`},excerpt:{bn:`ভয় কাটিয়ে আত্মবিশ্বাসের সাথে কথা বলা, কিউ কার্ডে ২ মিনিট টেকা এবং পার্ট ৩-এর গভীর উত্তর দেওয়ার উপায়।`,en:`How to speak confidently, last two minutes on a cue card and give deeper Part 3 answers.`},body:{bn:`Speaking-এ পরীক্ষক দেখেন আপনি কতটা সাবলীলভাবে, সঠিক শব্দ ও ব্যাকরণে এবং স্পষ্ট উচ্চারণে কথা বলতে পারেন।
+{{books:writing}}`},cover:``,tags:[`writing`,`task 1`,`task 2`],books:[`lizs-ielts-writing-task-1-and-2-bangla-translated`,`makkar-ielts-writing-bundle-package-latest`,`cambridge-ielts-writing-task-1-answers-developer-guide`,`confidents-cambridge-ielts-writing-task-2-answers-developer`],published:!0,featured:!1,source:`Bookshelf BD`,at:17928864e5,updated:17928864e5},{id:`ielts-speaking-tips-cue-card`,slug:`ielts-speaking-tips-cue-card`,cat:`study`,title:{bn:`IELTS Speaking: তিনটি পার্ট ও কিউ কার্ড উপস্থাপনের কৌশল`,en:`IELTS Speaking: Approaching the Three Parts and the Cue Card`},excerpt:{bn:`আত্মবিশ্বাসের সঙ্গে কথা বলা, কিউ কার্ডে দুই মিনিট ধারাবাহিকভাবে বলা এবং তৃতীয় পার্টে বিশ্লেষণধর্মী উত্তর দেওয়ার পদ্ধতি।`,en:`Speaking with confidence, sustaining a two-minute cue card response and giving analytical answers in Part 3.`},body:{bn:`Speaking-এ পরীক্ষক দেখেন আপনি কতটা সাবলীলভাবে, সঠিক শব্দ ও ব্যাকরণে এবং স্পষ্ট উচ্চারণে কথা বলতে পারেন।
 
 ## পার্ট ১ — পরিচিত বিষয়
 বাড়ি, কাজ, পড়াশোনা, শখ — সংক্ষিপ্ত নয়, ২–৩ বাক্যে কারণসহ উত্তর দিন। শুধু "Yes/No" নয়।
@@ -320,10 +320,10 @@ Give opinions, comparisons and reasons: "I think… because… for example…".
 
 Record yourself 15 minutes a day, practise cue cards with your own stories (not memorised ones) and shadow English videos. Books: [Speaking for IELTS by Liz (Bangla)](/product/speaking-for-ielts-by-liz-bangla-translated), [Makkar Speaking Latest Edition](/product/makkar-ielts-speaking-latest-edition-may-to-august-2026), [Repeated Cue Cards](/product/confidents-repeated-cue-cards-for-ielts-speaking).
 
-{{books:speaking}}`},cover:``,tags:[`speaking`,`cue card`],books:[`speaking-for-ielts-by-liz-bangla-translated`,`makkar-ielts-speaking-latest-edition-may-to-august-2026`,`confidents-repeated-cue-cards-for-ielts-speaking`],published:!0,featured:!1,source:`Bookshelf BD`,at:17942688e5,updated:17942688e5},{id:`which-ielts-book-to-read-when`,slug:`which-ielts-book-to-read-when`,cat:`books`,title:{bn:`কোন IELTS বই কখন, কোন কাজে পড়বেন: স্তর অনুযায়ী বই-গাইড`,en:`Which IELTS Book to Read When: A Stage-by-Stage Book Guide`},excerpt:{bn:`গ্রামার থেকে মক টেস্ট পর্যন্ত — আপনার স্তর অনুযায়ী কোন বই কখন পড়বেন, তার সহজ তালিকা।`,en:`From grammar to mock tests — which book fits which stage of your preparation.`},body:{bn:`সব বই একসাথে পড়লে প্রস্তুতি এলোমেলো হয়। ধাপ ধরে বই বেছে নিলে কম সময়ে বেশি লাভ।
+{{books:speaking}}`},cover:``,tags:[`speaking`,`cue card`],books:[`speaking-for-ielts-by-liz-bangla-translated`,`makkar-ielts-speaking-latest-edition-may-to-august-2026`,`confidents-repeated-cue-cards-for-ielts-speaking`],published:!0,featured:!1,source:`Bookshelf BD`,at:17928e8,updated:17928e8},{id:`which-ielts-book-to-read-when`,slug:`which-ielts-book-to-read-when`,cat:`books`,title:{bn:`প্রস্তুতির কোন পর্যায়ে কোন IELTS বই অনুসরণ করবেন`,en:`Which IELTS Book to Use at Each Stage of Preparation`},excerpt:{bn:`ব্যাকরণ থেকে মক টেস্ট পর্যন্ত — প্রস্তুতির স্তর অনুযায়ী উপযোগী বইয়ের একটি সুশৃঙ্খল তালিকা।`,en:`From grammar to mock tests: an orderly list of study materials matched to each stage of preparation.`},body:{bn:`সব বই একসাথে পড়লে প্রস্তুতি এলোমেলো হয়। ধাপ ধরে বই বেছে নিলে কম সময়ে বেশি লাভ।
 
 ## স্তর ১ — ভিত্তি (প্রথম ৪ সপ্তাহ)
-- গ্রামার: [Essential Grammar in Use](/product/essential-grammar-in-use-4th-edition) অথবা [বাংলায় IELTS গ্রামার](/product/banglay-ielts-grammar-by-rashed-mujib-zaman)
+- ব্যাকরণ: [Essential Grammar in Use](/product/essential-grammar-in-use-4th-edition) অথবা [বাংলায় IELTS ব্যাকরণ](/product/banglay-ielts-grammar-by-rashed-mujib-zaman)
 - শব্দভান্ডার: [Word Power Made Easy](/product/word-power-made-easy), [Cambridge IELTS Vocabulary (জীবন আহমেদ)](/product/cambridge-ielts-vocabulary-by-jibon-ahmed)
 - ফরম্যাট বুঝতে: [Cambridge IELTS Official Guide](/product/cambridge-ielts-official-guide)
 
@@ -340,7 +340,7 @@ Record yourself 15 minutes a day, practise cue cards with your own stories (not 
 - সাম্প্রতিক প্রশ্ন: [Actual Question Bank ২০২৬](/product/ielts-actual-question-bank-2026-last-6-months-digest)
 
 ## কোন বইয়ে কত সময়?
-ভিত্তির বইগুলো একবার পড়ে অনুশীলনে যান; কৌশলের বই প্রতিটির সাথে অনুশীলন প্রশ্ন সমাধান করুন; মক টেস্ট সময় ধরে করুন। বই কেনার সময় সর্বশেষ এডিশন দেখুন: [মাসিক আপডেট গাইড](/blog/monthly-ielts-book-update-guide)।
+ভিত্তির বইগুলো একবার পড়ে অনুশীলনে যান; কৌশলের বই প্রতিটির সাথে অনুশীলন প্রশ্ন সমাধান করুন; মক টেস্ট নির্ধারিত সময়ের মধ্যে সম্পন্ন করুন। বই কেনার সময় সর্বশেষ এডিশন দেখুন: [মাসিক আপডেট গাইড](/blog/monthly-ielts-book-update-guide)।
 
 {{combo}}`,en:`Reading every book at once makes preparation messy. Choose by stage.
 
@@ -355,11 +355,11 @@ Listening, Reading, Writing and Speaking strategy books by Liz (Bangla editions)
 
 Always check for the latest edition: [monthly update guide](/blog/monthly-ielts-book-update-guide).
 
-{{combo}}`},cover:``,tags:[`ielts books`,`book guide`],books:[`essential-grammar-in-use-4th-edition`,`word-power-made-easy`,`cambridge-ielts-with-answer-1-to-20-book-academic`,`confident-cambridge-ielts-mock-test-9-to-18`],published:!0,featured:!1,source:`Bookshelf BD`,at:17941824e5,updated:17941824e5},{id:`ielts-combo-package-benefits`,slug:`ielts-combo-package-benefits`,cat:`books`,title:{bn:`IELTS কম্বো প্যাকেজ কেন কিনবেন? সুবিধা ও কোনটি কার জন্য`,en:`Why Buy an IELTS Combo Package? Benefits and Which One Suits You`},excerpt:{bn:`আলাদা আলাদা বই কেনার চেয়ে কম্বো কেন সাশ্রয়ী ও সহজ, এবং বিগিনার, অ্যাডভান্সড ও কম্পিউটার-বেসড প্রস্তুতির জন্য কোন কম্বো দেখবেন।`,en:`Why a combo saves money and time, and which package fits beginners, advanced learners and computer-based test takers.`},body:{bn:`IELTS-এর জন্য প্রয়োজনীয় বই অনেক — গ্রামার, ভোকাবুলারি, চার মডিউল, মক টেস্ট। আলাদা আলাদা খুঁজে কেনা সময়সাপেক্ষ এবং কোনটা দরকার বুঝতেও ভুল হয়। কম্বো এই সমস্যার সহজ সমাধান।
+{{combo}}`},cover:``,tags:[`ielts books`,`book guide`],books:[`essential-grammar-in-use-4th-edition`,`word-power-made-easy`,`cambridge-ielts-with-answer-1-to-20-book-academic`,`confident-cambridge-ielts-mock-test-9-to-18`],published:!0,featured:!1,source:`Bookshelf BD`,at:17927136e5,updated:17927136e5},{id:`ielts-combo-package-benefits`,slug:`ielts-combo-package-benefits`,cat:`books`,title:{bn:`IELTS কম্বো প্যাকেজের সুবিধা ও উপযুক্ত প্যাকেজ নির্বাচন`,en:`The Benefits of IELTS Combo Packages and Choosing the Right One`},excerpt:{bn:`কম্বো প্যাকেজ কেন সাশ্রয়ী ও সুবিধাজনক, এবং নবীন, উচ্চ স্কোরপ্রত্যাশী ও কম্পিউটার-ভিত্তিক পরীক্ষার্থীদের জন্য কোনটি উপযোগী।`,en:`Why combo packages are economical and convenient, and which suits beginners, high-score candidates and computer-based test takers.`},body:{bn:`IELTS-এর জন্য প্রয়োজনীয় বই অনেক — ব্যাকরণ, শব্দভান্ডার, চার মডিউল, মক টেস্ট। আলাদা আলাদা খুঁজে কেনা সময়সাপেক্ষ এবং কোনটা দরকার বুঝতেও ভুল হয়। কম্বো এই সমস্যার সহজ সমাধান।
 
 ## কম্বোর সুবিধা
 - **সাশ্রয়:** আলাদা কেনার চেয়ে সাধারণত মোট দাম কম।
-- **সাজানো সেট:** স্তর ধরে বই বাছা থাকে, তাই দ্বিধা কম।
+- **সাজানো সেট:** স্তর ধরে বই বাছা থাকে, তাই সংশয় কম।
 - **এক অর্ডার, এক ডেলিভারি:** ক্যাশ অন ডেলিভারি সুবিধা সহ।
 - **সম্পূর্ণ প্রস্তুতি:** কোনো মডিউল বাদ পড়ে না।
 
@@ -388,7 +388,7 @@ Savings versus buying separately, a stage-by-stage set, one order and one delive
 
 > Contents and prices can change — check the product page.
 
-{{combo}}`},cover:``,tags:[`combo`,`package`,`ielts books`],books:[`ielts-beginner-combo-package-26-books`,`ielts-beginner-to-advanced-package-42-combo`,`ielts-advance-combo-package-50-books`,`ielts-special-combo-package-52-books`,`computer-based-ielts-55-combo`],published:!0,featured:!1,source:`Bookshelf BD`,at:1794096e6,updated:1794096e6},{id:`monthly-ielts-book-update-guide`,slug:`monthly-ielts-book-update-guide`,cat:`books`,title:{bn:`প্রতি মাসের আপডেটেড IELTS বই ও প্রশ্ন ব্যাংক: কী কিনবেন, কেন`,en:`Monthly Updated IELTS Books and Question Banks: What to Buy and Why`},excerpt:{bn:`IELTS-এর প্রশ্ন ও ট্রেন্ড বদলায়। সর্বশেষ এডিশন ও সাম্প্রতিক প্রশ্ন ব্যাংক কীভাবে বেছে নেবেন তার গাইড।`,en:`Question trends change. How to choose the latest editions and recent question banks.`},body:{bn:`IELTS-এ সরাসরি প্রশ্ন পুনরাবৃত্তি হয় না, তবে বিষয় ও ধরনের ট্রেন্ড থাকে — বিশেষ করে Speaking কিউ কার্ড ও Writing Task 2 টপিকে। তাই প্রতি কয়েক মাসে আপডেটেড উপাদান দেখে নেওয়া ভালো।
+{{combo}}`},cover:``,tags:[`combo`,`package`,`ielts books`],books:[`ielts-beginner-combo-package-26-books`,`ielts-beginner-to-advanced-package-42-combo`,`ielts-advance-combo-package-50-books`,`ielts-special-combo-package-52-books`,`computer-based-ielts-55-combo`],published:!0,featured:!1,source:`Bookshelf BD`,at:17926272e5,updated:17926272e5},{id:`monthly-ielts-book-update-guide`,slug:`monthly-ielts-book-update-guide`,cat:`books`,title:{bn:`হালনাগাদ IELTS বই ও প্রশ্ন সংকলন: কী নির্বাচন করবেন`,en:`Updated IELTS Books and Question Banks: What to Choose`},excerpt:{bn:`প্রশ্নের ধরন ও বিষয়ের প্রবণতা পরিবর্তিত হয়। সর্বশেষ সংস্করণ ও সাম্প্রতিক প্রশ্ন সংকলন নির্বাচনের নির্দেশিকা।`,en:`Question styles and topic trends change. A guide to selecting the latest editions and recent question banks.`},body:{bn:`IELTS-এ সরাসরি প্রশ্ন পুনরাবৃত্তি হয় না, তবে বিষয় ও ধরনের ট্রেন্ড থাকে — বিশেষ করে Speaking কিউ কার্ড ও Writing Task 2 টপিকে। তাই প্রতি কয়েক মাসে আপডেটেড উপাদান দেখে নেওয়া ভালো।
 
 ## কোন বইগুলো নিয়মিত আপডেট হয়?
 - **Speaking:** [Makkar IELTS Speaking Latest Edition (মে–আগস্ট ২০২৬)](/product/makkar-ielts-speaking-latest-edition-may-to-august-2026) ও [Repeated Cue Cards](/product/confidents-repeated-cue-cards-for-ielts-speaking)
@@ -400,7 +400,7 @@ Savings versus buying separately, a stage-by-stage set, one order and one delive
 - নতুন করে শুরু করলে: আগে ভিত্তি ও কৌশলের বই, পরে আপডেটেড প্রশ্ন।
 
 ## সতর্কতা
-কোনো বই "ফাঁস হওয়া প্রশ্ন" দাবি করলে সতর্ক থাকুন। এই বইগুলো অনুশীলনের উপকরণ — পরীক্ষায় একই প্রশ্ন আসার নিশ্চয়তা নেই। মূল ভরসা রাখুন দক্ষতা তৈরিতে।
+কোনো বই "ফাঁস হওয়া প্রশ্ন" দাবি করলে সতর্কতা অবলম্বন করুন। এই বইগুলো অনুশীলনের উপকরণ — পরীক্ষায় একই প্রশ্ন আসার নিশ্চয়তা নেই। মূল ভরসা রাখুন দক্ষতা তৈরিতে।
 
 নতুন সংস্করণ এলে আমরা এখানে আপডেট জানাবো। আমাদের [সব বই](/category/combo-package) দেখুন।
 
@@ -415,7 +415,7 @@ Add updated material 1–2 months before your test; beginners should build found
 
 **Caution:** treat these as practice material, not a promise of exam questions.
 
-{{books:speaking}}`},cover:``,tags:[`monthly update`,`question bank`,`latest edition`],books:[`makkar-ielts-speaking-latest-edition-may-to-august-2026`,`ielts-actual-question-bank-2026-last-6-months-digest`,`confidents-repeated-cue-cards-for-ielts-speaking`,`makkar-ielts-writing-bundle-package-latest`],published:!0,featured:!1,source:`Bookshelf BD`,at:17940096e5,updated:17940096e5},{id:`study-abroad-scholarships-overview`,slug:`study-abroad-scholarships-overview`,cat:`scholarship`,title:{bn:`বিদেশে পড়ার জনপ্রিয় স্কলারশিপ: দেশভিত্তিক সংক্ষিপ্ত পরিচিতি`,en:`Popular Study-Abroad Scholarships: A Country-by-Country Overview`},excerpt:{bn:`Chevening, Commonwealth, Fulbright, DAAD, Australia Awards, MEXT, GKS, CSC, Türkiye Burslari, Stipendium Hungaricum ও Erasmus Mundus — কোনটি কী, কীভাবে খুঁজবেন।`,en:`Chevening, Commonwealth, Fulbright, DAAD, Australia Awards, MEXT, GKS, CSC, Türkiye Burslari, Stipendium Hungaricum and Erasmus Mundus — what they are and how to look.`},body:{bn:`স্কলারশিপ পেলে বিদেশে পড়ার খরচ অনেক কমে। নিচে বিভিন্ন দেশের পরিচিত কিছু কর্মসূচির সংক্ষিপ্ত পরিচিতি দিলাম — **বিস্তারিত শর্ত ও ডেডলাইন প্রতিটির অফিসিয়াল ওয়েবসাইটে দেখুন**।
+{{books:speaking}}`},cover:``,tags:[`monthly update`,`question bank`,`latest edition`],books:[`makkar-ielts-speaking-latest-edition-may-to-august-2026`,`ielts-actual-question-bank-2026-last-6-months-digest`,`confidents-repeated-cue-cards-for-ielts-speaking`,`makkar-ielts-writing-bundle-package-latest`],published:!0,featured:!1,source:`Bookshelf BD`,at:17925408e5,updated:17925408e5},{id:`study-abroad-scholarships-overview`,slug:`study-abroad-scholarships-overview`,cat:`scholarship`,title:{bn:`বিদেশে উচ্চশিক্ষার জন্য উল্লেখযোগ্য বৃত্তি: দেশভিত্তিক পরিচিতি`,en:`Notable Scholarships for Study Abroad: A Country-by-Country Overview`},excerpt:{bn:`Chevening, Commonwealth, Fulbright, DAAD, Australia Awards, MEXT, GKS, CSC, Türkiye Burslari, Stipendium Hungaricum ও Erasmus Mundus সম্পর্কে সংক্ষিপ্ত তথ্য।`,en:`A concise introduction to Chevening, Commonwealth, Fulbright, DAAD, Australia Awards, MEXT, GKS, CSC, Türkiye Burslari, Stipendium Hungaricum and Erasmus Mundus.`},body:{bn:`স্কলারশিপ পেলে বিদেশে পড়ার খরচ অনেক কমে। নিচে বিভিন্ন দেশের পরিচিত কিছু কর্মসূচির সংক্ষিপ্ত পরিচিতি দিলাম — **বিস্তারিত শর্ত ও ডেডলাইন প্রতিটির অফিসিয়াল ওয়েবসাইটে দেখুন**।
 
 ## যুক্তরাজ্য
 - **Chevening:** সরকারি অর্থায়নে এক বছরের মাস্টার্স; কাজের অভিজ্ঞতা ও নেতৃত্বের গুণ গুরুত্ব পায়।
@@ -466,7 +466,7 @@ Start at least six months before the deadline, keep your IELTS score ready, writ
 
 See also: [score requirements by country](/blog/ielts-score-requirements-by-country).
 
-{{books:practice}}`},cover:``,tags:[`scholarship`,`chevening`,`daad`,`fulbright`],books:[`cambridge-ielts-with-answer-1-to-20-book-academic`,`ielts-actual-question-bank-2026-last-6-months-digest`],published:!0,featured:!1,source:`Bookshelf BD`,at:17939232e5,updated:17939232e5},{id:`ielts-score-requirements-by-country`,slug:`ielts-score-requirements-by-country`,cat:`country`,title:{bn:`দেশভিত্তিক IELTS স্কোর: কোথায় কত ব্যান্ড সাধারণত লাগে`,en:`IELTS Score Requirements by Country: What Bands Are Typically Needed`},excerpt:{bn:`যুক্তরাজ্য, কানাডা, অস্ট্রেলিয়া, যুক্তরাষ্ট্র, জার্মানি ও অন্যান্য দেশে সাধারণ স্কোরের পরিসর এবং কীভাবে নিশ্চিত হবেন।`,en:`Typical score ranges for the UK, Canada, Australia, the USA, Germany and others, and how to confirm the exact number.`},body:{bn:`নির্দিষ্ট কোনো দেশের জন্য একটি "স্থির" স্কোর নেই — **প্রতিটি বিশ্ববিদ্যালয় ও কোর্সের শর্ত আলাদা**। তবে একটি সাধারণ ধারণা থাকলে লক্ষ্য ঠিক করতে সুবিধা হয়।
+{{books:practice}}`},cover:``,tags:[`scholarship`,`chevening`,`daad`,`fulbright`],books:[`cambridge-ielts-with-answer-1-to-20-book-academic`,`ielts-actual-question-bank-2026-last-6-months-digest`],published:!0,featured:!1,source:`Bookshelf BD`,at:17924544e5,updated:17924544e5},{id:`ielts-score-requirements-by-country`,slug:`ielts-score-requirements-by-country`,cat:`country`,title:{bn:`দেশভিত্তিক IELTS স্কোরের সাধারণ প্রয়োজনীয়তা`,en:`Typical IELTS Score Requirements by Country`},excerpt:{bn:`যুক্তরাজ্য, কানাডা, অস্ট্রেলিয়া, যুক্তরাষ্ট্র, জার্মানিসহ বিভিন্ন দেশে সাধারণ স্কোরের পরিসর এবং সঠিক তথ্য যাচাইয়ের উপায়।`,en:`Typical score ranges for the UK, Canada, Australia, the USA, Germany and other destinations, and how to confirm the exact requirement.`},body:{bn:`নির্দিষ্ট কোনো দেশের জন্য একটি "স্থির" স্কোর নেই — **প্রতিটি বিশ্ববিদ্যালয় ও কোর্সের শর্ত আলাদা**। তবে একটি সাধারণ ধারণা থাকলে লক্ষ্য ঠিক করতে সুবিধা হয়।
 
 ## সাধারণ পরিসর (আনুমানিক)
 - **ব্যাচেলর:** প্রায় Overall ৬.০–৬.৫, প্রতি মডিউলে ৫.৫–৬.০ এর নিচে নয়।
@@ -503,7 +503,7 @@ Find the exact number on the course page under "English language requirements", 
 
 Then follow the [3-month plan](/blog/ielts-3-month-study-plan).
 
-{{combo}}`},cover:``,tags:[`ielts score`,`requirements`,`country`],books:[`ielts-beginner-combo-package-26-books`,`ielts-advance-combo-package-50-books`],published:!0,featured:!1,source:`Bookshelf BD`,at:17938368e5,updated:17938368e5},{id:`how-to-apply-to-foreign-university-step-by-step`,slug:`how-to-apply-to-foreign-university-step-by-step`,cat:`university`,title:{bn:`বিদেশি বিশ্ববিদ্যালয়ে আবেদন: ধাপে ধাপে পূর্ণ গাইড`,en:`How to Apply to a Foreign University: A Complete Step-by-Step Guide`},excerpt:{bn:`দেশ ও কোর্স বাছাই থেকে অফার লেটার পর্যন্ত — কখন কী করবেন তার টাইমলাইন।`,en:`From picking a country and course to the offer letter — a timeline of what to do when.`},body:{bn:`বিদেশি বিশ্ববিদ্যালয়ে আবেদন বড় মনে হলেও ধাপে ভাগ করলে সহজ।
+{{combo}}`},cover:``,tags:[`ielts score`,`requirements`,`country`],books:[`ielts-beginner-combo-package-26-books`,`ielts-advance-combo-package-50-books`],published:!0,featured:!1,source:`Bookshelf BD`,at:1792368e6,updated:1792368e6},{id:`how-to-apply-to-foreign-university-step-by-step`,slug:`how-to-apply-to-foreign-university-step-by-step`,cat:`university`,title:{bn:`বিদেশি বিশ্ববিদ্যালয়ে আবেদন: ধাপভিত্তিক পূর্ণাঙ্গ নির্দেশিকা`,en:`Applying to a Foreign University: A Complete Step-by-Step Guide`},excerpt:{bn:`গন্তব্য ও কোর্স নির্বাচন থেকে অফার লেটার প্রাপ্তি পর্যন্ত একটি সময়সূচিসহ নির্দেশিকা।`,en:`A guide from selecting a destination and course to receiving an offer letter, with a suggested timeline.`},body:{bn:`বিদেশি বিশ্ববিদ্যালয়ে আবেদন বড় মনে হলেও ধাপে ভাগ করলে সহজ।
 
 ## টাইমলাইন (আনুমানিক)
 - **১২–১৮ মাস আগে:** দেশ ও কোর্স ঠিক করুন, IELTS প্রস্তুতি শুরু করুন।
@@ -546,7 +546,7 @@ Never pay unofficial intermediaries unreasonable advance sums; if you use an age
 
 See also: [popular scholarships](/blog/study-abroad-scholarships-overview).
 
-{{books:writing}}`},cover:``,tags:[`university application`,`admission`,`study abroad`],books:[`lizs-ielts-writing-task-1-and-2-bangla-translated`,`makkar-ielts-writing-bundle-package-latest`],published:!0,featured:!1,source:`Bookshelf BD`,at:17937504e5,updated:17937504e5},{id:`sop-lor-documents-checklist`,slug:`sop-lor-documents-checklist`,cat:`university`,title:{bn:`SOP, LOR ও আবেদনের ডকুমেন্ট চেকলিস্ট`,en:`SOP, LOR and Application Documents Checklist`},excerpt:{bn:`ভালো SOP কীভাবে লিখবেন, কাকে দিয়ে LOR নেবেন এবং আবেদনের আগে কোন কাগজগুলো তৈরি রাখবেন।`,en:`How to write a strong SOP, who to ask for an LOR, and which documents to keep ready.`},body:{bn:`SOP (Statement of Purpose) আপনার আবেদনের মূল গল্প; LOR (Letter of Recommendation) অন্যের চোখে আপনার যোগ্যতা।
+{{books:writing}}`},cover:``,tags:[`university application`,`admission`,`study abroad`],books:[`lizs-ielts-writing-task-1-and-2-bangla-translated`,`makkar-ielts-writing-bundle-package-latest`],published:!0,featured:!1,source:`Bookshelf BD`,at:17922816e5,updated:17922816e5},{id:`sop-lor-documents-checklist`,slug:`sop-lor-documents-checklist`,cat:`university`,title:{bn:`SOP, LOR ও আবেদনের প্রয়োজনীয় নথির তালিকা`,en:`SOP, LOR and the Application Documents Checklist`},excerpt:{bn:`কার্যকর SOP রচনার পদ্ধতি, LOR সংগ্রহের পরামর্শ এবং আবেদনের পূর্বে প্রস্তুত রাখার নথির তালিকা।`,en:`How to write an effective SOP, advice on obtaining LORs and the documents to prepare before applying.`},body:{bn:`SOP (Statement of Purpose) আপনার আবেদনের মূল গল্প; LOR (Letter of Recommendation) অন্যের চোখে আপনার যোগ্যতা।
 
 ## ভালো SOP-এর কাঠামো
 1. **ভূমিকা:** আপনার আগ্রহ কীভাবে শুরু হলো — একটি নির্দিষ্ট ঘটনা বা অভিজ্ঞতা দিয়ে।
@@ -555,7 +555,7 @@ See also: [popular scholarships](/blog/study-abroad-scholarships-overview).
 4. **ভবিষ্যৎ লক্ষ্য:** পড়াশোনা শেষে কী করবেন এবং কীভাবে এটি কাজে লাগবে।
 5. **উপসংহার:** সংক্ষিপ্ত ও আত্মবিশ্বাসী।
 
-**সতর্কতা:** অন্যের SOP কপি বা অনলাইনের টেমপ্লেট হুবহু ব্যবহার করবেন না — কপি ধরা পড়লে আবেদন বাতিল হতে পারে। নিজের কথায় লিখুন।
+**বিশেষ দ্রষ্টব্য:** অন্যের SOP কপি বা অনলাইনের ছক হুবহু ব্যবহার করবেন না — কপি ধরা পড়লে আবেদন বাতিল হতে পারে। নিজের কথায় লিখুন।
 
 ## LOR
 - আপনাকে ভালো চেনেন এমন শিক্ষক বা সুপারভাইজারকে বলুন।
@@ -589,14 +589,14 @@ Strengthen your writing with the [Writing guide](/blog/ielts-writing-task-1-task
 
 > General guidance only. Rules, deadlines and funding change every year — always verify on the official website before applying.
 
-{{books:writing}}`},cover:``,tags:[`sop`,`lor`,`documents`],books:[`lizs-ielts-writing-task-1-and-2-bangla-translated`,`confidents-cambridge-ielts-writing-task-2-answers-developer`],published:!0,featured:!1,source:`Bookshelf BD`,at:1793664e6,updated:1793664e6},{id:`student-visa-process-overview-and-checklist`,slug:`student-visa-process-overview-and-checklist`,cat:`abroad`,title:{bn:`স্টুডেন্ট ভিসা প্রক্রিয়া: সাধারণ ধাপ ও চেকলিস্ট`,en:`Student Visa Process: General Steps and Checklist`},excerpt:{bn:`অফার লেটার পাওয়ার পর ফান্ডের প্রমাণ, ভিসা আবেদন, স্বাস্থ্য-পরীক্ষা, ইন্টারভিউ ও ফ্লাইটের পরিকল্পনা — সাধারণ ধারণা।`,en:`After the offer: proof of funds, the visa application, medicals, interview and travel — the general picture.`},body:{bn:`স্টুডেন্ট ভিসার নিয়ম দেশভেদে আলাদা এবং প্রায়ই বদলায়। এখানে সাধারণ কাঠামোটি দেওয়া হলো — **বিস্তারিত অবশ্যই সংশ্লিষ্ট দেশের অফিসিয়াল ইমিগ্রেশন বা দূতাবাসের ওয়েবসাইটে দেখুন**।
+{{books:writing}}`},cover:``,tags:[`sop`,`lor`,`documents`],books:[`lizs-ielts-writing-task-1-and-2-bangla-translated`,`confidents-cambridge-ielts-writing-task-2-answers-developer`],published:!0,featured:!1,source:`Bookshelf BD`,at:17921952e5,updated:17921952e5},{id:`student-visa-process-overview-and-checklist`,slug:`student-visa-process-overview-and-checklist`,cat:`abroad`,title:{bn:`স্টুডেন্ট ভিসা প্রক্রিয়া: সাধারণ ধাপ ও নথির তালিকা`,en:`The Student Visa Process: General Steps and Document Checklist`},excerpt:{bn:`অফার লেটার প্রাপ্তির পর আর্থিক সক্ষমতার প্রমাণ, ভিসা আবেদন, স্বাস্থ্য পরীক্ষা, সাক্ষাৎকার ও যাত্রার প্রস্তুতি সম্পর্কে সাধারণ ধারণা।`,en:`A general overview of what follows an offer: proof of funds, the visa application, medical checks, interview and travel preparation.`},body:{bn:`স্টুডেন্ট ভিসার নিয়ম দেশভেদে আলাদা এবং প্রায়ই বদলায়। এখানে সাধারণ কাঠামোটি দেওয়া হলো — **বিস্তারিত অবশ্যই সংশ্লিষ্ট দেশের অফিসিয়াল ইমিগ্রেশন বা দূতাবাসের ওয়েবসাইটে দেখুন**।
 
 ## সাধারণ ধাপ
 1. **অফার গ্রহণ ও ডিপোজিট:** শর্ত পূরণ করে অফার গ্রহণ করুন এবং বিশ্ববিদ্যালয়ের নির্দেশনা মতো ডিপোজিট দিন।
 2. **ভিসার জন্য প্রয়োজনীয় সনদ পাওয়া:** বিশ্ববিদ্যালয় থেকে ভিসার জন্য নির্ধারিত নথি (যেমন CAS বা সমতুল্য) আসবে।
 3. **ফান্ডের প্রমাণ:** ব্যাংক স্টেটমেন্ট বা অন্যান্য প্রমাণ — অর্থের উৎস পরিষ্কার ও স্বচ্ছ হতে হবে।
 4. **অনলাইনে ভিসা আবেদন ও ফি:** অফিসিয়াল পোর্টাল ব্যবহার করুন।
-5. **বায়োমেট্রিক্স, স্বাস্থ্য পরীক্ষা ও ইন্টারভিউ:** দেশ অনুযায়ী প্রযোজ্য হলে।
+5. **বায়োমেট্রিক্স, স্বাস্থ্য পরীক্ষা ও সাক্ষাৎকার:** দেশ অনুযায়ী প্রযোজ্য হলে।
 6. **ভিসা পাওয়ার পর:** আবাসন, ফ্লাইট, ইনস্যুরেন্স ও প্রাথমিক খরচের পরিকল্পনা।
 
 ## ডকুমেন্ট চেকলিস্ট
@@ -613,7 +613,7 @@ Strengthen your writing with the [Writing guide](/blog/ielts-writing-task-1-task
 - অফিসিয়াল চ্যানেল ছাড়া "গ্যারান্টি ভিসা"-র প্রলোভনে পড়বেন না।
 - আবেদনের সময় সীমা আগেভাগে দেখুন — প্রক্রিয়ায় সপ্তাহ বা মাস লাগতে পারে।
 
-ভিসা ইন্টারভিউ বা অ্যাকাডেমিক আলোচনায় ইংরেজিতে আত্মবিশ্বাসী হতে [Speaking গাইড](/blog/ielts-speaking-tips-cue-card) কাজে লাগবে।
+ভিসা সাক্ষাৎকার বা অ্যাকাডেমিক আলোচনায় ইংরেজিতে আত্মবিশ্বাসী হতে [Speaking গাইড](/blog/ielts-speaking-tips-cue-card) কাজে লাগবে।
 
 > তথ্যটি সাধারণ গাইডলাইন। শর্ত, ডেডলাইন ও ফান্ডিং প্রতি বছর বদলায় — আবেদনের আগে অবশ্যই অফিসিয়াল ওয়েবসাইটে যাচাই করুন।
 
@@ -632,4 +632,4 @@ Build confidence for interviews with the [Speaking guide](/blog/ielts-speaking-t
 
 > General guidance only. Rules, deadlines and funding change every year — always verify on the official website before applying.
 
-{{books:speaking}}`},cover:``,tags:[`student visa`,`visa checklist`,`abroad`],books:[`speaking-for-ielts-by-liz-bangla-translated`,`makkar-ielts-speaking-latest-edition-may-to-august-2026`],published:!0,featured:!1,source:`Bookshelf BD`,at:17935776e5,updated:17935776e5}]};export{e as default};
+{{books:speaking}}`},cover:``,tags:[`student visa`,`visa checklist`,`abroad`],books:[`speaking-for-ielts-by-liz-bangla-translated`,`makkar-ielts-speaking-latest-edition-may-to-august-2026`],published:!0,featured:!1,source:`Bookshelf BD`,at:17921088e5,updated:17921088e5}]};export{e as default};

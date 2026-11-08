@@ -3,6 +3,7 @@
 /* Brand tokens — the ONLY place colours/fonts are defined. Green + orange come from the Bookshelf logo. */
 @theme {
   --font-sans: "Hind Siliguri", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Noto Serif Bengali", "Noto Serif", Georgia, "Times New Roman", serif;
 
   --color-brand: #15803d;        /* logo green: header nav, headings */
   --color-brand-dark: #0f5e2c;
@@ -42,14 +43,14 @@ body { @apply bg-surface text-ink font-sans antialiased; }
 @utility no-scrollbar { scrollbar-width: none; &::-webkit-scrollbar { display: none; } }
 
 /* ---------- IELTS blog ---------- */
-.blog-prose { font-size: 1.05rem; line-height: 1.85; color: #1f2937; }
-.blog-prose h2 { margin: 2rem 0 .75rem; font-size: 1.45rem; line-height: 1.35; font-weight: 700; color: #14532d; scroll-margin-top: 90px; }
-.blog-prose h3 { margin: 1.5rem 0 .5rem; font-size: 1.2rem; font-weight: 700; }
+.blog-prose { font-size: 1.05rem; line-height: 1.95; color: #1f2937; letter-spacing: .005em; }
+.blog-prose h2 { margin: 2rem 0 .75rem; padding-bottom: .35rem; border-bottom: 1px solid #e5e7eb; font-family: var(--font-serif); font-size: 1.4rem; line-height: 1.45; font-weight: 700; color: #14532d; scroll-margin-top: 90px; }
+.blog-prose h3 { margin: 1.5rem 0 .5rem; font-family: var(--font-serif); font-size: 1.15rem; font-weight: 700; }
 .blog-prose p { margin: .85rem 0; }
 .blog-prose ul, .blog-prose ol { margin: .85rem 0 .85rem 1.4rem; }
 .blog-prose ul { list-style: disc; } .blog-prose ol { list-style: decimal; }
 .blog-prose li { margin: .3rem 0; }
-.blog-prose blockquote { margin: 1.1rem 0; padding: .75rem 1rem; border-left: 4px solid #ee6a1f; background: #fff7ed; border-radius: 0 .5rem .5rem 0; }
+.blog-prose blockquote { margin: 1.1rem 0; padding: .75rem 1rem; border-left: 3px solid #15803d; background: #f6f8f6; font-family: var(--font-serif); border-radius: 0 .5rem .5rem 0; }
 .blog-prose hr { margin: 1.75rem 0; border-color: #e5e7eb; }
 @keyframes bk-marquee { from { transform: translateX(0) } to { transform: translateX(-50%) } }
 @keyframes bk-float { 0%,100% { transform: translateY(0) rotate(-1deg) } 50% { transform: translateY(-6px) rotate(1deg) } }

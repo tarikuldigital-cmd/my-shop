@@ -18,8 +18,8 @@ export default function BlogHome() {
   const books = usePromoBooks({ cat: cat || 'guide', limit: 10 })
 
   useSeo({
-    title: c ? `${c.bn} — IELTS ব্লগ` : 'IELTS ব্লগ — A–Z গাইডলাইন, স্কলারশিপ, ইউনিভার্সিটি ও বই সাজেশন',
-    description: c ? c.dBn : 'IELTS প্রস্তুতি, পরীক্ষার তথ্য, স্কলারশিপ, বিশ্ববিদ্যালয় আবেদন ও স্টুডেন্ট ভিসা নিয়ে বাংলা ও ইংরেজিতে সহজ গাইড — Bookshelf BD।',
+    title: c ? `${c.bn} — IELTS জ্ঞানকেন্দ্র` : 'IELTS জ্ঞানকেন্দ্র — পূর্ণাঙ্গ নির্দেশিকা, বৃত্তি, বিশ্ববিদ্যালয় ও প্রস্তাবিত বই',
+    description: c ? c.dBn : 'IELTS প্রস্তুতি, পরীক্ষা সম্পর্কিত তথ্য, বৃত্তি, বিশ্ববিদ্যালয়ে আবেদন ও স্টুডেন্ট ভিসা বিষয়ে বাংলা ও ইংরেজিতে নির্ভরযোগ্য নির্দেশিকা — Bookshelf BD।',
   })
 
   useEffect(() => {
@@ -38,28 +38,27 @@ export default function BlogHome() {
     <div className="container-x space-y-5 py-4 pb-24">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-extrabold text-brand sm:text-3xl">{c ? `${c.icon} ${lang === 'en' ? c.en : c.bn}` : lang === 'en' ? 'IELTS Helpful Blog' : 'IELTS হেল্পফুল ব্লগ'}</h1>
-          <p className="mt-1 text-sm text-muted">{c ? (lang === 'en' ? c.dEn : c.dBn) : lang === 'en' ? 'A–Z IELTS guidance, scholarships, universities and book suggestions — in Bangla and English.' : 'IELTS-এর A–Z গাইডলাইন, স্কলারশিপ, ইউনিভার্সিটি ও বই সাজেশন — বাংলা ও ইংরেজিতে।'}</p>
+          <h1 className="text-2xl font-serif font-bold text-brand sm:text-3xl">{c ? (lang === 'en' ? c.en : c.bn) : lang === 'en' ? 'IELTS Knowledge Centre' : 'IELTS জ্ঞানকেন্দ্র'}</h1>
+          <p className="mt-1 text-sm text-muted">{c ? (lang === 'en' ? c.dEn : c.dBn) : lang === 'en' ? 'Comprehensive IELTS guidance, scholarship information, university admissions and recommended study materials, in Bangla and English.' : 'আইইএলটিএস প্রস্তুতি, বৃত্তির তথ্য, বিশ্ববিদ্যালয়ে ভর্তি এবং প্রস্তাবিত পাঠ্যসামগ্রী সম্পর্কিত পূর্ণাঙ্গ নির্দেশিকা — বাংলা ও ইংরেজিতে।'}</p>
         </div>
         <LangToggle lang={lang} setLang={setLang} />
       </header>
       <CatBar lang={lang} />
       <WhyBuyStrip lang={lang} />
-      <input value={q} onChange={(e) => setQ(e.target.value)} className="field" placeholder={lang === 'en' ? 'Search the blog… (e.g. scholarship, writing task 2)' : 'ব্লগে খুঁজুন… (যেমন: স্কলারশিপ, রাইটিং টাস্ক ২)'} aria-label="Search" />
+      <input value={q} onChange={(e) => setQ(e.target.value)} className="field" placeholder={lang === 'en' ? 'Search articles (e.g. scholarship, writing task 2)' : 'নিবন্ধ অনুসন্ধান করুন (যেমন: স্কলারশিপ, Writing Task 2)'} aria-label="Search" />
 
       {!cat && !q && (
-        <Link to="/ielts-guide" className="bk-shine block rounded-xl p-[2px]">
-          <span className="flex items-center gap-3 rounded-[10px] bg-white px-4 py-3">
-            <span className="text-3xl bk-float" aria-hidden="true">🗺️</span>
-            <span><b className="block">{lang === 'en' ? 'New here? Start with the A–Z IELTS roadmap' : 'নতুন? শুরু করুন A–Z IELTS রোডম্যাপ দিয়ে'}</b><span className="text-sm text-muted">{lang === 'en' ? 'From your first day of preparation to landing abroad — with the right book for every step.' : 'প্রস্তুতির প্রথম দিন থেকে বিদেশে পৌঁছানো পর্যন্ত — প্রতিটি ধাপে কোন বই পড়বেন।'}</span></span>
-          </span>
+        <Link to="/ielts-guide" className="block rounded-lg border border-line bg-white p-4 transition hover:border-brand hover:shadow-md sm:p-5">
+          <p className="text-[11px] font-semibold uppercase tracking-[.14em] text-accent">{lang === 'en' ? 'Start here' : 'এখান থেকে শুরু করুন'}</p>
+          <p className="mt-1 font-serif text-lg font-bold text-brand">{lang === 'en' ? 'The Complete IELTS Roadmap' : 'আইইএলটিএস পূর্ণাঙ্গ রোডম্যাপ'}</p>
+          <p className="mt-1 text-sm leading-6 text-muted">{lang === 'en' ? 'A structured pathway from the first day of preparation to commencing study abroad, with recommended study materials at every stage.' : 'প্রস্তুতির প্রথম দিন থেকে বিদেশে উচ্চশিক্ষা শুরু পর্যন্ত একটি সুসংগঠিত পথনির্দেশ, প্রতিটি ধাপের উপযোগী পাঠ্যসামগ্রীসহ।'}</p>
         </Link>
       )}
 
       {posts === null ? <Spinner className="py-16" /> : (
         <>
           {featured && <PostCard post={featured} lang={lang} big />}
-          {rest.length === 0 && !featured ? <p className="py-10 text-center text-muted">{lang === 'en' ? 'No posts yet.' : 'এখনো কোনো পোস্ট নেই।'}</p> : (
+          {rest.length === 0 && !featured ? <p className="py-10 text-center text-muted">{lang === 'en' ? 'No articles have been published yet.' : 'এখনো কোনো নিবন্ধ প্রকাশিত হয়নি।'}</p> : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {rest.map((p, i) => (
                 <PostCard key={p.id} post={p} lang={lang} />
@@ -68,7 +67,7 @@ export default function BlogHome() {
           )}
         </>
       )}
-      <BookMarquee books={books} title={lang === 'en' ? '📚 Books our students use for IELTS' : '📚 IELTS প্রস্তুতিতে আমাদের শিক্ষার্থীদের পছন্দের বই'} />
+      <BookMarquee books={books} title={lang === 'en' ? 'Study materials for IELTS preparation' : 'আইইএলটিএস প্রস্তুতির জন্য প্রস্তাবিত পাঠ্যসামগ্রী'} />
       <StickyCta books={books} lang={lang} />
     </div>
   )

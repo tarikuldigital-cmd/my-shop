@@ -64,7 +64,7 @@ function DesktopNav({ categories }) {
           </li>
         ))}
         <li className="ml-auto">
-          <NavLink to="/blog" className={({ isActive }) => `flex items-center gap-1 px-3 py-3 text-sm font-bold text-white hover:bg-accent ${isActive ? 'bg-accent' : 'bg-accent/80'}`}>📖 IELTS ব্লগ</NavLink>
+          <NavLink to="/blog" className={({ isActive }) => `flex items-center gap-1 px-3 py-3 text-sm font-semibold text-white hover:bg-accent ${isActive ? 'bg-accent' : 'bg-accent/85'}`}>IELTS জ্ঞানকেন্দ্র</NavLink>
         </li>
       </ul>
     </nav>
@@ -104,8 +104,8 @@ function MobileMenu({ open, onClose, categories }) {
           ))}
         </ul>
         <div className="space-y-1 border-t border-line p-4 text-sm">
-          <Link to="/blog" onClick={onClose} className="block py-1.5 font-bold text-accent">📖 IELTS ব্লগ</Link>
-          <Link to="/ielts-guide" onClick={onClose} className="block py-1.5">🗺️ IELTS A–Z গাইড</Link>
+          <Link to="/blog" onClick={onClose} className="block py-1.5 font-bold text-accent">IELTS জ্ঞানকেন্দ্র</Link>
+          <Link to="/ielts-guide" onClick={onClose} className="block py-1.5">আইইএলটিএস রোডম্যাপ</Link>
           <Link to="/customer/order-track" onClick={onClose} className="block py-1.5">Track Order</Link>
           {user
             ? <Link to="/customer/account" onClick={onClose} className="block py-1.5">My Account</Link>
