@@ -1,6 +1,6 @@
 /*
  * Marketing tags, configured from Admin → Settings → Tracking & SEO (no code changes needed).
- * - Meta Pixel (browser) + event_id for deduplication with the Conversions API (server, Laravel phase)
+ * - Meta Pixel / Conversions API: NOT sent from the site. Configure them in Google Tag Manager (the dataLayer carries event_id for deduplication)
  * - Google Tag Manager (dataLayer with GA4 e-commerce events)
  * - GA4 direct (gtag) and Google Ads conversion — used only when GTM is NOT set, to avoid double counting
  * - TikTok Pixel
@@ -43,13 +43,7 @@ export function initTracking(t = {}) {
   addMeta('facebook-domain-verification', t.fbDomainVerify)
   addMeta('google-site-verification', t.googleSiteVerify)
 
-  if (/^\d{6,20}$/.test(t.metaPixelId || '') && !loaded.meta) {
-    loaded.meta = true
-    /* eslint-disable */
-    !function (f, b, e, v, n, tt, ss) { if (f.fbq) return; n = f.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments) }; if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0'; n.queue = []; tt = b.createElement(e); tt.async = !0; tt.src = v; ss = b.getElementsByTagName(e)[0]; ss.parentNode.insertBefore(tt, ss) }(w, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js')
-    /* eslint-enable */
-    w.fbq('init', t.metaPixelId)
-  }
+  // Meta Pixel is intentionally NOT loaded here: Meta (browser + server-side) is handled only inside Google Tag Manager.
 
   if (/^GTM-[A-Z0-9]+$/i.test(t.gtmId || '') && !loaded.gtm) {
     loaded.gtm = true
@@ -97,15 +91,9 @@ export function track(event, data = {}) {
   const eventId = data.eventId || newEventId()
   const items = data.items || []
   const value = data.value ?? items.reduce((s, i) => s + i.price * (i.quantity ?? 1), 0)
-  const fb = { currency: 'BDT', value, content_ids: items.map((i) => String(i.productId ?? i.id)), content_type: 'product', num_items: items.reduce((s, i) => s + (i.quantity ?? 1), 0) || undefined }
   const ga4Name = { PageView: 'page_view', ViewContent: 'view_item', AddToCart: 'add_to_cart', InitiateCheckout: 'begin_checkout', Purchase: 'purchase', Search: 'search', Lead: 'generate_lead' }[event]
   const ga4 = event === 'Search' ? { search_term: data.query } : event === 'PageView' ? { page_path: data.path, page_title: data.title } : { currency: 'BDT', value, items: ga4Items(items), ...(data.orderId ? { transaction_id: data.orderId } : {}) }
 
-  if (w.fbq) {
-    if (event === 'Search') w.fbq('track', 'Search', { search_string: data.query }, { eventID: eventId })
-    else if (event === 'PageView') w.fbq('track', 'PageView', {}, { eventID: eventId })
-    else w.fbq('track', event, fb, { eventID: eventId })
-  }
   if (loaded.gtm && w.dataLayer) {
     if (event !== 'PageView') w.dataLayer.push({ ecommerce: null })
     w.dataLayer.push({ event: ga4Name, event_id: eventId, ...(event === 'PageView' ? ga4 : { ecommerce: ga4 }) })

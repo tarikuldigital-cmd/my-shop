@@ -126,7 +126,7 @@ function create_order_public(array $in): array {
   });
 
   sms_order_event($order, 'placed');
-  meta_capi_purchase($order, (string)($in['eventId'] ?? ''));
+  // Meta Conversions API is handled in Google Tag Manager (server container); the site no longer sends it directly.
   return $order;
 }
 
@@ -174,20 +174,4 @@ function steadfast_status_map(string $st): ?string {
     'hold' => 'hold',
     default => null,
   };
-}
-
-/* ---------------- Meta Conversions API (best effort) ---------------- */
-function meta_capi_purchase(array $o, string $eventId): void {
-  try {
-    $t = (kv_get('settings', []))['tracking'] ?? [];
-    $px = trim((string)($t['metaPixelId'] ?? '')); $tok = trim((string)($t['metaCapiToken'] ?? ''));
-    if ($px === '' || $tok === '' || $eventId === '') return;
-    $ev = ['event_name' => 'Purchase', 'event_time' => time(), 'event_id' => $eventId, 'action_source' => 'website',
-      'event_source_url' => site_url() . '/',
-      'user_data' => ['ph' => [hash('sha256', '88' . $o['phone'])], 'client_ip_address' => client_ip(), 'client_user_agent' => substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 250)],
-      'custom_data' => ['currency' => 'BDT', 'value' => $o['total'], 'order_id' => $o['invoice'], 'content_type' => 'product', 'contents' => array_map(fn($i) => ['id' => (string)$i['productId'], 'quantity' => $i['quantity'], 'item_price' => $i['price']], $o['items'])]];
-    $payload = ['data' => [$ev]];
-    if (!empty($t['metaTestCode'])) $payload['test_event_code'] = $t['metaTestCode'];
-    http_call("https://graph.facebook.com/v19.0/$px/events?access_token=" . urlencode($tok), [CURLOPT_POST => true, CURLOPT_HTTPHEADER => ['Content-Type: application/json'], CURLOPT_POSTFIELDS => jenc($payload), CURLOPT_TIMEOUT => 6]);
-  } catch (Throwable $e) { error_log('capi: ' . $e->getMessage()); }
 }

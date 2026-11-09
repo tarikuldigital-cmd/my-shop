@@ -107,9 +107,7 @@ export default function Settings() {
         <div className="grid gap-4 xl:grid-cols-2">
           <Panel title="Meta (Facebook) Pixel & Conversions API">
             <div className="space-y-3">
-              {txt('tracking.metaPixelId', 'Pixel ID', 'Events Manager → Data sources → your pixel. Sends PageView, ViewContent, AddToCart, InitiateCheckout, Purchase, Search.')}
-              {txt('tracking.metaCapiToken', 'Conversions API access token', 'Used by the Laravel server (not the browser) to send the same events with the same event_id — iOS/ad-blocker safe and deduplicated.', { type: 'password' })}
-              {txt('tracking.metaTestCode', 'Test event code (optional)', 'e.g. TEST12345 while testing in Events Manager')}
+              <p className="rounded-lg bg-amber-50 p-3 text-xs text-amber-900">Meta Pixel and Conversions API are managed only in Google Tag Manager. The website no longer sends anything to Meta directly; the fields below are ignored.</p>
               {txt('tracking.fbDomainVerify', 'Domain verification code', 'Business Settings → Brand safety → Domains → Meta-tag option (just the content value)')}
             </div>
           </Panel>
