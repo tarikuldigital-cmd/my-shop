@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import Img from '../components/common/Img'
 import { S, save, useDb, validPhone, shippingFor, inStock } from '../store/db'
 import { placeOrder, saveCheckoutDraft, discardCheckoutDraft } from '../services/orderService'
-import { track } from '../lib/tracking'
+import { track, customerData } from '../lib/tracking'
 import { useSeo, bookJsonLd } from '../lib/seo'
 import { THEMES, embedUrl } from '../lib/landing'
 import { LIVE } from '../config/env'
@@ -128,7 +128,7 @@ export default function LandingPage() {
       const order = await placeOrder({ ...form, paymentMethod: 'cod', eventId, source: 'Landing page', landing: lp.slug, note: `Landing page: /lp/${lp.slug}`, items: [item] })
       await discardCheckoutDraft(draftId.current)
       if (!LIVE) { lp.orders = (lp.orders || 0) + 1; save() }
-      track('Purchase', { items: order.items, value: order.total, orderId: order.invoice, eventId })
+      track('Purchase', { items: order.items, value: order.total, orderId: order.invoice, eventId, customer: customerData(form, settings.shipping.find((x) => x.id === form.shippingArea)?.label) })
       navigate(`/customer/order-success/${order.invoice}`, { state: { order } })
     } catch (err) { done.current = false; setServerError(err.message) } finally { setBusy(false) }
   }

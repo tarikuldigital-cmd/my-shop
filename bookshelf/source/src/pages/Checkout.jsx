@@ -11,7 +11,7 @@ import { placeOrder, saveCheckoutDraft, discardCheckoutDraft } from '../services
 import { validPhone, couponCalc, shippingFor } from '../store/db'
 import { LIVE } from '../config/env'
 import { liveValidateCoupon } from '../lib/live'
-import { track } from '../lib/tracking'
+import { track, customerData } from '../lib/tracking'
 import { useSeo } from '../lib/seo'
 import { formatPrice } from '../utils/format'
 
@@ -90,7 +90,7 @@ export default function Checkout() {
         items: items.map(({ productId, slug, name, price, quantity, variation }) => ({ productId, slug, name, price, quantity, variation })),
       })
       await discardCheckoutDraft(draftId.current)
-      track('Purchase', { items: order.items, value: order.total, orderId: order.invoice, eventId })
+      track('Purchase', { items: order.items, value: order.total, orderId: order.invoice, eventId, customer: customerData(form, settings.shipping.find((x) => x.id === form.shippingArea)?.label, user?.email) })
       clear()
       navigate(`/customer/order-success/${order.invoice}`, { state: { order } })
     } catch (err) {

@@ -78,6 +78,27 @@ export function initTracking(t = {}) {
   loaded.settings = t
 }
 
+/**
+ * Customer details for the Purchase event (GA4 "user_provided_data" format + flat keys).
+ * Values are sent raw into the dataLayer; GTM tags hash them (SHA-256) before sending to Meta/Google.
+ * Only fields the checkout actually collects are filled; the rest are left empty.
+ */
+export function customerData(form = {}, areaLabel = '', email = '') {
+  const parts = String(form.name || '').trim().split(/\s+/).filter(Boolean)
+  const first = parts.length > 1 ? parts.slice(0, -1).join(' ') : parts[0] || ''
+  const last = parts.length > 1 ? parts[parts.length - 1] : ''
+  const digits = String(form.phone || '').replace(/[^\d]/g, '').replace(/^88/, '')
+  const phone = digits ? `+88${digits}` : ''
+  const city = /ঢাকা.*(ভেতর|ভিতর)|inside\s*dhaka/i.test(areaLabel) ? 'Dhaka' : ''
+  const address = String(form.address || '').trim()
+  return {
+    first_name: first, last_name: last, phone_number: phone, email: String(email || '').trim().toLowerCase(),
+    street: address, city, country: 'BD',
+    // aliases so GTM Data Layer variables can use whichever names they prefer
+    address, user_first_name: first, user_last_name: last, user_phone: phone, user_email: String(email || '').trim().toLowerCase(), user_address: address, user_city: city, user_country: 'BD',
+  }
+}
+
 const newEventId = () => `${Date.now()}.${Math.random().toString(36).slice(2, 9)}`
 const ga4Items = (items) => items.map((i) => ({ item_id: String(i.productId ?? i.id), item_name: i.name, price: i.price, quantity: i.quantity ?? 1, item_category: i.category }))
 
@@ -96,8 +117,11 @@ export function track(event, data = {}) {
 
   if (loaded.gtm && w.dataLayer) {
     if (event !== 'PageView') w.dataLayer.push({ ecommerce: null })
-    w.dataLayer.push({ event: ga4Name, event_id: eventId, ...(event === 'PageView' ? ga4 : { ecommerce: ga4 }) })
+    const c = data.customer
+    const ud = c ? { user_data: { email: c.email, phone_number: c.phone_number, address: { first_name: c.first_name, last_name: c.last_name, street: c.street, city: c.city, country: c.country } }, ...c } : {}
+    w.dataLayer.push({ event: ga4Name, event_id: eventId, ...ud, ...(event === 'PageView' ? ga4 : { ecommerce: ga4 }) })
   } else if (w.gtag) {
+    if (data.customer) w.gtag('set', 'user_data', { email: data.customer.email, phone_number: data.customer.phone_number, address: { first_name: data.customer.first_name, last_name: data.customer.last_name, street: data.customer.street, city: data.customer.city, country: data.customer.country } })
     w.gtag('event', ga4Name, ga4)
     const t = loaded.settings || {}
     if (event === 'Purchase' && t.googleAdsId && t.googleAdsLabel) w.gtag('event', 'conversion', { send_to: `${t.googleAdsId}/${t.googleAdsLabel}`, value, currency: 'BDT', transaction_id: data.orderId })
