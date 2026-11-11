@@ -2,7 +2,61 @@
  {
   "slug": "electronics-and-gadgets",
   "name": "Electronics & Gadgets",
-  "image": "https://images.pexels.com/photos/17810098/pexels-photo-17810098.jpeg?auto=compress&cs=tinysrgb&w=500",
+  "image": "https://shop.varieytbazar.com/wp-content/uploads/2026/11/imgi_15_nqwyNpFC7r7pIpYmcuQxAki3E9WvHuE9C1oTo5WL.jpg.w800.webp",
+  "subcategories": []
+ },
+ {
+  "slug": "home-appliances",
+  "name": "Home Appliances",
+  "image": "https://shop.varieytbazar.com/wp-content/uploads/2026/10/imgi_349_H46bcf07e7c3141fda85a5b9c523c9d595.jpg",
+  "subcategories": []
+ },
+ {
+  "slug": "home-and-kitchen",
+  "name": "Home & Kitchen",
+  "image": "https://shop.varieytbazar.com/wp-content/uploads/2026/10/imgi_104_H0034d39e2b4a4d3ea05b75262221b92fI.png",
+  "subcategories": []
+ },
+ {
+  "slug": "home-decor-and-utility",
+  "name": "Home Decor & Utility",
+  "image": "https://shop.varieytbazar.com/wp-content/uploads/2026/10/669487071_122181134636425931_3263058525060809157_n.jpg",
+  "subcategories": []
+ },
+ {
+  "slug": "personal-care",
+  "name": "Personal Care",
+  "image": "https://shop.varieytbazar.com/wp-content/uploads/2026/11/imgi_337_H8bed8fc8219c4aec9ec07f25dbb1c036J.jpg",
+  "subcategories": []
+ },
+ {
+  "slug": "beauty-and-care",
+  "name": "Beauty & Cosmetics",
+  "image": "https://shop.varieytbazar.com/wp-content/uploads/2026/09/imgi_338_H85e2e033a8f14843bd3b7ad0d5b0e01cr.jpg",
+  "subcategories": []
+ },
+ {
+  "slug": "car-and-bike",
+  "name": "Car & Bike",
+  "image": "https://shop.varieytbazar.com/wp-content/uploads/2026/11/imgi_302_H10bbee8c1bbb4ffb81b98bdf31ee7eebJ.png",
+  "subcategories": []
+ },
+ {
+  "slug": "islamic-items",
+  "name": "Islamic Items",
+  "image": "https://shop.varieytbazar.com/wp-content/uploads/2026/05/imgi_86_Hfac818ce51fa4cf0ac44eb0993fc2f55H-1.jpg",
+  "subcategories": []
+ },
+ {
+  "slug": "fashion",
+  "name": "Fashion & Bags",
+  "image": "https://shop.varieytbazar.com/wp-content/uploads/2026/09/imgi_418_H6f0424bb40eb4cf6a2ed72a9096d0b20s.jpg",
+  "subcategories": []
+ },
+ {
+  "slug": "toys-and-baby",
+  "name": "Kids & School",
+  "image": "https://shop.varieytbazar.com/wp-content/uploads/2026/08/imgi_315_Hb07aa090f0224bdfb76373a2ef7af5d0v.jpg",
   "subcategories": []
  },
  {
@@ -12,57 +66,15 @@
   "subcategories": []
  },
  {
-  "slug": "winter-gadgets",
-  "name": "Winter Gadgets",
-  "image": "https://images.pexels.com/photos/15206538/pexels-photo-15206538.jpeg?auto=compress&cs=tinysrgb&w=500",
-  "subcategories": []
- },
- {
   "slug": "smart-home-and-security",
   "name": "Smart Home & Security",
   "image": "https://images.pexels.com/photos/24346971/pexels-photo-24346971.jpeg?auto=compress&cs=tinysrgb&w=500",
   "subcategories": []
  },
  {
-  "slug": "car-and-bike",
-  "name": "Car & Bike",
-  "image": "https://images.pexels.com/photos/33488/pexels-photo-33488.jpeg?auto=compress&cs=tinysrgb&w=500",
-  "subcategories": []
- },
- {
-  "slug": "personal-care",
-  "name": "Personal Care",
-  "image": "https://images.pexels.com/photos/11372618/pexels-photo-11372618.jpeg?auto=compress&cs=tinysrgb&w=500",
-  "subcategories": []
- },
- {
-  "slug": "fashion",
-  "name": "Fashion",
-  "image": "https://images.pexels.com/photos/28494850/pexels-photo-28494850.jpeg?auto=compress&cs=tinysrgb&w=500",
-  "subcategories": []
- },
- {
-  "slug": "home-and-kitchen",
-  "name": "Home & Kitchen",
-  "image": "https://images.pexels.com/photos/8055165/pexels-photo-8055165.jpeg?auto=compress&cs=tinysrgb&w=500",
-  "subcategories": []
- },
- {
-  "slug": "beauty-and-care",
-  "name": "Beauty & Care",
-  "image": "https://images.pexels.com/photos/34939709/pexels-photo-34939709.jpeg?auto=compress&cs=tinysrgb&w=500",
-  "subcategories": []
- },
- {
   "slug": "plants-and-garden",
   "name": "Plants & Garden",
   "image": "https://images.pexels.com/photos/1084199/pexels-photo-1084199.jpeg?auto=compress&cs=tinysrgb&w=500",
-  "subcategories": []
- },
- {
-  "slug": "toys-and-baby",
-  "name": "Toys & Baby",
-  "image": "https://images.pexels.com/photos/5889959/pexels-photo-5889959.jpeg?auto=compress&cs=tinysrgb&w=500",
   "subcategories": []
  },
  {

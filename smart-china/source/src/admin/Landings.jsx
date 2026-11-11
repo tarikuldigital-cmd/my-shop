@@ -4,6 +4,7 @@ import { Field, Modal, Pill, Empty, toast } from './ui'
 import Img from '../components/common/Img'
 import { storeUrl } from '../config/env'
 import { THEMES, newLanding, contentFromProduct, slugify } from '../lib/landing'
+import { loadDetails } from '../services/catalogService'
 
 const lines = (s) => s.split('\n').map((x) => x.trim()).filter(Boolean)
 const toLocal = (t) => { if (!t) return ''; const d = new Date(t - new Date(t).getTimezoneOffset() * 6e4); return d.toISOString().slice(0, 16) }
@@ -35,7 +36,8 @@ function Editor({ landing, isNew, onDone }) {
   const set = (k) => (e) => setF({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value })
   const matches = useMemo(() => pq.trim().length < 2 ? [] : S.products.filter((p) => `${p.name} ${p.sku}`.toLowerCase().includes(pq.toLowerCase())).slice(0, 6), [pq])
 
-  const pick = (p) => {
+  const pick = async (p) => {
+    await loadDetails(p)
     const c = contentFromProduct(p)
     setF({ ...f, ...c, bulletsText: c.bullets.join('\n'), slug: isNew ? newLanding(p, S.landings).slug : f.slug })
     setPq('')

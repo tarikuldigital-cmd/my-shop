@@ -4,120 +4,212 @@
    "image": "",
    "link": "/category/electronics-and-gadgets",
    "title": "New gadgets, honest prices",
-   "sub": "Up to 25% off earbuds, smart watches and power banks.",
-   "cta": "Shop gadgets",
-   "tint": "#2b62a8"
+   "sub": "228+ gadgets — cash on delivery all over Bangladesh.",
+   "cta": "Shop gadgets"
   },
   {
    "image": "",
-   "link": "/category/winter-gadgets",
-   "title": "Winter gadgets are here",
-   "sub": "Room heaters, hot water bags, kettles and lunch boxes at honest prices.",
-   "cta": "Shop winter",
-   "tint": "#d9480f"
+   "link": "/category/home-appliances",
+   "title": "Smart home appliances",
+   "sub": "Make everyday work easier at home and in the kitchen.",
+   "cta": "Shop appliances"
   },
   {
    "image": "",
-   "link": "/category/home-and-kitchen",
-   "title": "Kitchen essentials",
-   "sub": "Pans, bottles and combo deals in one place.",
-   "cta": "Shop kitchen",
-   "tint": "#b8641c"
+   "link": "/category/personal-care",
+   "title": "Personal care essentials",
+   "sub": "Health, comfort and care products delivered to your door.",
+   "cta": "Shop personal care"
   }
  ],
  "flashSale": [
-  "mini-room-heater",
-  "electric-hot-water-bag",
-  "v380-wi-fi-ip-camera",
-  "k9-dual-wireless-microphone",
-  "hair-and-beard-trimmer"
+  "2-pcs-wall-mounted-soap-box",
+  "4-pcs-wall-mounted-soap-box",
+  "facial-and-neck-lifting-massager-facial-skin-care",
+  "2-pcs-6-layer-water-filter-tap-purifier",
+  "shoe-polish-combo",
+  "2-in-1-multifunctional-stainless-steel-peeler",
+  "jbl-m3-mini-wireless-bluetooth-speaker-metal-body",
+  "high-performance-rechargeable-led-headlamp",
+  "creative-non-stick-rice-spoon",
+  "water-filter-bag-faucet-tap-cotton-reusable-double-layer-splash",
+  "1-pcs-wall-mounted-soap-box",
+  "adjustable-strengthener-hand-grip"
  ],
  "hotDeal": "sameAsFlashSale",
  "allProducts": [
-  "wireless-earbuds-pro",
-  "smart-watch-series-8",
-  "mens-polo-shirt",
-  "non-stick-frying-pan",
-  "money-plant-with-pot",
-  "baby-diaper-pants",
-  "pure-sundarbans-honey",
-  "portable-bluetooth-speaker",
-  "electric-kettle-1-8-l",
-  "hy300-mini-smart-projector",
-  "k9-dual-wireless-microphone",
-  "ring-light-7-ft-tripod",
-  "mini-room-heater",
-  "electric-hot-water-bag",
-  "v380-wi-fi-ip-camera",
-  "car-and-bike-phone-holder",
-  "hair-and-beard-trimmer"
+  "foldable-led-desk-lamp-built-in-power-bank",
+  "rechargeable-cob-keychain-light-mini-flashlight",
+  "car-tire-repair-tools-kit-for-tubeless-tyer-puncture",
+  "temperature-coffee-tea-mug-spoon-heat-resistant",
+  "jbl-m3-mini-wireless-bluetooth-speaker-metal-body",
+  "skateboard-ornament-cute-bear",
+  "4-pcs-flower-shape-living-room-carpet",
+  "3-pcs-flower-shape-living-room-carpet",
+  "multifunctional-2-in-1-blood-pressure-blood-glucose-monitor-machine",
+  "rechargeable-plant-electric-garden-spray",
+  "long-handle-detachable-ceiling-fan-dusting-brush",
+  "multifunctional-stainless-steel-kitchen-scissors",
+  "energy-saving-device-for-home-office-commercial",
+  "wireless-portable-cordless-powerful-car-cleaning",
+  "smart-stainless-steel-vacuum-flask",
+  "portable-mini-steam-iron-2",
+  "wooden-trivet-set-for-modern-kitchen",
+  "electric-handheld-foam-maker"
  ],
  "categorySections": {
   "electronics-and-gadgets": [
-   "wireless-earbuds-pro",
-   "smart-watch-series-8",
-   "fast-charging-power-bank",
-   "usb-rechargeable-desk-fan",
-   "portable-bluetooth-speaker",
-   "bluetooth-neckband-enc",
-   "hy300-mini-smart-projector",
-   "rechargeable-table-fan-led-light"
+   "foldable-led-desk-lamp-built-in-power-bank",
+   "rechargeable-cob-keychain-light-mini-flashlight",
+   "jbl-m3-mini-wireless-bluetooth-speaker-metal-body",
+   "energy-saving-device-for-home-office-commercial",
+   "portable-mini-steam-iron-2",
+   "electric-handheld-foam-maker",
+   "high-power-aluminum-alloy-flashlight",
+   "solar-charging-wireless-for-speaker-flashlight",
+   "usb-lighter-outdoor-windproof-double-arc-lighter",
+   "usb-dongle-universal-air-mouse-remote",
+   "smart-test-pen-with-lighting-led-firewire-sound-and-light-alarm-safety-sensor",
+   "mini-hair-straightener-curling-iron"
+  ],
+  "home-appliances": [
+   "rechargeable-plant-electric-garden-spray",
+   "long-handle-detachable-ceiling-fan-dusting-brush",
+   "low-temperature-welding-rods",
+   "long-lasting-air-freshener-automatic-toilet-flush-cleaner",
+   "adjustable-clothes-dryer-tension-rod",
+   "car-home-dual-use-mini-vacuum-cleaner",
+   "usb-rechargeable-motion-sensor-wireless-magnetic-lights",
+   "3-2-liter-electric-cooking-pot",
+   "2-2-liter-electric-cooking-pot",
+   "heavy-duty-steel-wire-clothesline",
+   "magnetic-window-cleaner-brush-2",
+   "modern-eco-friendly-battery-table-lamp-night-light"
+  ],
+  "home-and-kitchen": [
+   "multifunctional-stainless-steel-kitchen-scissors",
+   "wooden-trivet-set-for-modern-kitchen",
+   "nail-fungus-removal-liquid",
+   "20-pcs-2-box-cleaning-sponge",
+   "magic-eraser-multi-purpose-cleaning-sponge",
+   "4-in-1-refillable-plastic-travel-bottle",
+   "smart-electronic-measuring-spoon",
+   "https-shop-varieytbazar-com-product-hand-free-magnetic-camera-neck-hanging-camera-holder",
+   "mini-popcorn-electric-household-appliance-machine",
+   "2-in-1-multifunctional-stainless-steel-peeler",
+   "4-function-garden-spray-gun-washing-and-gardening",
+   "matchstick-shape-refillable-lighter"
+  ],
+  "home-decor-and-utility": [
+   "4-pcs-flower-shape-living-room-carpet",
+   "3-pcs-flower-shape-living-room-carpet",
+   "14-car-windshield-led-screen-wallpaper",
+   "8-car-windshield-led-screen-wallpaper",
+   "4-pcsrat-killer-trap-for-professional",
+   "3pcsrat-killer-trap-for-professional",
+   "2pcsrat-killer-trap-for-professional",
+   "urgent-fire-safety-spray-for-car-and-home-fire-stop-extinguisher-can-2",
+   "urgent-fire-safety-spray-for-car-and-home-fire-stop-extinguisher-can",
+   "500gram-wall-crack-protection",
+   "eco-friendly-coating-for-kitchen-shower-balcony-exterior-wall-crack-protection",
+   "3-pcs-self-locking-silent-hinge"
+  ],
+  "personal-care": [
+   "temperature-coffee-tea-mug-spoon-heat-resistant",
+   "multifunctional-2-in-1-blood-pressure-blood-glucose-monitor-machine",
+   "smart-stainless-steel-vacuum-flask",
+   "electric-shaver-for-women-female-razor",
+   "foldable-multi-purpose-pipe-integrated-dual-use",
+   "electric-mist-scalp-care-tool-retractable-brush",
+   "patient-transfer-sheet-transfer-slide-sheet",
+   "silicone-shower-brush-scrubber",
+   "waterproof-shoes-organizer-storage-bag",
+   "8pcs-stainless-steel-nail-set",
+   "modern-salon-curling-hair-dye-hair-tools",
+   "hot-leg-and-foot-massager-air-pressure-heating-relief"
+  ],
+  "beauty-and-care": [
+   "large-capacity-rotating-makeup-tools-bucket",
+   "luxury-elegant-celebrity-earrings",
+   "arabic-retro-ayatul-kursi-mens-watches-for-men",
+   "ayatollah-kursi-pendant-arabic-3d-bar-necklace",
+   "luxury-gardenia-aroma-diffuser-120ml-essential-oil-reed-fragrance-with-gift-box",
+   "multi-functional-luxury-sewing-box",
+   "5-in-1-nail-care-manicure-pedicure",
+   "essential-oil-hair-serum",
+   "electric-shaver-with-usb-charging",
+   "jewelry-gift-box-with-smart-watch",
+   "multifunctional-shoe-cleaning-cream",
+   "facial-and-neck-lifting-massager-facial-skin-care"
+  ],
+  "car-and-bike": [
+   "car-tire-repair-tools-kit-for-tubeless-tyer-puncture",
+   "skateboard-ornament-cute-bear",
+   "wireless-portable-cordless-powerful-car-cleaning",
+   "glass-nano-repair-window-repair",
+   "gps-tracker-magnetic-real-time-tracking",
+   "car-home-dual-use-mini-vacuum-cleaner",
+   "ip67-waterproof-endoscope-camera",
+   "air-conditioner-coil-cleaner-spray",
+   "motorcycle-handlebar-lock",
+   "reflective-car-reflector-strips-tape-rim-stickers",
+   "high-power-wireless-portable-vacuum-cleaner",
+   "high-pressure-portable-electric-cleaning-spray-gun"
+  ],
+  "islamic-items": [
+   "medium-qurbani-kuthar-with-rubber-grip",
+   "qurbani-kuthar-with-rubber-grip",
+   "quran-adjustable-stand",
+   "holly-digital-tally-counter-with-led-screen",
+   "foldable-travel-muslim-prayer-mat-with-backrest",
+   "rechargeable-electric-coffee-mug",
+   "labor-saving-wrench-for-cars",
+   "cute-childrens-musical-dancing-instrument-toy-dance-rabbit-for-kids",
+   "multi-functional-diy-wire-cutter-hammer-head-remover",
+   "thermos-vacuum-flask-stainless-steel-water-bottle-gift-set-with-2-cup",
+   "powerful-flashlight-white-laser-led",
+   "infrared-scalp-massager-with-4-kneading-massage-heads-head-body-massager-for-hair-growth-stress-relax-red-light-nourishes-hair"
+  ],
+  "fashion": [
+   "luxury-elegant-celebrity-earrings",
+   "green-teardrop-leaf-hoop-earrings",
+   "2-pcs-posture-correction-open-shoulder-strap",
+   "posture-correction-open-shoulder-strap",
+   "premium-wooden-finish-notebook-2",
+   "premium-wooden-finish-notebook",
+   "luxury-gardenia-aroma-diffuser-120ml-essential-oil-reed-fragrance-with-gift-box",
+   "womens-abdomen-belt-slimming-belly-fat-reducing-cross-waist-exercise-belt",
+   "360-adjustable-waterproof-motorcycle-bike-phone-holder-universal-smartphone-mount",
+   "electric-velvet-bright-heating-pad-with-gel-for-pain-relief-multicolour-hot-water-bag",
+   "5-in-1-nail-care-manicure-pedicure",
+   "folding-pocket-mirror-with-brush"
+  ],
+  "toys-and-baby": [
+   "magical-water-painting-pen",
+   "flying-ball-spinner-toys-magic-flying-toy-flying-spinners-built-in-rgb-lights",
+   "induction-spaceman-spinning-fly-robot-toy",
+   "automatic-electric-water-shark-gun-game-toy",
+   "electric-water-gun",
+   "tabletop-football-board-game",
+   "stainless-steel-304-leak-proof-bento-lunch-box",
+   "20-pcs-transparent-waterproof-book-cover",
+   "10-pcs-transparent-waterproof-book-cover",
+   "portable-electric-lunch-box",
+   "premium-wooden-finish-notebook-2",
+   "premium-wooden-finish-notebook"
   ],
   "mobile-and-creator-gear": [
    "k9-dual-wireless-microphone",
-   "ring-light-7-ft-tripod",
-   "selfie-stick-tripod-bluetooth-remote",
-   "adjustable-phone-and-tablet-stand"
-  ],
-  "winter-gadgets": [
-   "mini-room-heater",
-   "electric-hot-water-bag",
-   "electric-lunch-box"
+   "ring-light-7-ft-tripod"
   ],
   "smart-home-and-security": [
    "v380-wi-fi-ip-camera",
    "smart-wi-fi-plug",
    "rgb-led-strip-light-with-remote"
   ],
-  "car-and-bike": [
-   "car-and-bike-phone-holder",
-   "bluetooth-fm-transmitter-car-charger",
-   "portable-car-vacuum-cleaner"
-  ],
-  "personal-care": [
-   "hair-and-beard-trimmer",
-   "massage-gun"
-  ],
-  "fashion": [
-   "mens-polo-shirt",
-   "womens-cotton-kurti",
-   "casual-sneakers",
-   "water-resistant-laptop-backpack",
-   "polarized-sunglasses",
-   "womens-crossbody-bag"
-  ],
-  "home-and-kitchen": [
-   "non-stick-frying-pan",
-   "insulated-steel-bottle",
-   "electric-kettle-1-8-l",
-   "portable-rechargeable-juice-blender",
-   "15-in-1-vegetable-chopper",
-   "decorative-fairy-lights",
-   "kitchen-combo-pan-bottle"
-  ],
-  "beauty-and-care": [
-   "vitamin-c-face-serum",
-   "organic-hair-oil",
-   "korean-sunscreen-spf50",
-   "hair-straightener"
-  ],
   "plants-and-garden": [
    "money-plant-with-pot",
    "snake-plant"
-  ],
-  "toys-and-baby": [
-   "building-blocks-set",
-   "baby-diaper-pants"
   ],
   "grocery": [
    "chinigura-aromatic-rice",

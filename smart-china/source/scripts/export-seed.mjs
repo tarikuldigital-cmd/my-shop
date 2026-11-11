@@ -3,7 +3,8 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { PRODUCT_FIELDS, defaultSettings } from '../src/store/defaults.js'
 const j = (f) => JSON.parse(readFileSync(new URL(`../src/mocks/${f}`, import.meta.url)))
-const products = j('products.json').map((p) => ({ ...PRODUCT_FIELDS, ...p }))
+const descriptions = j('descriptions.json')
+const products = j('products.json').map((p) => ({ ...PRODUCT_FIELDS, ...p, description: p.description ?? descriptions[p.slug] ?? '' }))
 const home = j('home.json')
 const pages = Object.fromEntries(Object.entries(j('pages.json')).filter(([k]) => !k.startsWith('_')))
 const seed = {

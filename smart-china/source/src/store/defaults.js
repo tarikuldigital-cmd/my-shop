@@ -3,7 +3,7 @@ import { defaultChat } from '../lib/chatDefaults.js'
 import seedSettings from '../mocks/settings.json' with { type: 'json' }
 
 /** Fields every product has (variants: options = [{ name, values }], variants = [{ key, price, oldPrice, stock, sku }]) */
-export const PRODUCT_FIELDS = { shortDescription: '', description: '', brand: '', sku: '', specs: [], options: [], variants: [], stock: null, featured: false, isNew: false, seoTitle: '', seoDescription: '', active: true, sold: 0 }
+export const PRODUCT_FIELDS = { shortDescription: '', brand: '', sku: '', specs: [], options: [], variants: [], stock: null, featured: false, isNew: false, seoTitle: '', seoDescription: '', active: true, sold: 0 }
 
 export function defaultSettings() {
   return {

@@ -9,6 +9,7 @@ function routes(): array {
     ['GET', 'health', fn() => out(['ok' => true, 'time' => time(), 'db' => (bool)q('SELECT 1')->fetch()])],
     ['GET', 'bootstrap', 'h_bootstrap'],
     ['GET', 'sitemap', 'h_sitemap'],
+    ['GET', 'products/([a-zA-Z0-9%._-]{1,200})/details', 'h_product_details'],
     ['POST', 'orders', 'h_place_order'],
     ['POST', 'orders/track', 'h_track_by_phone'],
     ['GET', 'orders/track/([A-Za-z0-9-]{6,40})', 'h_track_code'],
@@ -51,7 +52,8 @@ function routes(): array {
 
 /* =============== public storefront =============== */
 function h_bootstrap(): void {
-  $products = array_values(array_filter(doc_all('products'), fn($p) => ($p['active'] ?? true) !== false));
+  // long descriptions are left out of the catalogue download; the product page loads them from products/{slug}/details
+  $products = array_map(function ($p) { unset($p['description']); return $p; }, array_values(array_filter(doc_all('products'), fn($p) => ($p['active'] ?? true) !== false)));
   $reviews = array_map(function ($r) { unset($r['phone']); return $r; }, array_values(array_filter(doc_all('reviews'), fn($r) => !empty($r['approved']))));
   $landings = array_values(array_filter(doc_all('landings'), fn($l) => ($l['active'] ?? true) !== false));
   $data = [
@@ -63,7 +65,16 @@ function h_bootstrap(): void {
   header('Cache-Control: no-cache'); header("ETag: $etag");
   if (($_SERVER['HTTP_IF_NONE_MATCH'] ?? '') === $etag) { http_response_code(304); exit; }
   header('Content-Type: application/json; charset=utf-8');
+  // ~700 products: compress here too, in case the host does not (Apache mod_deflate skips already-encoded responses)
+  if (function_exists('gzencode') && str_contains((string)($_SERVER['HTTP_ACCEPT_ENCODING'] ?? ''), 'gzip') && !headers_sent()) { header('Content-Encoding: gzip'); header('Vary: Accept-Encoding'); echo gzencode($json, 6); exit; }
   echo $json; exit;
+}
+
+function h_product_details(string $slug): void {
+  $p = doc_by('products', 'k', urldecode($slug));
+  if (!$p || ($p['active'] ?? true) === false) fail(404, 'Product not found');
+  header('Cache-Control: public, max-age=300');
+  out(['description' => (string)($p['description'] ?? ''), 'specs' => $p['specs'] ?? []]);
 }
 
 function h_place_order(): void { out(create_order_public(body()), 201); }

@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { loadDetails } from '../services/catalogService'
 import { S, save, useDb, hasOptions, syncVariantSummary } from '../store/db'
 import { Field, Modal, Pill, tk, toast, Empty } from './ui'
 import Img from '../components/common/Img'
@@ -88,6 +89,8 @@ function SpecsEditor({ f, setF }) {
 function ProductForm({ product, onDone }) {
   const [f, setF] = useState(() => ({ ...BLANK, ...product, images: [...(product?.images || [])], options: (product?.options || []).map((o) => ({ ...o, values: [...o.values] })), variants: (product?.variants || []).map((v) => ({ ...v })), specs: (product?.specs || []).map((r) => ({ ...r })) }))
   const [err, setErr] = useState('')
+  // the long description is loaded on demand (not part of the catalogue download)
+  useEffect(() => { if (product && typeof product.description !== 'string') loadDetails(product).then((p) => setF((x) => ({ ...x, description: p.description || '' }))) }, [product])
   const set = (k, num) => (e) => {
     const v = e.target.type === 'checkbox' ? e.target.checked : e.target.value
     setF({ ...f, [k]: num ? (v === '' ? null : Number(v)) : v })
@@ -176,10 +179,10 @@ export default function Products() {
   const term = q.toLowerCase()
   const low = (p) => typeof p.stock === 'number' && p.stock <= 3
   const all = S.products.filter((p) => (!cat || p.categories.includes(cat)) && (!term || `${p.name} ${p.sku} ${p.brand || ''} ${(p.variants || []).map((v) => `${v.key} ${v.sku}`).join(' ')}`.toLowerCase().includes(term))
-    && (!stockF || (stockF === 'low' ? low(p) : stockF === 'out' ? p.stock === 0 || (hasOptions(p) && p.variants.some((v) => v.stock === 0)) : p.active === false)))
+    && (!stockF || (stockF === 'low' ? low(p) : stockF === 'out' ? p.stock === 0 || (hasOptions(p) && p.variants.some((v) => v.stock === 0)) : stockF === 'noprice' ? !p.price : p.active === false)))
   const pages = Math.max(1, Math.ceil(all.length / 25))
   const list = all.slice((Math.min(page, pages) - 1) * 25, Math.min(page, pages) * 25)
-  const missing = (p) => [!p.images.length && 'image', !p.description && 'description'].filter(Boolean)
+  const missing = (p) => [!p.images.length && 'image', !p.price && 'price', p.description === '' && 'description'].filter(Boolean)
   const stockCell = (p) => {
     if (hasOptions(p)) {
       const out = p.variants.filter((v) => v.stock === 0).length
@@ -197,7 +200,7 @@ export default function Products() {
       <div className="flex flex-wrap gap-2">
         <input type="search" className="field max-w-sm" placeholder="Search name, SKU, brand, variant…" value={q} onChange={(e) => { setQ(e.target.value); setPage(1) }} />
         <select className="field w-auto" value={cat} onChange={(e) => { setCat(e.target.value); setPage(1) }}><option value="">All categories</option>{S.categories.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}</select>
-        <select className="field w-auto" value={stockF} onChange={(e) => { setStockF(e.target.value); setPage(1) }}><option value="">All stock</option><option value="low">Low stock (≤3)</option><option value="out">Out of stock</option><option value="hidden">Hidden</option></select>
+        <select className="field w-auto" value={stockF} onChange={(e) => { setStockF(e.target.value); setPage(1) }}><option value="">All stock</option><option value="low">Low stock (≤3)</option><option value="out">Out of stock</option><option value="hidden">Hidden</option><option value="noprice">No price</option></select>
       </div>
       <div className="overflow-x-auto rounded-lg border border-line bg-white">
         <table className="w-full min-w-[820px] text-sm">

@@ -93,12 +93,22 @@ export async function getProducts(params = {}) {
   }
 }
 
+/** Long descriptions are not part of the catalogue download (keeps the site fast); they load with the product page. */
+export async function loadDetails(p) {
+  if (!p || typeof p.description === 'string') return p
+  try {
+    if (LIVE) { const d = await api.get(`/products/${encodeURIComponent(p.slug)}/details`); p.description = d.data?.description ?? d.description ?? ''; if (d.data?.specs || d.specs) p.specs = d.data?.specs || d.specs }
+    else { const all = (await import('../mocks/descriptions.json')).default; p.description = all[p.slug] ?? '' }
+  } catch { /* the page still works without the long description */ }
+  return p
+}
+
 export async function getProduct(slug) {
   if (USE_MOCK) {
     await delay()
     const p = bySlugLive(slug)
     if (!p) throw Object.assign(new Error('Product not found'), { status: 404 })
-    return p
+    return loadDetails(p)
   }
   return unwrap(await api.get(ENDPOINTS.product(slug)))
 }
