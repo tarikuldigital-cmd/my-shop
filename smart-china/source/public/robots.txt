@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /admin
+Disallow: /customer/
+Disallow: /track/
+Disallow: /t/
+Allow: /
+
+Sitemap: /api/v1/sitemap

@@ -1,0 +1,74 @@
+[
+ {
+  "slug": "electronics-and-gadgets",
+  "name": "Electronics & Gadgets",
+  "image": "https://images.pexels.com/photos/17810098/pexels-photo-17810098.jpeg?auto=compress&cs=tinysrgb&w=500",
+  "subcategories": []
+ },
+ {
+  "slug": "mobile-and-creator-gear",
+  "name": "Mobile & Creator Gear",
+  "image": "https://images.pexels.com/photos/9413665/pexels-photo-9413665.jpeg?auto=compress&cs=tinysrgb&w=500",
+  "subcategories": []
+ },
+ {
+  "slug": "winter-gadgets",
+  "name": "Winter Gadgets",
+  "image": "https://images.pexels.com/photos/15206538/pexels-photo-15206538.jpeg?auto=compress&cs=tinysrgb&w=500",
+  "subcategories": []
+ },
+ {
+  "slug": "smart-home-and-security",
+  "name": "Smart Home & Security",
+  "image": "https://images.pexels.com/photos/24346971/pexels-photo-24346971.jpeg?auto=compress&cs=tinysrgb&w=500",
+  "subcategories": []
+ },
+ {
+  "slug": "car-and-bike",
+  "name": "Car & Bike",
+  "image": "https://images.pexels.com/photos/33488/pexels-photo-33488.jpeg?auto=compress&cs=tinysrgb&w=500",
+  "subcategories": []
+ },
+ {
+  "slug": "personal-care",
+  "name": "Personal Care",
+  "image": "https://images.pexels.com/photos/11372618/pexels-photo-11372618.jpeg?auto=compress&cs=tinysrgb&w=500",
+  "subcategories": []
+ },
+ {
+  "slug": "fashion",
+  "name": "Fashion",
+  "image": "https://images.pexels.com/photos/28494850/pexels-photo-28494850.jpeg?auto=compress&cs=tinysrgb&w=500",
+  "subcategories": []
+ },
+ {
+  "slug": "home-and-kitchen",
+  "name": "Home & Kitchen",
+  "image": "https://images.pexels.com/photos/8055165/pexels-photo-8055165.jpeg?auto=compress&cs=tinysrgb&w=500",
+  "subcategories": []
+ },
+ {
+  "slug": "beauty-and-care",
+  "name": "Beauty & Care",
+  "image": "https://images.pexels.com/photos/34939709/pexels-photo-34939709.jpeg?auto=compress&cs=tinysrgb&w=500",
+  "subcategories": []
+ },
+ {
+  "slug": "plants-and-garden",
+  "name": "Plants & Garden",
+  "image": "https://images.pexels.com/photos/1084199/pexels-photo-1084199.jpeg?auto=compress&cs=tinysrgb&w=500",
+  "subcategories": []
+ },
+ {
+  "slug": "toys-and-baby",
+  "name": "Toys & Baby",
+  "image": "https://images.pexels.com/photos/5889959/pexels-photo-5889959.jpeg?auto=compress&cs=tinysrgb&w=500",
+  "subcategories": []
+ },
+ {
+  "slug": "grocery",
+  "name": "Grocery",
+  "image": "https://images.pexels.com/photos/11032901/pexels-photo-11032901.jpeg?auto=compress&cs=tinysrgb&w=500",
+  "subcategories": []
+ }
+]

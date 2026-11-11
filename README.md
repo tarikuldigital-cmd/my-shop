@@ -1,5 +1,9 @@
 # Smart China Gallery
 
+> **New version (Nov 2026):** `smart-china/` — Bookshelf-style React + PHP/MySQL backend, Steadfast courier API, live courier tracking.
+> Preview: https://tarikuldigital-cmd.github.io/my-shop/smart-china/ · Admin: add `#/admin` (demo login admin@demo.com / 123456) · cPanel package: `smart-china/cpanel/smart-china-cpanel-upload.zip` · Source: `smart-china/source/`
+
+
 Online store for Smart China Gallery (New Paltan, Dhaka · WhatsApp +880 1338-325365), built with **React + Vite**.
 Everything is in English: storefront, checkout and admin panel.
 

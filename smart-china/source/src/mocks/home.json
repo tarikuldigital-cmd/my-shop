@@ -1,0 +1,128 @@
+{
+ "banners": [
+  {
+   "image": "",
+   "link": "/category/electronics-and-gadgets",
+   "title": "New gadgets, honest prices",
+   "sub": "Up to 25% off earbuds, smart watches and power banks.",
+   "cta": "Shop gadgets",
+   "tint": "#2b62a8"
+  },
+  {
+   "image": "",
+   "link": "/category/winter-gadgets",
+   "title": "Winter gadgets are here",
+   "sub": "Room heaters, hot water bags, kettles and lunch boxes at honest prices.",
+   "cta": "Shop winter",
+   "tint": "#d9480f"
+  },
+  {
+   "image": "",
+   "link": "/category/home-and-kitchen",
+   "title": "Kitchen essentials",
+   "sub": "Pans, bottles and combo deals in one place.",
+   "cta": "Shop kitchen",
+   "tint": "#b8641c"
+  }
+ ],
+ "flashSale": [
+  "mini-room-heater",
+  "electric-hot-water-bag",
+  "v380-wi-fi-ip-camera",
+  "k9-dual-wireless-microphone",
+  "hair-and-beard-trimmer"
+ ],
+ "hotDeal": "sameAsFlashSale",
+ "allProducts": [
+  "wireless-earbuds-pro",
+  "smart-watch-series-8",
+  "mens-polo-shirt",
+  "non-stick-frying-pan",
+  "money-plant-with-pot",
+  "baby-diaper-pants",
+  "pure-sundarbans-honey",
+  "portable-bluetooth-speaker",
+  "electric-kettle-1-8-l",
+  "hy300-mini-smart-projector",
+  "k9-dual-wireless-microphone",
+  "ring-light-7-ft-tripod",
+  "mini-room-heater",
+  "electric-hot-water-bag",
+  "v380-wi-fi-ip-camera",
+  "car-and-bike-phone-holder",
+  "hair-and-beard-trimmer"
+ ],
+ "categorySections": {
+  "electronics-and-gadgets": [
+   "wireless-earbuds-pro",
+   "smart-watch-series-8",
+   "fast-charging-power-bank",
+   "usb-rechargeable-desk-fan",
+   "portable-bluetooth-speaker",
+   "bluetooth-neckband-enc",
+   "hy300-mini-smart-projector",
+   "rechargeable-table-fan-led-light"
+  ],
+  "mobile-and-creator-gear": [
+   "k9-dual-wireless-microphone",
+   "ring-light-7-ft-tripod",
+   "selfie-stick-tripod-bluetooth-remote",
+   "adjustable-phone-and-tablet-stand"
+  ],
+  "winter-gadgets": [
+   "mini-room-heater",
+   "electric-hot-water-bag",
+   "electric-lunch-box"
+  ],
+  "smart-home-and-security": [
+   "v380-wi-fi-ip-camera",
+   "smart-wi-fi-plug",
+   "rgb-led-strip-light-with-remote"
+  ],
+  "car-and-bike": [
+   "car-and-bike-phone-holder",
+   "bluetooth-fm-transmitter-car-charger",
+   "portable-car-vacuum-cleaner"
+  ],
+  "personal-care": [
+   "hair-and-beard-trimmer",
+   "massage-gun"
+  ],
+  "fashion": [
+   "mens-polo-shirt",
+   "womens-cotton-kurti",
+   "casual-sneakers",
+   "water-resistant-laptop-backpack",
+   "polarized-sunglasses",
+   "womens-crossbody-bag"
+  ],
+  "home-and-kitchen": [
+   "non-stick-frying-pan",
+   "insulated-steel-bottle",
+   "electric-kettle-1-8-l",
+   "portable-rechargeable-juice-blender",
+   "15-in-1-vegetable-chopper",
+   "decorative-fairy-lights",
+   "kitchen-combo-pan-bottle"
+  ],
+  "beauty-and-care": [
+   "vitamin-c-face-serum",
+   "organic-hair-oil",
+   "korean-sunscreen-spf50",
+   "hair-straightener"
+  ],
+  "plants-and-garden": [
+   "money-plant-with-pot",
+   "snake-plant"
+  ],
+  "toys-and-baby": [
+   "building-blocks-set",
+   "baby-diaper-pants"
+  ],
+  "grocery": [
+   "chinigura-aromatic-rice",
+   "pure-sundarbans-honey"
+  ]
+ },
+ "reviewBanner": ""
+}

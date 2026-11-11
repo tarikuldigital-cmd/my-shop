@@ -1,0 +1,17 @@
+Options -Indexes
+<IfModule mod_rewrite.c>
+RewriteEngine On
+# keep the Authorization header (some cPanel/FastCGI setups drop it)
+RewriteCond %{HTTP:Authorization} .
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+RewriteRule ^v1/(.*)$ index.php?r=$1 [QSA,L]
+</IfModule>
+<FilesMatch "^(config\.php|.*\.sqlite.*|.*\.log)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>

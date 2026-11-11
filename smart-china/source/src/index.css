@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+/* Brand tokens — the ONLY place colours/fonts are defined. Green + light red come from the Smart China Gallery logo. */
+@theme {
+  --font-sans: "Inter", "Hind Siliguri", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Noto Serif Bengali", "Noto Serif", Georgia, "Times New Roman", serif;
+
+  --color-brand: #15803d;        /* logo green: header nav, headings */
+  --color-brand-dark: #0f5e2c;
+  --color-accent: #ef4444;       /* light red: buttons, badges, prices */
+  --color-accent-dark: #dc2626;
+  --color-sale: #e11d48;
+  --color-accent-soft: #fee2e2;  /* light red tint: badges, highlights */         /* discount badge */
+  --color-surface: #f5f6f8;      /* page background */
+  --color-ink: #1f2937;
+  --color-muted: #6b7280;
+  --color-line: #e5e7eb;
+}
+
+html { scroll-behavior: smooth; }
+body { @apply bg-surface text-ink font-sans antialiased; }
+
+@utility container-x { @apply mx-auto w-full max-w-7xl px-3 sm:px-4; }
+
+@utility btn { @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition disabled:opacity-60; }
+@utility btn-accent { @apply btn bg-accent text-white hover:bg-accent-dark; }
+@utility btn-brand { @apply btn bg-brand text-white hover:bg-brand-dark; }
+@utility btn-outline { @apply btn border border-line bg-white text-ink hover:border-brand hover:text-brand; }
+
+@utility field-label { @apply mb-1 block text-sm font-medium text-ink; }
+@utility field { @apply w-full rounded-md border border-line bg-white px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15; }
+
+@utility card { @apply rounded-lg border border-line bg-white; }
+
+@utility section-title { @apply text-lg font-bold text-brand sm:text-xl; }
+
+/* Rich text coming from the CMS / Laravel pages table */
+.prose-bs h4 { @apply mt-5 mb-2 text-base font-bold text-brand; }
+.prose-bs p { @apply mb-3 leading-7; }
+.prose-bs ul { @apply mb-3 list-disc space-y-1 pl-6; }
+.prose-bs ol { @apply mb-3 list-decimal space-y-1 pl-6; }
+.prose-bs li { @apply leading-7; }
+
+@utility no-scrollbar { scrollbar-width: none; &::-webkit-scrollbar { display: none; } }
+
+@keyframes bk-glow { 0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,.5) } 50% { box-shadow: 0 0 0 10px rgba(239,68,68,0) } }
+@keyframes bk-slide { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: none } }
+@keyframes bk-shine { from { background-position: 0% 50% } to { background-position: 200% 50% } }
+@keyframes bk-fadeup { from { opacity: 0; transform: translateY(14px) } to { opacity: 1; transform: none } }
+.bk-glow { animation: bk-glow 2s ease-out infinite; }
+.bk-slide { animation: bk-slide .5s ease both; }
+.bk-fade { animation: bk-fadeup .7s ease both; }
+.bk-shine { background-image: linear-gradient(90deg,#15803d,#16a34a,#ef4444,#16a34a,#15803d); background-size: 200% 100%; animation: bk-shine 6s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .bk-glow, .bk-shine { animation: none } }

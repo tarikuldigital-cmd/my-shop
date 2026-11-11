@@ -1,0 +1,27 @@
+{
+  "name": "bookshelf-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "build:pages": "VITE_BASE=./ VITE_ROUTER=hash vite build",
+    "data": "python3 scripts/build-mock-data.py",
+    "build:cpanel": "node scripts/export-seed.mjs && VITE_USE_MOCK=false VITE_API_BASE_URL=/api/v1 vite build",
+    "seed": "node scripts/export-seed.mjs"
+  },
+  "dependencies": {
+    "axios": "^1.21.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-router-dom": "^7.18.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.4",
+    "@vitejs/plugin-react": "^6.2.1",
+    "tailwindcss": "^4.3.4",
+    "vite": "^8.3.5"
+  }
+}

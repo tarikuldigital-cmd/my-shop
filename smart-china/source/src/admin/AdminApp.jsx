@@ -1,0 +1,151 @@
+import { useEffect, useState } from 'react'
+import { Link, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { S, save, useDb } from '../store/db'
+import { Toasts, toast } from './ui'
+import Img from '../components/common/Img'
+import Icon from '../components/common/Icon'
+import Dashboard from './Dashboard'
+import Orders from './Orders'
+import Incomplete from './Incomplete'
+import Products from './Products'
+import Categories from './Categories'
+import HomeEditor from './HomeEditor'
+import { Coupons, Customers, Messages, Reviews, Pages } from './Misc'
+import Settings from './Settings'
+import Sms from './Sms'
+import Landings from './Landings'
+import LiveChat from './LiveChat'
+import { storeUrl, LIVE } from '../config/env'
+import { adminLogin, adminLogout, resumeAdmin, syncState, onSyncState, flush } from '../lib/live'
+
+/* Demo login only — the Laravel phase replaces this with a server session (Sanctum) + roles. */
+const DEMO = { email: 'admin@demo.com', pass: '123456' }
+const AUTH_KEY = 'scg_admin'
+
+function Login({ onOk }) {
+  const [email, setEmail] = useState(LIVE ? '' : DEMO.email)
+  const [pass, setPass] = useState(LIVE ? '' : DEMO.pass)
+  const [err, setErr] = useState('')
+  const [busy, setBusy] = useState(false)
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-surface p-4">
+      <form className="card w-full max-w-sm space-y-4 p-6" onSubmit={async (e) => {
+        e.preventDefault()
+        if (LIVE) { setBusy(true); setErr(''); try { await adminLogin(email.trim(), pass); onOk() } catch (x) { setErr(x.message) } finally { setBusy(false) } return }
+        if (email.trim() === DEMO.email && pass === DEMO.pass) { sessionStorage.setItem(AUTH_KEY, '1'); onOk() } else setErr('Wrong email or password')
+      }}>
+        <Img src={S.settings.logoDark} alt={S.settings.siteName} className="mx-auto h-24" />
+        <h1 className="text-center text-xl font-bold">Admin login</h1>
+        <label className="block"><span className="field-label">Email</span><input type="email" inputMode="email" className="field" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" /></label>
+        <label className="block"><span className="field-label">Password</span><input className="field" type="password" value={pass} onChange={(e) => setPass(e.target.value)} autoComplete="current-password" /></label>
+        {err && <p className="text-sm text-red-600">{err}</p>}
+        <button className="btn-brand w-full py-2.5" disabled={busy}>{busy ? 'Logging in…' : 'Log in'}</button>
+        {!LIVE && <p className="rounded bg-amber-50 p-2 text-xs text-amber-800">Demo login: {DEMO.email} / {DEMO.pass}. Not real security — the live site gets a server-side login.</p>}
+        <Link to="/" className="block text-center text-sm text-brand">← Back to the store</Link>
+      </form>
+    </div>
+  )
+}
+
+const NAV = [
+  ['Orders', [['', 'Dashboard'], ['orders', 'Orders', () => S.orders.filter((o) => o.status === 'pending').length], ['incomplete', 'Incomplete orders', () => S.incomplete.filter((x) => x.status === 'new').length]]],
+  ['Customers', [['customers', 'Customers'], ['chat', 'Live chat', () => S.chats.filter((c) => Date.now() - (c.updated || c.at) < 864e5).length], ['sms', 'SMS', () => S.smsLog.filter((x) => x.status !== 'sent' && Date.now() - x.at < 864e5).length], ['messages', 'Messages', () => S.messages.filter((m) => !m.read).length], ['reviews', 'Reviews', () => S.reviews.filter((r) => !r.approved).length]]],
+  ['Catalogue', [['products', 'Products'], ['categories', 'Categories'], ['landing-pages', 'Landing pages'], ['homepage', 'Homepage & banners'], ['coupons', 'Coupons'], ['pages', 'Info pages']]],
+  ['Store', [['settings', 'Settings, Pixel & SEO']]],
+]
+
+export default function AdminApp() {
+  const [ok, setOk] = useState(() => !LIVE && sessionStorage.getItem(AUTH_KEY) === '1')
+  const [checking, setChecking] = useState(LIVE)
+  useEffect(() => { if (LIVE) resumeAdmin().then(setOk).finally(() => setChecking(false)) }, [])
+  const [, setTick] = useState(0)
+  useEffect(() => onSyncState(() => setTick((n) => n + 1)), [])
+  // a customer just ordered → toast + short beep + tab title
+  useEffect(() => {
+    const on = (e) => {
+      toast(`🛒 New order ${e.detail.invoice} — ${e.detail.name} · ৳${e.detail.total}`)
+      document.title = `🛒 New order! | Admin`
+      try { const a = new (window.AudioContext || window.webkitAudioContext)(), o = a.createOscillator(); o.frequency.value = 880; o.connect(a.destination); o.start(); setTimeout(() => { o.stop(); a.close() }, 250) } catch { /* no audio */ }
+    }
+    window.addEventListener('scg:new-order', on)
+    return () => window.removeEventListener('scg:new-order', on)
+  }, [])
+  const [menu, setMenu] = useState(false)
+  // installable admin app (PWA): manifest + service worker + "Install" button
+  const [installEv, setInstallEv] = useState(null)
+  useEffect(() => {
+    const add = (tag, attrs) => { const el = document.createElement(tag); Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v)); el.dataset.adminPwa = '1'; document.head.appendChild(el); return el }
+    add('link', { rel: 'manifest', href: '/admin-manifest.json' })
+    add('link', { rel: 'apple-touch-icon', href: '/admin-icon-192.png' })
+    add('meta', { name: 'apple-mobile-web-app-capable', content: 'yes' })
+    add('meta', { name: 'mobile-web-app-capable', content: 'yes' })
+    add('meta', { name: 'apple-mobile-web-app-title', content: 'BS Admin' })
+    if (LIVE && 'serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('/admin-sw.js', { scope: '/admin' }).catch(() => {})
+    const onPrompt = (e) => { e.preventDefault(); setInstallEv(e) }
+    window.addEventListener('beforeinstallprompt', onPrompt)
+    return () => { window.removeEventListener('beforeinstallprompt', onPrompt); document.querySelectorAll('[data-admin-pwa]').forEach((n) => n.remove()) }
+  }, [])
+  const loc = useLocation()
+  useDb()
+  useEffect(() => { setMenu(false); window.scrollTo(0, 0); document.title = 'Admin | Smart China Gallery' }, [loc.pathname])
+  if (checking) return <div className="flex min-h-screen items-center justify-center text-muted">Loading…</div>
+  if (!ok) return <Login onOk={() => setOk(true)} />
+
+  const link = ({ isActive }) => `flex items-center justify-between rounded-md px-3 py-2 text-sm ${isActive ? 'bg-white/15 font-semibold text-white' : 'text-white/80 hover:bg-white/10'}`
+  return (
+    <div className="min-h-screen bg-surface lg:grid lg:grid-cols-[240px_1fr]">
+      <aside className={`fixed inset-y-0 left-0 z-40 w-60 overflow-y-auto bg-brand-dark p-3 transition-transform lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 ${menu ? 'translate-x-0' : '-translate-x-full'}`}>
+        <Link to="/admin" className="mb-4 block rounded bg-white p-2"><Img src={S.settings.logoDark} alt={S.settings.siteName} className="mx-auto h-12" /></Link>
+        {NAV.map(([group, items]) => (
+          <div key={group} className="mb-3">
+            <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-white/50">{group}</p>
+            {items.map(([to, label, badge]) => {
+              const n = badge?.()
+              return <NavLink key={to} end to={`/admin${to ? '/' + to : ''}`} className={link}>{label}{n ? <span className="rounded-full bg-accent px-1.5 text-xs text-white">{n}</span> : null}</NavLink>
+            })}
+          </div>
+        ))}
+        <div className="mt-4 space-y-2 border-t border-white/10 pt-3">
+          <label className="block px-3 text-xs text-white/60">Working as
+            <select className="mt-1 w-full rounded bg-white/10 px-2 py-1.5 text-sm text-white" value={S.me ?? 0} onChange={(e) => { S.me = +e.target.value; save() }}>
+              {S.settings.staff.map((s, i) => <option key={s} value={i} className="text-ink">{s}</option>)}
+            </select>
+          </label>
+          {LIVE && <p className={`mx-3 rounded px-2 py-1 text-xs ${syncState.status === 'error' ? 'bg-red-500/30 text-red-100' : 'bg-white/10 text-white/70'}`}>{syncState.status === 'saving' ? '⏳ Saving…' : syncState.status === 'error' ? `⚠ Not saved: ${syncState.error} — retrying` : '✓ All changes saved'}</p>}
+          {installEv && <button onClick={async () => { installEv.prompt(); await installEv.userChoice; setInstallEv(null) }} className="mx-3 block rounded bg-accent px-3 py-1.5 text-sm font-semibold text-white">📲 Install the app on your phone</button>}
+          <a href={storeUrl('/')} target="_blank" rel="noreferrer" className="block px-3 text-sm text-white/80 hover:text-white">View store ↗</a>
+          <button onClick={async () => { if (LIVE) { await flush(); await adminLogout() } else sessionStorage.removeItem(AUTH_KEY); setOk(false) }} className="block px-3 text-sm text-white/80 hover:text-white">Log out</button>
+        </div>
+      </aside>
+      {menu && <div className="fixed inset-0 z-30 bg-black/40 lg:hidden" onClick={() => setMenu(false)} />}
+      <div className="min-w-0">
+        <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-line bg-white px-4 py-3 lg:hidden">
+          <button onClick={() => setMenu(true)} aria-label="Open admin menu"><Icon name="menu" /></button>
+          <span className="font-bold">Smart China Admin</span>
+        </header>
+        <main className="p-4 sm:p-6">
+          <Routes>
+            <Route index element={<Dashboard />} />
+            <Route path="orders" element={<Orders />} />
+            <Route path="incomplete" element={<Incomplete />} />
+            <Route path="customers" element={<Customers />} />
+            <Route path="messages" element={<Messages />} />
+            <Route path="sms" element={<Sms />} />
+            <Route path="chat" element={<LiveChat />} />
+            <Route path="reviews" element={<Reviews />} />
+            <Route path="products" element={<Products />} />
+            <Route path="categories" element={<Categories />} />
+            <Route path="landing-pages" element={<Landings />} />
+            <Route path="homepage" element={<HomeEditor />} />
+            <Route path="coupons" element={<Coupons />} />
+            <Route path="pages" element={<Pages />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="*" element={<Navigate to="/admin" replace />} />
+          </Routes>
+        </main>
+      </div>
+      <Toasts />
+    </div>
+  )
+}
+

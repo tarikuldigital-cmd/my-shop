@@ -1,0 +1,40 @@
+{
+  "siteName": "Smart China Gallery",
+  "logoDark": "local:logo.svg",
+  "logoWhite": "local:logo.svg",
+  "phone": "01338325365",
+  "phoneIntl": "+8801338325365",
+  "email": null,
+  "address": "New Paltan, Dhaka, Bangladesh",
+  "topBarText": "Welcome to Smart China Gallery! Gadgets & lifestyle products at honest prices — nationwide delivery, cash on delivery.",
+  "messengerUrl": "",
+  "whatsappUrl": "https://wa.me/8801338325365",
+  "socials": [
+    { "name": "Facebook", "url": "#" },
+    { "name": "Instagram", "url": "#" },
+    { "name": "YouTube", "url": "#" },
+    { "name": "TikTok", "url": "#" }
+  ],
+  "shipping": [
+    { "id": "inside_dhaka", "label": "Inside Dhaka", "labelEn": "Inside Dhaka", "charge": 60, "eta": "1–2 working days" },
+    { "id": "outside_dhaka", "label": "Outside Dhaka", "labelEn": "Outside Dhaka", "charge": 120, "eta": "2–4 working days" }
+  ],
+  "paymentMethods": [
+    { "id": "cod", "label": "Cash on delivery" }
+  ],
+  "copyright": "© 2026 Smart China Gallery. All rights reserved.",
+  "developer": { "name": "Tarikul Islam", "url": "" },
+  "footerUsefulLinks": [
+    { "label": "Contact us", "to": "/site/contact-us" },
+    { "label": "Track your order", "to": "/customer/order-track" },
+    { "label": "How to order", "to": "/page/order-procedure" },
+    { "label": "Delivery policy", "to": "/page/delivery-rules" }
+  ],
+  "footerLinks": [
+    { "label": "Return & replacement", "to": "/page/return-policy" },
+    { "label": "Terms & conditions", "to": "/page/terms-&-conditions" },
+    { "label": "Privacy policy", "to": "/page/privacy-policy" },
+    { "label": "About us", "to": "/page/about-us" }
+  ],
+  "orderPolicyHtml": "<ul><li>Please check the product in front of the delivery person before paying.</li><li>If the product is damaged, wrong or a different colour / size / model, tell us within 3 days of delivery and we will replace it free of charge.</li><li>Change-of-mind returns are accepted within 3 days if the product is unused and in its original box; the customer pays the return delivery charge.</li><li>If you refuse a parcel without a valid reason, the delivery charge must be paid to the rider.</li></ul>"
+}
