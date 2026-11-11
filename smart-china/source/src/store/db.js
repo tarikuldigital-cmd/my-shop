@@ -13,7 +13,7 @@ import { PRODUCT_FIELDS, defaultSettings } from './defaults'
 import { LIVE } from '../config/env'
 export { defaultSettings }
 
-const KEY = 'scg_db_v2'
+const KEY = 'scg_db_v3'
 export const DAY = 864e5
 export const HOUR = 36e5
 

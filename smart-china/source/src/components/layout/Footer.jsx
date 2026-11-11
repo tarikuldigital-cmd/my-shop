@@ -36,7 +36,7 @@ export default function Footer() {
       <div className="border-t border-white/10">
         <div className="container-x flex flex-col items-center justify-between gap-1 py-4 text-xs sm:flex-row">
           <p>{settings.copyright}</p>
-          <p>Developed by <span className="font-semibold">Tarikul Islam</span></p>
+          <p>Developed by <span className="font-semibold">{settings.developer?.name || "Abdur Rahim"}</span></p>
         </div>
       </div>
     </footer>

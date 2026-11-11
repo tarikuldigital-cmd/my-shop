@@ -23,7 +23,7 @@
     { "id": "cod", "label": "Cash on delivery" }
   ],
   "copyright": "© 2026 Smart China Gallery. All rights reserved.",
-  "developer": { "name": "Tarikul Islam", "url": "" },
+  "developer": { "name": "Abdur Rahim", "url": "" },
   "footerUsefulLinks": [
     { "label": "Contact us", "to": "/site/contact-us" },
     { "label": "Track your order", "to": "/customer/order-track" },
