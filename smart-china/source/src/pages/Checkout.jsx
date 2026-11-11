@@ -89,7 +89,7 @@ export default function Checkout() {
         items: items.map(({ productId, slug, name, variant, price, quantity }) => ({ productId, slug, name, variant, price, quantity })),
       })
       await discardCheckoutDraft(draftId.current)
-      track('Purchase', { items: order.items, value: order.total, orderId: order.invoice, eventId, customer: customerData(form, settings.shipping.find((x) => x.id === form.shippingArea)?.label, user?.email) })
+      track('Purchase', { items: order.items.map((i) => { const c = items.find((x) => x.productId === i.productId && (x.variant || '') === (i.variant || '')); return { ...i, sku: i.sku || c?.sku, category: c?.category } }), value: order.total, orderId: order.invoice, eventId, customer: customerData(form, settings.shipping.find((x) => x.id === form.shippingArea)?.label, user?.email) })
       clear()
       navigate(`/customer/order-success/${order.invoice}`, { state: { order } })
     } catch (err) {

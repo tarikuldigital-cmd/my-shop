@@ -88,7 +88,7 @@ export default function LandingPage() {
   useEffect(() => { if (opts && !vkey) setVkey((product.variants.find(variantInStock) || product.variants[0]).key) }, [product?.id]) // eslint-disable-line react-hooks/exhaustive-deps
   const v = opts ? variantOf(product, vkey) : null
   const unit = v ? v.price : product?.price || 0
-  const item = product && { productId: product.id, slug: product.slug, name: product.name, variant: v?.key || '', price: unit, quantity: qty }
+  const item = product && { productId: product.id, slug: product.slug, name: product.name, variant: v?.key || '', sku: v?.sku || product.sku, category: product.categories?.[0], price: unit, quantity: qty }
   const subtotal = product ? unit * qty : 0
   const shipping = product ? shippingFor(form.shippingArea, subtotal) : 0
   const total = subtotal + shipping
@@ -134,7 +134,7 @@ export default function LandingPage() {
       const order = await placeOrder({ ...form, paymentMethod: 'cod', eventId, source: 'Landing page', landing: lp.slug, note: `Landing page: /lp/${lp.slug}`, items: [item] })
       await discardCheckoutDraft(draftId.current)
       if (!LIVE) { lp.orders = (lp.orders || 0) + 1; save() }
-      track('Purchase', { items: order.items, value: order.total, orderId: order.invoice, eventId, customer: customerData(form, settings.shipping.find((x) => x.id === form.shippingArea)?.label) })
+      track('Purchase', { items: order.items.map((i) => ({ ...i, sku: i.sku || v?.sku || product.sku, category: product.categories[0] })), value: order.total, orderId: order.invoice, eventId, customer: customerData(form, settings.shipping.find((x) => x.id === form.shippingArea)?.label) })
       navigate(`/customer/order-success/${order.invoice}`, { state: { order } })
     } catch (err) { done.current = false; setServerError(err.message) } finally { setBusy(false) }
   }

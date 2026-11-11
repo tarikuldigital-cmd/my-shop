@@ -163,7 +163,7 @@ export default function ProductDetail() {
     const first = hasOptions(product) ? (product.variants.find(variantInStock) || product.variants[0]) : null
     setPicked(first ? first.key.split(' / ') : [])
     addRecent(product.slug)
-    track('ViewContent', { items: [{ productId: product.id, name: product.name, price: product.price, quantity: 1, category: product.categories[0] }], value: product.price })
+    track('ViewContent', { items: [{ productId: product.id, name: product.name, sku: product.sku, variant: first?.key || '', price: first?.price ?? product.price, quantity: 1, category: product.categories[0] }], value: first?.price ?? product.price })
     if (params.get('buy')) document.getElementById('buy-box')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }, [product]) // eslint-disable-line react-hooks/exhaustive-deps
 

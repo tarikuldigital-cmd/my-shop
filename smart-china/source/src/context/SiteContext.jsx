@@ -13,6 +13,8 @@ export function SiteProvider({ children }) {
   useEffect(() => { if (!/\/admin/.test(location.pathname + location.hash)) initTracking(settings.tracking) }, [settings.tracking])
 
   const findCategory = (slug) => categories.find((c) => c.slug === slug)
+  // category names for analytics (dataLayer item_category)
+  if (typeof window !== 'undefined') window.__scgCats = Object.fromEntries(categories.map((c) => [c.slug, c.name]))
   const findSubcategory = (slug) => {
     for (const c of categories) {
       const s = c.subcategories?.find((x) => x.slug === slug)

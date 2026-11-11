@@ -100,7 +100,21 @@ export function customerData(form = {}, areaLabel = '', email = '') {
 }
 
 const newEventId = () => `${Date.now()}.${Math.random().toString(36).slice(2, 9)}`
-const ga4Items = (items) => items.map((i) => ({ item_id: String(i.productId ?? i.id), item_name: i.name, price: i.price, quantity: i.quantity ?? 1, item_category: i.category }))
+const catName = (slug) => { try { return (window.__scgCats || {})[slug] || slug || '' } catch { return slug || '' } }
+/** GA4 items: item_variant = colour / size / model; item_category = category name */
+const ga4Items = (items) => items.map((i) => ({
+  item_id: String(i.productId ?? i.id), item_name: i.name, price: i.price, quantity: i.quantity ?? 1,
+  ...(i.variant ? { item_variant: i.variant } : {}), ...(i.sku ? { item_sku: i.sku } : {}), ...(i.category ? { item_category: catName(i.category) } : {}),
+}))
+/** Meta-style fields (Pixel / CAPI tags in GTM read these directly): content_ids, contents, num_items */
+const metaFields = (items, value) => ({
+  content_type: 'product',
+  content_ids: items.map((i) => String(i.productId ?? i.id)),
+  contents: items.map((i) => ({ id: String(i.productId ?? i.id), quantity: i.quantity ?? 1, item_price: i.price })),
+  content_name: items.length === 1 ? items[0].name : undefined,
+  num_items: items.reduce((n, i) => n + (i.quantity ?? 1), 0),
+  value, currency: 'BDT',
+})
 
 /**
  * One call fans out to every configured platform.
@@ -119,7 +133,8 @@ export function track(event, data = {}) {
     if (event !== 'PageView') w.dataLayer.push({ ecommerce: null })
     const c = data.customer
     const ud = c ? { user_data: { email: c.email, phone_number: c.phone_number, address: { first_name: c.first_name, last_name: c.last_name, street: c.street, city: c.city, country: c.country } }, ...c } : {}
-    w.dataLayer.push({ event: ga4Name, event_id: eventId, ...ud, ...(event === 'PageView' ? ga4 : { ecommerce: ga4 }) })
+    const meta = ['ViewContent', 'AddToCart', 'InitiateCheckout', 'Purchase', 'Lead'].includes(event) ? metaFields(items, value) : event === 'Search' ? { search_string: data.query } : {}
+    w.dataLayer.push({ event: ga4Name, event_id: eventId, meta_event: event, ...meta, ...(data.orderId ? { order_id: data.orderId } : {}), ...ud, ...(event === 'PageView' ? ga4 : { ecommerce: ga4 }) })
   } else if (w.gtag) {
     if (data.customer) w.gtag('set', 'user_data', { email: data.customer.email, phone_number: data.customer.phone_number, address: { first_name: data.customer.first_name, last_name: data.customer.last_name, street: data.customer.street, city: data.customer.city, country: data.customer.country } })
     w.gtag('event', ga4Name, ga4)

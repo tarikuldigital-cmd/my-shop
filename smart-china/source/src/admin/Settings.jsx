@@ -98,7 +98,7 @@ export default function Settings() {
           <Panel title="Payment methods">
             <p className="mb-3 text-sm text-muted">Cash on delivery is always on. Fill a number to switch on manual bKash/Nagad payment (customer sends money, enters TrxID, you verify in the order).</p>
             <div className="grid gap-3 sm:grid-cols-2">{txt('bkashNumber', 'bKash merchant/personal number')}{txt('nagadNumber', 'Nagad number')}</div>
-            <p className="mt-3 rounded bg-surface p-2 text-xs text-muted">Automatic bKash Checkout (PGW) needs the Laravel backend — the app keys must never be put in the browser.</p>
+            <p className="mt-3 rounded bg-surface p-2 text-xs text-muted">Automatic bKash Checkout (PGW) is not connected yet — customers send money and enter the TrxID, which you verify in Orders.</p>
           </Panel>
         </div>
       )}

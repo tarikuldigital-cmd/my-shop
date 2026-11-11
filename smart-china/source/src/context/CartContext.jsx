@@ -18,6 +18,8 @@ const toItem = (p, quantity = 1, variant = '') => {
     price: v ? v.price : p.price,
     oldPrice: v ? v.oldPrice : p.oldPrice,
     image: p.images?.[0] || null,
+    sku: v?.sku || p.sku || '',
+    category: p.categories?.[0] || '',
     quantity,
   }
 }
@@ -62,7 +64,7 @@ export function CartProvider({ children }) {
       add: (product, quantity = 1, variant = '') => {
         dispatch({ type: 'add', product, quantity, variant })
         const price = variantOf(product, variant)?.price ?? product.price
-        track('AddToCart', { items: [{ productId: product.id, name: product.name, variant, price, quantity, category: product.categories?.[0] }] })
+        track('AddToCart', { items: [{ productId: product.id, name: product.name, sku: variantOf(product, variant)?.sku || product.sku, variant, price, quantity, category: product.categories?.[0] }] })
       },
       setQty: (key, quantity) => dispatch({ type: 'setQty', key, quantity }),
       remove: (key) => dispatch({ type: 'remove', key }),
