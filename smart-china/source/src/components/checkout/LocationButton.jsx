@@ -49,6 +49,17 @@ async function fromGoogleBrowser(lat, lng, key) {
   const district = (comp(['administrative_area_level_2']) || comp(['locality'])).replace(/ District$/i, '')
   return { address, thana: comp(['sublocality_level_1', 'administrative_area_level_3']), district, insideDhaka: /dhaka/i.test(comp(['locality']) || district) && !OUTER.test(address) }
 }
+/** demo preview only: Barikoi straight from the browser with the key saved in this browser's admin settings */
+async function fromBarikoiBrowser(lat, lng, key) {
+  const q = new URLSearchParams({ api_key: key, longitude: lng, latitude: lat, district: 'true', post_code: 'true', sub_district: 'true', address: 'true', area: 'true', thana: 'true' })
+  const j = await (await fetch(`https://barikoi.xyz/v2/api/search/reverse/geocode?${q}`)).json()
+  const p = j.place
+  if (!p) throw new Error('no place')
+  let text = (p.address || '').trim()
+  for (const x of [p.area, p.thana || p.sub_district, p.district || p.city]) if (x && !text.toLowerCase().includes(String(x).toLowerCase())) text += (text ? ', ' : '') + x
+  const district = p.district || p.city || ''
+  return { address: text, thana: p.thana || p.sub_district || p.area || '', district, insideDhaka: /dhaka/i.test(district) && !OUTER.test(text) }
+}
 async function fromOsm(lat, lng) {
   const j = await (await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=en`, { headers: { Accept: 'application/json' } })).json()
   return addressFromOsm(j)
@@ -68,7 +79,7 @@ export default function LocationButton({ onPick, className = '' }) {
       const location = { lat, lng, accuracy: Math.round(accuracy || 0) }
       const c = S.settings?.courier || {}
       const tries = [
-        ...(LIVE ? [() => fromServer(lat, lng)] : c.geoProvider === 'google' && c.geoKey ? [() => fromGoogleBrowser(lat, lng, c.geoKey)] : []),
+        ...(LIVE ? [() => fromServer(lat, lng)] : c.geoKey && c.geoProvider === 'google' ? [() => fromGoogleBrowser(lat, lng, c.geoKey)] : c.geoKey && c.geoProvider === 'barikoi' ? [() => fromBarikoiBrowser(lat, lng, c.geoKey)] : []),
         () => fromOsm(lat, lng),
       ]
       let d = null

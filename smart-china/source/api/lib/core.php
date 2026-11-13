@@ -7,6 +7,9 @@ function cfg(string $path = '', $default = null) {
   if ($c === null) {
     $f = dirname(__DIR__) . '/config.php';
     $c = is_file($f) ? (include $f) : [];
+    // keys shipped privately with your own package (never committed to GitHub): api/secrets.php → ['barikoi_key' => '…']
+    $s = dirname(__DIR__) . '/secrets.php';
+    if (is_file($s)) $c = array_replace((array)(include $s), (array)$c);
   }
   $v = $c;
   foreach ($path === '' ? [] : explode('.', $path) as $k) { if (!is_array($v) || !array_key_exists($k, $v)) return $default; $v = $v[$k]; }

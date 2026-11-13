@@ -514,6 +514,8 @@ function h_geo_reverse(): void {
   if ($lat < 20 || $lat > 27 || $lng < 87.5 || $lng > 93) fail(422, 'Location is outside Bangladesh');
   $c = kv_get('settings', [])['courier'] ?? [];
   $prov = (string)($c['geoProvider'] ?? ''); $key = trim((string)($c['geoKey'] ?? ''));
+  // no key in Admin → use the Barikoi key from api/config.php or api/secrets.php
+  if ($key === '' && ($prov === '' || $prov === 'barikoi') && ($bk = trim((string)cfg('barikoi_key', ''))) !== '') { $prov = 'barikoi'; $key = $bk; }
   if ($key === '' || !in_array($prov, ['barikoi', 'google'], true)) fail(404, 'No address finder configured');
   $r = $prov === 'barikoi' ? geo_barikoi($lat, $lng, $key) : geo_google($lat, $lng, $key);
   out($r + ['provider' => $prov]);
