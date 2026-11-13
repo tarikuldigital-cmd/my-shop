@@ -75,6 +75,14 @@ function stock_change(array $p, string $vkey, int $delta): array {
   return $p;
 }
 
+/** GPS pin from "Share my location": kept only if it is a sane coordinate in / near Bangladesh */
+function clean_location($l): ?array {
+  if (!is_array($l) || !is_numeric($l['lat'] ?? null) || !is_numeric($l['lng'] ?? null)) return null;
+  $lat = round((float)$l['lat'], 6); $lng = round((float)$l['lng'], 6);
+  if ($lat < 20 || $lat > 27 || $lng < 87.5 || $lng > 93) return null;
+  return ['lat' => $lat, 'lng' => $lng, 'accuracy' => max(0, min(100000, (int)($l['accuracy'] ?? 0)))];
+}
+
 function create_order_public(array $in): array {
   $settings = kv_get('settings', []);
   $name = s($in['name'] ?? '', 120);
@@ -133,6 +141,7 @@ function create_order_public(array $in): array {
     $inv = next_invoice();
     $o = [
       'id' => 'o' . $now . random_int(100, 999), 'invoice' => $inv, 'name' => $name, 'phone' => $phone, 'address' => $address,
+      ...(($loc = clean_location($in['location'] ?? null)) ? ['location' => $loc] : []),
       'shippingArea' => $areaId, 'items' => $items, 'subtotal' => $subtotal, 'shippingCharge' => $ship, 'discount' => $disc,
       'coupon' => $cc['coupon']['code'] ?? '', 'total' => $subtotal + $ship - $disc, 'payment' => $payment, 'status' => 'pending',
       'courier' => '', 'tracking' => '', 'courierLog' => [], 'source' => $source, 'note' => $note, 'customerPhone' => $cust['phone'] ?? null,

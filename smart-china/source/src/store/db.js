@@ -225,7 +225,7 @@ function adjustStock(items, sign) {
   }
 }
 
-export function createOrder({ name, phone, address, shippingArea, items, couponCode, note, source = 'Website', by = 'Customer', status = 'pending', payment, customerPhone }) {
+export function createOrder({ name, phone, address, location, shippingArea, items, couponCode, note, source = 'Website', by = 'Customer', status = 'pending', payment, customerPhone }) {
   const subtotal = items.reduce((s, x) => s + x.price * x.quantity, 0)
   const shippingCharge = shippingFor(shippingArea, subtotal)
   const cc = couponCalc(couponCode, subtotal)
@@ -233,7 +233,7 @@ export function createOrder({ name, phone, address, shippingArea, items, couponC
   const o = {
     id: `o${now}${Math.floor(Math.random() * 999)}`,
     invoice: `SC${S.nextInvoice++}`,
-    name, phone: normPhone(phone), address, shippingArea, items, subtotal, shippingCharge,
+    name, phone: normPhone(phone), address, ...(location ? { location } : {}), shippingArea, items, subtotal, shippingCharge,
     discount: cc.discount || 0, coupon: cc.coupon?.code || '', total: subtotal + shippingCharge - (cc.discount || 0),
     payment: payment || { method: 'cod', status: 'unpaid' },
     status: 'pending', courier: '', tracking: '', courierLog: [], source, note: note || '', customerPhone: customerPhone || null,
@@ -297,8 +297,10 @@ export const COURIER_ST = {
 /** Text for copying into a courier panel / Messenger: name, phone, address, COD, items */
 export function parcelText(o) {
   const items = o.items.map((i) => `${i.name}${i.variant ? ` (${i.variant})` : ''} x${i.quantity}`).join(', ')
-  return `Name: ${o.name}\nPhone: ${o.phone}\nAddress: ${o.address}\nCOD: ${codOf(o)} Tk\nInvoice: ${o.invoice}\nItems: ${items}${o.note ? `\nNote: ${o.note}` : ''}`
+  return `Name: ${o.name}\nPhone: ${o.phone}\nAddress: ${o.address}${o.location ? `\nMap: ${mapUrl(o)}` : ''}\nCOD: ${codOf(o)} Tk\nInvoice: ${o.invoice}\nItems: ${items}${o.note ? `\nNote: ${o.note}` : ''}`
 }
+/** Google Maps link for a customer who shared their location at checkout */
+export const mapUrl = (o) => (o.location ? `https://www.google.com/maps?q=${o.location.lat},${o.location.lng}` : '')
 export const trackUrl = (o) => !o.tracking ? '' : o.courier === 'steadfast' ? `https://steadfast.com.bd/t/${o.tracking}` : o.courier === 'redx' ? `https://redx.com.bd/track-parcel/?trackingId=${o.tracking}` : o.courier === 'pathao' ? `https://merchant.pathao.com/tracking?consignment_id=${o.tracking}&phone=${o.phone}` : ''
 export const waNum = (p) => { p = normPhone(p); return p.startsWith('0') ? '88' + p : p }
 

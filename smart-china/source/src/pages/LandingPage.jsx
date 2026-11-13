@@ -5,6 +5,7 @@ import { S, save, useDb, validPhone, shippingFor, inStock, hasOptions, variantOf
 import { placeOrder, saveCheckoutDraft, discardCheckoutDraft } from '../services/orderService'
 import { track, customerData } from '../lib/tracking'
 import { useSeo, productJsonLd } from '../lib/seo'
+import LocationButton from '../components/checkout/LocationButton'
 import { THEMES, embedUrl } from '../lib/landing'
 import { LIVE } from '../config/env'
 import { liveLandingView } from '../lib/live'
@@ -61,6 +62,11 @@ export default function LandingPage() {
   const [qty, setQty] = useState(1)
   const [vkey, setVkey] = useState('')
   const [form, setForm] = useState({ name: '', phone: '', address: '', shippingArea: settings.shipping[0].id })
+  // "Share my location": fill the address from GPS and pick Inside / Outside Dhaka (customer can still edit both)
+  const onLocation = ({ address, location, insideDhaka }) => setForm((f) => ({
+    ...f, location, address: address || f.address,
+    shippingArea: insideDhaka === null ? f.shippingArea : (settings.shipping.find((s) => (insideDhaka ? /inside/i : /outside/i).test(`${s.id} ${s.labelEn || s.label}`))?.id || f.shippingArea),
+  }))
   const [errors, setErrors] = useState({})
   const [busy, setBusy] = useState(false)
   const [serverError, setServerError] = useState('')
@@ -261,6 +267,7 @@ export default function LandingPage() {
                 <label className="block"><span className="mb-1 block text-sm font-semibold">Your name *</span><input className="field" value={form.name} onChange={set('name')} autoComplete="name" placeholder="Full name" />{err('name')}</label>
                 <label className="block"><span className="mb-1 block text-sm font-semibold">Mobile number *</span><input className="field" inputMode="tel" value={form.phone} onChange={set('phone')} autoComplete="tel" placeholder="01XXXXXXXXX" />{err('phone')}</label>
                 <label className="block"><span className="mb-1 block text-sm font-semibold">Full address *</span><textarea rows={3} className="field" value={form.address} onChange={set('address')} autoComplete="street-address" placeholder="House / road, area, thana, district" />{err('address')}</label>
+                <LocationButton onPick={onLocation} />
                 <fieldset><legend className="mb-1 text-sm font-semibold">Delivery area</legend>
                   <div className="grid gap-2 sm:grid-cols-2">{settings.shipping.map((a) => (
                     <label key={a.id} className={`flex cursor-pointer items-center gap-2 rounded-lg border-2 p-3 text-sm ${form.shippingArea === a.id ? 'bg-[var(--lp-soft)]' : 'border-gray-200'}`} style={form.shippingArea === a.id ? { borderColor: th.c } : undefined}>

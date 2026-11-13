@@ -3,7 +3,7 @@ import { courierLive, refreshCourier, refreshAllCouriers } from '../lib/live'
 import { useMemo, useState } from 'react'
 import {
   S, STATUS, ST_KEYS, COURIERS, PAY, PAY_ST, CANCEL_REASONS, RETURN_REASONS, SOURCES, DAY,
-  save, useDb, setStatus, sendToCourier, createOrder, riskOf, trackUrl, waNum, validPhone, meName, shippingFor, codOf, parcelText, COURIER_ST, hasOptions,
+  save, useDb, setStatus, sendToCourier, createOrder, riskOf, trackUrl, waNum, validPhone, meName, shippingFor, codOf, parcelText, COURIER_ST, hasOptions, mapUrl,
 } from '../store/db'
 import { Empty, Field, Modal, Pill, tk, fdate, startOfDay, toast } from './ui'
 import { WhatsAppIcon } from '../components/common/Icon'
@@ -144,7 +144,7 @@ function OrderDrawer({ order: o, onClose }) {
         <dl className="grid grid-cols-[110px_1fr] gap-x-3 gap-y-1.5">
           <dt className="text-muted">Customer</dt><dd className="flex items-center gap-2 font-semibold">{o.name} <CopyBtn text={o.name} label="Name copied" /></dd>
           <dt className="text-muted">Phone</dt><dd className="flex flex-wrap items-center gap-2">{o.phone} <CopyBtn text={o.phone} label="Phone copied" /><a href={`tel:${o.phone}`} className="text-brand">Call</a><a href={`https://wa.me/${waNum(o.phone)}?text=${encodeURIComponent(confirmMsg)}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-green-600"><WhatsAppIcon className="h-4 w-4" />Confirm on WhatsApp</a></dd>
-          <dt className="text-muted">Address</dt><dd><span>{o.address}</span> <CopyBtn text={o.address} label="Address copied" /><span className="block text-xs text-muted">{o.shippingArea === 'inside_dhaka' ? 'Inside Dhaka' : 'Outside Dhaka'}</span></dd>
+          <dt className="text-muted">Address</dt><dd><span>{o.address}</span> <CopyBtn text={o.address} label="Address copied" /><span className="block text-xs text-muted">{o.shippingArea === 'inside_dhaka' ? 'Inside Dhaka' : 'Outside Dhaka'}</span>{o.location && <a href={mapUrl(o)} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 rounded bg-green-50 px-2 py-0.5 text-xs font-semibold text-green-700">📍 Customer's location on Google Maps{o.location.accuracy ? ` (±${o.location.accuracy} m)` : ''} ↗</a>}</dd>
           <dt className="text-muted">Collect (COD)</dt><dd className="font-semibold">{tk(codOf(o))}{codOf(o) === 0 && <span className="ml-1 text-xs font-normal text-green-700">already paid</span>}</dd>
           <dt className="text-muted">Source</dt><dd>{o.source}{o.coupon && ` · coupon ${o.coupon}`}</dd>
           {o.note && <><dt className="text-muted">Customer note</dt><dd>{o.note}</dd></>}

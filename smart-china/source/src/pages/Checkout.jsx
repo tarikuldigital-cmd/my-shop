@@ -8,6 +8,7 @@ import { useCart } from '../context/CartContext'
 import { useSite } from '../context/SiteContext'
 import { useAuth } from '../context/AuthContext'
 import { placeOrder, saveCheckoutDraft, discardCheckoutDraft } from '../services/orderService'
+import LocationButton from '../components/checkout/LocationButton'
 import { validPhone, couponCalc, shippingFor } from '../store/db'
 import { LIVE } from '../config/env'
 import { liveValidateCoupon } from '../lib/live'
@@ -48,6 +49,11 @@ export default function Checkout() {
     return () => clearTimeout(t)
   }, [form.name, form.phone, form.address, form.shippingArea, items, subtotal])
 
+  // "Share my location": fill the address from GPS and pick Inside / Outside Dhaka (customer can still edit both)
+  const onLocation = ({ address, location, insideDhaka }) => setForm((f) => ({
+    ...f, location, address: address || f.address,
+    shippingArea: insideDhaka === null ? f.shippingArea : (settings.shipping.find((s) => (insideDhaka ? /inside/i : /outside/i).test(`${s.id} ${s.labelEn || s.label}`))?.id || f.shippingArea),
+  }))
   const area = settings.shipping.find((s) => s.id === form.shippingArea)
   const shippingCharge = items.length ? shippingFor(form.shippingArea, subtotal) : 0
   // live mode: coupon codes never leave the server — it validates and returns the discount
@@ -134,6 +140,7 @@ export default function Checkout() {
               <label className="field-label" htmlFor="address">Full address *</label>
               <textarea id="address" rows={3} className="field" value={form.address} onChange={set('address')} placeholder="House / road, area, thana, district" autoComplete="street-address" />
               {err('address')}
+              <LocationButton className="mt-2" onPick={onLocation} />
             </div>
             <fieldset>
               <legend className="field-label">Delivery area *</legend>
