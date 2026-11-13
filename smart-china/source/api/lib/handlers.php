@@ -9,6 +9,7 @@ function routes(): array {
     ['GET', 'health', fn() => out(['ok' => true, 'time' => time(), 'db' => (bool)q('SELECT 1')->fetch()])],
     ['GET', 'bootstrap', 'h_bootstrap'],
     ['GET', 'sitemap', 'h_sitemap'],
+    ['GET', 'geo/reverse', 'h_geo_reverse'],
     ['GET', 'products/([a-zA-Z0-9%._-]{1,200})/details', 'h_product_details'],
     ['POST', 'orders', 'h_place_order'],
     ['POST', 'orders/track', 'h_track_by_phone'],
@@ -497,6 +498,60 @@ function h_steadfast_hook(): void {
   });
   if ($o && $event) sms_order_event($o, $event);
   out(['status' => 'success', 'message' => 'Webhook received successfully.']);
+}
+
+/* ---------------- "Share my location": GPS → full written address ---------------- */
+/**
+ * GET geo/reverse?lat=..&lng=..  → { address, area, thana, district, insideDhaka, provider }
+ * Provider + key: Admin → Settings → Courier → "Address finder" (kept on the server, never sent to visitors).
+ *  - barikoi: Bangladeshi map data — house / holding numbers, road, area, thana, district (best for BD)
+ *  - google:  Google Geocoding API (needs billing enabled; free monthly quota)
+ *  - none / failure: the browser falls back to OpenStreetMap (area level only)
+ */
+function h_geo_reverse(): void {
+  limit_or_fail('geo:' . client_ip(), 40, 3600, 'Too many location lookups — please type your address.');
+  $lat = (float)($_GET['lat'] ?? 0); $lng = (float)($_GET['lng'] ?? 0);
+  if ($lat < 20 || $lat > 27 || $lng < 87.5 || $lng > 93) fail(422, 'Location is outside Bangladesh');
+  $c = kv_get('settings', [])['courier'] ?? [];
+  $prov = (string)($c['geoProvider'] ?? ''); $key = trim((string)($c['geoKey'] ?? ''));
+  if ($key === '' || !in_array($prov, ['barikoi', 'google'], true)) fail(404, 'No address finder configured');
+  $r = $prov === 'barikoi' ? geo_barikoi($lat, $lng, $key) : geo_google($lat, $lng, $key);
+  out($r + ['provider' => $prov]);
+}
+function geo_get(string $url): array {
+  [$code, $b, $err] = http_call($url, [CURLOPT_TIMEOUT => 10]);
+  $j = json_decode((string)$b, true);
+  if ($err || $code >= 300 || !is_array($j)) fail(502, 'Address finder is not responding');
+  return $j;
+}
+function geo_inside_dhaka(string $district, string $text): bool {
+  return stripos($district, 'dhaka') !== false && !preg_match('/savar|keraniganj|dohar|nawabganj|dhamrai|ashulia|gazipur|narayanganj/i', $text);
+}
+function geo_barikoi(float $lat, float $lng, string $key): array {
+  $q = http_build_query(['api_key' => $key, 'longitude' => $lng, 'latitude' => $lat, 'district' => 'true', 'post_code' => 'true', 'sub_district' => 'true', 'union' => 'true', 'pauroshova' => 'true', 'division' => 'true', 'address' => 'true', 'area' => 'true', 'thana' => 'true']);
+  $j = geo_get(rtrim((string)cfg('barikoi_api', 'https://barikoi.xyz/v2/api'), '/') . "/search/reverse/geocode?$q");
+  $p = $j['place'] ?? null;
+  if (!is_array($p)) fail(404, 'No address found here');
+  $address = trim((string)($p['address'] ?? ''));
+  $area = (string)($p['area'] ?? ''); $thana = (string)($p['thana'] ?? $p['sub_district'] ?? ''); $district = (string)($p['district'] ?? $p['city'] ?? '');
+  // "House 44/Q/6, Moulavi Salek Road" + area / thana / district when the address line does not already say them
+  $text = $address;
+  foreach ([$area, $thana, $district] as $x) if ($x !== '' && stripos($text, $x) === false) $text .= ($text === '' ? '' : ', ') . $x;
+  $parts = [$text];
+  return ['address' => $text, 'area' => $area, 'thana' => $thana, 'district' => $district, 'insideDhaka' => geo_inside_dhaka($district, implode(' ', $parts) . ' ' . ($p['city'] ?? ''))];
+}
+function geo_google(float $lat, float $lng, string $key): array {
+  $j = geo_get('https://maps.googleapis.com/maps/api/geocode/json?' . http_build_query(['latlng' => "$lat,$lng", 'key' => $key, 'language' => 'en', 'region' => 'bd']));
+  if (($j['status'] ?? '') !== 'OK' || empty($j['results'])) fail(502, 'Google: ' . ($j['error_message'] ?? $j['status'] ?? 'no result'));
+  // most precise result first: premise / street_address / plus-code-free route
+  $rank = ['premise' => 0, 'subpremise' => 0, 'street_address' => 1, 'establishment' => 2, 'point_of_interest' => 2, 'route' => 3];
+  $best = $j['results'][0]; $bestRank = 9;
+  foreach ($j['results'] as $r) foreach ($r['types'] ?? [] as $t) if (isset($rank[$t]) && $rank[$t] < $bestRank && !in_array('plus_code', $r['types'], true)) { $best = $r; $bestRank = $rank[$t]; }
+  $comp = function (array $types) use ($j) { foreach ($j['results'] as $r) foreach ($r['address_components'] as $c) if (array_intersect($types, $c['types'])) return $c['long_name']; return ''; };
+  $addr = preg_replace(['/^[A-Z0-9]{4}\+[A-Z0-9]{2,3},?\s*/', '/,?\s*Bangladesh$/i', '/\s+\d{4}\b/'], '', (string)$best['formatted_address']);
+  $district = $comp(['administrative_area_level_2']) ?: $comp(['locality']);
+  $thana = $comp(['sublocality_level_1', 'administrative_area_level_3']);
+  return ['address' => trim($addr, " ,"), 'area' => $comp(['sublocality_level_2', 'neighborhood', 'sublocality']), 'thana' => $thana, 'district' => preg_replace('/ District$/i', '', $district), 'insideDhaka' => geo_inside_dhaka($comp(['locality']) ?: $district, $addr)];
 }
 
 /* ---------------- sitemap ---------------- */

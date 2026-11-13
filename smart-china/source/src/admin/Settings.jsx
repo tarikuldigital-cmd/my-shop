@@ -175,7 +175,18 @@ export default function Settings() {
         <div className="grid gap-4 xl:grid-cols-2">
           <Panel title="Steadfast Courier">
             <div className="space-y-3">{txt('courier.steadfastApiKey', 'API key', '', { type: 'password' })}{txt('courier.steadfastSecret', 'Secret key', '', { type: 'password' })}</div>
-            <p className="mt-3 rounded bg-amber-50 p-2 text-xs text-amber-800">Saved here for the backend hand-over. “Send to courier” creates real Steadfast consignments only after the Laravel backend is connected (the keys stay on the server there).</p>
+            <p className="mt-3 rounded bg-amber-50 p-2 text-xs text-amber-800">Used by “Send to courier” to create the Steadfast parcel with COD. The keys stay on the server and are never shown to visitors.</p>
+          </Panel>
+          <Panel title="Address finder — “Share my location” at checkout">
+            <div className="space-y-3">
+              <Field label="Provider"><select className="field" value={f.courier?.geoProvider || ''} onChange={set('courier.geoProvider')}>
+                <option value="">OpenStreetMap (free, area only — no key)</option>
+                <option value="barikoi">Barikoi — house / holding no., road, area, thana (best for Bangladesh)</option>
+                <option value="google">Google Maps Geocoding API</option>
+              </select></Field>
+              {f.courier?.geoProvider && txt('courier.geoKey', f.courier.geoProvider === 'barikoi' ? 'Barikoi API key' : 'Google Maps API key (Geocoding API enabled)', f.courier.geoProvider === 'barikoi' ? 'developer.barikoi.com → sign up → API key (has a free monthly quota)' : 'Google Cloud → APIs & Services → enable Geocoding API (billing account needed, free monthly quota)', { type: 'password' })}
+              <p className="rounded bg-surface p-2 text-xs text-muted">With Barikoi or Google the customer's exact house / road is filled in. The key stays on the server. If the provider fails, the site falls back to OpenStreetMap automatically.</p>
+            </div>
           </Panel>
           <Panel title="BD Courier — courier history / fraud check">
             <Field label="API key (app.bdcourier.com → API)" hint="Saved only in this browser, never in backups or GitHub."><input type="password" className="field" value={bdKey} onChange={(e) => setBdKey(e.target.value)} autoComplete="off" /></Field>
