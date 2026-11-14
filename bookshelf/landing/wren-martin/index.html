@@ -7,7 +7,7 @@
 <meta name="description" content="High School English Grammar & Composition — Wren & Martin, বাংলা ব্যাখ্যা ও প্রতিটি অনুশীলনীর উত্তরসহ। ৪৮৮ পৃষ্ঠা। সারাদেশে ক্যাশ অন ডেলিভারি।" />
 <meta property="og:title" content="Wren & Martin বাংলা (উত্তরসহ) — মাত্র ৳৩৫০" />
 <meta property="og:description" content="ইংরেজি গ্রামার এবার বাংলায় বুঝুন। প্রতিটি অনুশীলনীর উত্তরসহ। সারাদেশে ক্যাশ অন ডেলিভারি।" />
-<meta property="og:image" content="https://bookshelf.com.bd/public/uploads/product/1789803697-wren-789.webp" />
+<meta property="og:image" content="https://bookshelf.com.bd/wren-martin/cover.webp" />
 <meta name="theme-color" content="#15803d" />
 <link rel="icon" href="/favicon.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -60,16 +60,16 @@
   .price s{color:var(--muted);font-size:20px}
   .price .off{background:var(--sale);color:#fff;font-weight:700;font-size:14px;padding:4px 10px;border-radius:8px}
   .hero .ctas{display:flex;gap:12px;flex-wrap:wrap}
-  .cover{position:relative;justify-self:center;width:min(380px,100%)}
-  .cover .frame{background:#fff;border-radius:22px;padding:18px;box-shadow:var(--shadow);transform:rotate(-2deg)}
-  .cover img{border-radius:12px;width:100%;aspect-ratio:3/4;object-fit:cover;background:#eef2f0}
+  .cover{position:relative;justify-self:center;width:min(440px,100%)}
+  .cover .frame{background:#fff;border-radius:20px;padding:8px;box-shadow:var(--shadow)}
+  .cover img{border-radius:14px;width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;background:#e9dccb}
   .cover .stamp{position:absolute;top:-14px;right:-10px;background:var(--accent);color:#fff;border-radius:50%;width:92px;height:92px;display:grid;place-items:center;text-align:center;font-weight:700;line-height:1.15;font-size:15px;box-shadow:0 8px 20px -6px rgba(238,106,31,.8);transform:rotate(10deg)}
   .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:22px}
   .stats div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
   .stats b{display:block;font-size:20px;color:var(--brand)}
   .stats small{color:var(--muted);font-size:13px}
   /* fallback cover if the image can't load */
-  .fake-cover{aspect-ratio:3/4;border-radius:12px;background:linear-gradient(160deg,#14532d,#15803d 55%,#22a058);color:#fff;display:flex;flex-direction:column;justify-content:center;padding:26px;gap:10px}
+  .fake-cover{aspect-ratio:1/1;border-radius:12px;background:linear-gradient(160deg,#14532d,#15803d 55%,#22a058);color:#fff;display:flex;flex-direction:column;justify-content:center;padding:26px;gap:10px}
   .fake-cover small{opacity:.85;letter-spacing:.08em;font-size:12px}
   .fake-cover strong{font-size:26px;line-height:1.25}
   .fake-cover em{font-style:normal;background:var(--accent);align-self:flex-start;padding:3px 10px;border-radius:6px;font-size:14px}
@@ -161,7 +161,8 @@
 
   @media (max-width:860px){
     .hero .wrap,.order-box,.vs{grid-template-columns:1fr}
-    .cover{order:-1;width:min(300px,82%)}
+    .cover{order:-1;width:100%;max-width:480px}
+    .cover .frame{padding:6px;border-radius:16px}
     .who{grid-template-columns:repeat(2,1fr)}
     .trust .wrap{grid-template-columns:1fr 1fr}
     section{padding:44px 0}
@@ -204,9 +205,8 @@
     </div>
     <div class="cover">
       <div class="frame">
-        <img id="coverImg" src="https://bookshelf.com.bd/public/uploads/product/1789803697-wren-789.webp" alt="Wren & Martin High School English Grammar বাংলা উত্তরসহ বই" width="600" height="800" />
+        <img id="coverImg" src="cover.webp" alt="Wren & Martin High School English Grammar বাংলা উত্তরসহ বই" width="900" height="900" fetchpriority="high" />
       </div>
-      <div class="stamp">উত্তরসহ<br>বাংলা</div>
       <div class="stats">
         <div><b>৪৮৮</b><small>পৃষ্ঠা</small></div>
         <div><b>১০০%</b><small>উত্তরসহ</small></div>
