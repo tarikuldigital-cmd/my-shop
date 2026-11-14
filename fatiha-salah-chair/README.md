@@ -21,6 +21,7 @@ It is built on the same code and admin panel as Bookshelf (`../bookshelf/`), reb
 | `cpanel/fatiha-cpanel-upload.zip` | same as `deploy/`, zipped for File Manager upload |
 | `preview/` | demo build for GitHub Pages (data saved in the browser only) |
 | `docs/CPANEL_GUIDE_BN.md` | step-by-step going-live guide (Bangla) |
+| `docs/GTM_SETUP_BN.md` | Pixel/GTM tracking — identical dataLayer events to Bookshelf (Bangla) |
 
 ## Develop / build
 ```bash

@@ -70,8 +70,8 @@ Save করুন। তারপর **Admin → SMS → Settings** এ "Send or
 3. Steadfast প্যানেলে Webhook দিলে ডেলিভারি স্ট্যাটাস নিজে নিজে আপডেট হবে: Callback URL = `https://আপনার-ডোমেইন/api/v1/webhook/steadfast`, Auth token = `api/config.php` এর `steadfast_webhook_token` এর মান।
 4. Pathao / RedX এ এখনো API সংযোগ নেই — "Send to courier" চাপলে ট্র্যাকিং/কনসাইনমেন্ট আইডি হাতে লিখতে বলবে।
 
-## ধাপ ৯ — Facebook Pixel / Google ট্যাগ
-**Settings → Pixel & tracking** এ Pixel ID, Conversion API token, GTM/GA4 বসান। Purchase ইভেন্ট ব্রাউজার ও সার্ভার দুই দিক থেকেই (ডুপ্লিকেট ছাড়া) যাবে।
+## ধাপ ৯ — Pixel / GTM ট্র্যাকিং (Bookshelf-এর মতোই)
+**Settings → Pixel & tracking** এ শুধু **GTM container ID** বসান। Meta Pixel, Conversions API, GA4, Google Ads — সব GTM-এর ভেতরে চালান; সাইট নিজে Meta-তে কিছু পাঠায় না। বিস্তারিত ইভেন্ট ও ভ্যারিয়েবলের নাম: `docs/GTM_SETUP_BN.md`।
 
 ---
 
