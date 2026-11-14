@@ -70,11 +70,20 @@ function demoOrders(products, now) {
       name: pick(names), phone: `017${String(10000000 + Math.floor(rnd() * 89999999))}`, address,
       shippingArea: inside ? 'inside_dhaka' : 'outside_dhaka', items, subtotal, shippingCharge, discount: 0, total: subtotal + shippingCharge,
       payment: { method: 'cod', status: status === 'delivered' ? 'paid' : 'unpaid' },
-      status, courier, tracking: courier ? COURIERS[courier].p + (10000000 + i * 7919) : '', source: pick(SOURCES.filter((x) => x !== 'Landing page')), note: '',
+      status, courier, tracking: courier ? COURIERS[courier].p + (10000000 + i * 7919) : '', courierLog: courier ? demoCourierLog(status, at) : [], courierStatus: courier ? { ready: 'in_review', transit: 'pending', delivered: 'delivered', returned: 'cancelled' }[status] : '', source: pick(SOURCES.filter((x) => x !== 'Landing page')), note: '',
       cancelReason: status === 'cancelled' ? history[history.length - 1].note : '', createdAt: at, history,
     })
   }
   return list.sort((a, b) => b.createdAt - a.createdAt)
+}
+
+function demoCourierLog(status, at) {
+  const steps = [['in_review', 'Steadfast-এ পার্সেল বুক হয়েছে · COD সহ'], ['', 'রাইডার পার্সেল পিকআপ করেছে — হাবে পাঠানো হয়েছে'], ['pending', 'রাইডারের কাছে — ডেলিভারির পথে'], ['', 'রাইডার নোট: কাস্টমারকে কল করা হয়েছে, বিকেলে ডেলিভারি দেবে']]
+  const n = { ready: 1, transit: 4, delivered: 4, returned: 3 }[status] || 1
+  const log = steps.slice(0, n).map(([s, m], k) => ({ at: at + (k + 1) * 9 * HOUR, status: s, message: m }))
+  if (status === 'delivered') log.push({ at: at + 46 * HOUR, status: 'delivered', message: 'ডেলিভারি সম্পন্ন — COD আদায় হয়েছে' })
+  if (status === 'returned') log.push({ at: at + 40 * HOUR, status: 'cancelled', message: 'রাইডার নোট: কাস্টমার ফোন ধরেননি, পার্সেল ফেরত যাচ্ছে' })
+  return log
 }
 
 function demoIncomplete(products, now) {

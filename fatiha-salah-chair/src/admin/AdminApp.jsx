@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { liveCourierRefreshAll } from '../lib/live'
+import CourierBell from './CourierBell'
 import { Link, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { S, save, useDb } from '../store/db'
 import { Toasts, toast } from './ui'
@@ -70,6 +72,17 @@ export default function AdminApp() {
     window.addEventListener('fatiha:new-order', on)
     return () => window.removeEventListener('fatiha:new-order', on)
   }, [])
+  // No webhook on this Steadfast account → while the admin is open, pull courier status + rider notes every 15 minutes
+  useEffect(() => {
+    if (!LIVE || !ok) return
+    const run = () => {
+      const open = S.orders.some((o) => o.courier === 'steadfast' && o.tracking && ['ready', 'transit', 'hold'].includes(o.status))
+      if (open && !document.hidden) liveCourierRefreshAll().catch(() => {})
+    }
+    const first = setTimeout(run, 20000)
+    const t = setInterval(run, 15 * 60000)
+    return () => { clearTimeout(first); clearInterval(t) }
+  }, [ok])
   const [menu, setMenu] = useState(false)
   // installable admin app (PWA): manifest + service worker + "Install" button
   const [installEv, setInstallEv] = useState(null)
@@ -121,8 +134,10 @@ export default function AdminApp() {
       <div className="min-w-0">
         <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-line bg-white px-4 py-3 lg:hidden">
           <button onClick={() => setMenu(true)} aria-label="Open admin menu"><Icon name="menu" /></button>
-          <span className="font-bold">Fatiha Ayat Salah Chair Admin</span>
+          <span className="flex-1 font-bold">Fatiha Admin</span>
+          <CourierBell />
         </header>
+        <div className="sticky top-0 z-20 hidden justify-end border-b border-line bg-white/90 px-6 py-1.5 backdrop-blur lg:flex"><CourierBell /></div>
         <main className="p-4 sm:p-6">
           <Routes>
             <Route index element={<Dashboard />} />

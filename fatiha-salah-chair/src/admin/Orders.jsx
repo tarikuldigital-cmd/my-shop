@@ -1,6 +1,8 @@
 import { LIVE } from '../config/env'
-import { courierLive } from '../lib/live'
-import { useMemo, useState } from 'react'
+import { courierLive, liveCourierRefresh, liveCourierRefreshAll } from '../lib/live'
+import { COURIER_ST, CourierLog } from './courierLog'
+import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import {
   S, STATUS, ST_KEYS, COURIERS, PAY, PAY_ST, CANCEL_REASONS, RETURN_REASONS, SOURCES, DAY,
   save, useDb, setStatus, sendToCourier, createOrder, riskOf, trackUrl, waNum, validPhone, meName, shippingFor,
@@ -76,6 +78,8 @@ function OrderDrawer({ order: o, onClose }) {
   const [extra, setExtra] = useState(null)
   const [note, setNote] = useState('')
   const [courier, setCourier] = useState('steadfast')
+  const [riderNote, setRiderNote] = useState('')
+  const [busyRef, setBusyRef] = useState(false)
   const [reason, setReason] = useState('')
   const [, re] = useState(0)
   if (!o) return null
@@ -91,7 +95,7 @@ function OrderDrawer({ order: o, onClose }) {
   }
   const confirmExtra = async () => {
     if (extra === 'courier') {
-      try { await (LIVE ? courierLive(o, courier, meName()) : sendToCourier(o, courier, meName())); toast(`${o.invoice} sent to ${COURIERS[courier].t}`) } catch (e) { return toast(e.message) }
+      try { await (LIVE ? courierLive(o, courier, meName(), riderNote.trim()) : sendToCourier(o, courier, meName())); setRiderNote(''); toast(`${o.invoice} sent to ${COURIERS[courier].t}`) } catch (e) { return toast(e.message) }
     }
     else { setStatus(o, extra, meName(), reason); toast(`${o.invoice}: ${STATUS[extra].t}`) }
     save(); setExtra(null)
@@ -143,13 +147,25 @@ function OrderDrawer({ order: o, onClose }) {
           {extra && (
             <div className="mt-3 space-y-2 rounded-md border border-line bg-surface p-3">
               {extra === 'courier'
-                ? <Field label="Courier"><select className="field" value={courier} onChange={(e) => setCourier(e.target.value)}>{Object.entries(COURIERS).map(([k, c]) => <option key={k} value={k}>{c.t}</option>)}</select></Field>
+                ? <><Field label="Courier"><select className="field" value={courier} onChange={(e) => setCourier(e.target.value)}>{Object.entries(COURIERS).map(([k, c]) => <option key={k} value={k}>{c.t}</option>)}</select></Field>
+                  {courier === 'steadfast' && <Field label="রাইডারের জন্য নোট (ঐচ্ছিক)" hint="Steadfast পার্সেলের নোটে যাবে। বিদেশি অর্ডার হলে বিদেশের নাম্বার নিজে থেকেই যোগ হবে।"><input className="field" value={riderNote} onChange={(e) => setRiderNote(e.target.value)} placeholder="যেমন: কল করে ডেলিভারি দিন" /></Field>}</>
                 : <Field label="Reason"><select className="field" value={reason} onChange={(e) => setReason(e.target.value)}>{(extra === 'cancelled' ? CANCEL_REASONS : RETURN_REASONS).map((r) => <option key={r}>{r}</option>)}</select></Field>}
               <div className="flex gap-2"><button className="btn-brand" onClick={confirmExtra}>Confirm</button><button className="btn-outline" onClick={() => setExtra(null)}>Back</button></div>
-              {extra === 'courier' && <p className="text-xs text-muted">Demo creates a tracking code. With the Laravel backend this calls the Steadfast API and saves the real consignment ID.</p>}
+              {extra === 'courier' && <p className="text-xs text-muted">{LIVE ? 'Steadfast: পার্সেল সরাসরি Steadfast-এ বুক হবে (COD সহ), আসল ট্র্যাকিং কোড সেভ হবে। অন্য কুরিয়ারে ট্র্যাকিং আইডি হাতে দিতে হবে।' : 'Demo creates a tracking code. On the live site this books the parcel in Steadfast.'}</p>}
             </div>
           )}
         </div>
+
+        {o.courier && (
+          <div className="rounded-md border border-line p-3">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+              <p className="font-semibold">🚚 কুরিয়ার আপডেট ও রাইডার নোট{o.courierStatus && <span className="ml-2 rounded bg-surface px-1.5 py-0.5 text-xs font-normal">{COURIER_ST[o.courierStatus] || o.courierStatus}</span>}</p>
+              {LIVE && o.courier === 'steadfast' && o.tracking && <button className="btn-outline px-2 py-1 text-xs" disabled={busyRef} onClick={async () => { setBusyRef(true); try { await liveCourierRefresh(o); toast('Steadfast থেকে সর্বশেষ আপডেট আনা হয়েছে') } catch (e) { toast(e.message) } finally { setBusyRef(false) } }}>{busyRef ? 'Refreshing…' : '↻ Refresh status'}</button>}
+            </div>
+            {(o.codAmount != null || o.codCollected != null || o.courierCharge != null) && <p className="mb-2 text-xs text-muted">{o.codAmount != null && <>COD ৳{o.codAmount}</>}{o.codCollected != null && <> · আদায় ৳{o.codCollected}</>}{o.courierCharge != null && <> · কুরিয়ার চার্জ ৳{o.courierCharge}</>}</p>}
+            <CourierLog o={o} />
+          </div>
+        )}
 
         <div className="rounded-md border border-line p-3">
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
@@ -256,6 +272,10 @@ export default function Orders() {
   const [bulk, setBulk] = useState('')
   const [openId, setOpenId] = useState(null)
   const [newOpen, setNewOpen] = useState(false)
+  const [refAll, setRefAll] = useState(false)
+  // ?open=FA100123 (from the notification bell) opens that order
+  const [sp, setSp] = useSearchParams()
+  useEffect(() => { const inv = sp.get('open'); if (!inv) return; const o = S.orders.find((x) => x.invoice === inv); if (o) setOpenId(o.id); sp.delete('open'); setSp(sp, { replace: true }) }, [sp]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const base = useMemo(() => {
     const a = from ? new Date(from + 'T00:00').getTime() : 0
@@ -294,7 +314,10 @@ export default function Orders() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <h1 className="text-2xl font-bold">Order management</h1>
+        <div>
+          <h1 className="text-2xl font-bold">Order management</h1>
+          {LIVE && <button className="btn-outline mt-2 px-3 py-1.5 text-xs" disabled={refAll} onClick={async () => { setRefAll(true); try { const r = await liveCourierRefreshAll(); toast(`Steadfast: ${r.checked}টি পার্সেল চেক হয়েছে, ${r.statusChanged}টির স্ট্যাটাস বদলেছে${r.errors?.length ? ' · ' + r.errors[0] : ''}`) } catch (e) { toast(e.message) } finally { setRefAll(false) } }}>{refAll ? 'Steadfast চেক হচ্ছে…' : '↻ সব কুরিয়ার পার্সেলের স্ট্যাটাস আপডেট'}</button>}
+        </div>
         <div className="rounded-lg bg-brand px-4 py-2 text-white">
           <p className="text-[11px] uppercase tracking-wide text-white/70">Today</p>
           <p className="text-xl font-bold">{today.length} new · {today.filter((o) => o.status === 'pending').length} pending</p>
@@ -354,7 +377,7 @@ export default function Orders() {
                   <td className="p-3" onClick={(e) => e.stopPropagation()}><FraudBadge phone={o.phone} /></td>
                   <td className="p-3"><Pill s={o.status} /></td>
                   <td className="p-3 font-semibold">{tk(o.total)}</td>
-                  <td className="p-3 text-xs">{o.courier ? <>{COURIERS[o.courier].t}<br />{trackUrl(o) ? <a className="text-brand" href={trackUrl(o)} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>{o.tracking} ↗</a> : o.tracking}</> : '—'}</td>
+                  <td className="p-3 text-xs">{o.courier ? <>{COURIERS[o.courier].t}<br />{trackUrl(o) ? <a className="text-brand" href={trackUrl(o)} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>{o.tracking} ↗</a> : o.tracking}{o.courierLog?.length > 0 && <p className="mt-0.5 max-w-44 truncate text-muted" title={o.courierLog[o.courierLog.length - 1].message}>{!o.courierLog[o.courierLog.length - 1].status && '🛵 '}{o.courierLog[o.courierLog.length - 1].message}</p>}</> : '—'}</td>
                   <td className="p-3"><Pill tone={paid ? 'green' : o.payment?.status === 'pending' ? 'amber' : 'gray'}>{paid ? 'PAID' : o.payment?.status === 'pending' ? 'VERIFY' : 'DUE'}</Pill>{o.payment?.method !== 'cod' && <div className="text-xs text-muted">{PAY[o.payment?.method]}</div>}</td>
                 </tr>
               )

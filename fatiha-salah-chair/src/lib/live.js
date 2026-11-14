@@ -224,18 +224,37 @@ export const liveLandingView = (slug) => call('landing/view', { method: 'POST', 
 export const liveValidateCoupon = (code, subtotal) => call('coupons/validate', { method: 'POST', body: { code, subtotal } })
 
 /** Product a parcel with Steadfast through the server (the API keys never leave it). Returns the tracking code. */
-export async function bookSteadfast(order) {
-  const r = await call('admin/courier/steadfast', { method: 'POST', admin: true, body: { orderId: order.id } })
+export async function bookSteadfast(order, note = '') {
+  const r = await call('admin/courier/steadfast', { method: 'POST', admin: true, body: { orderId: order.id, note } })
+  Object.assign(order, { consignmentId: r.consignmentId, courierLog: r.courierLog || [], courierStatus: r.courierStatus || '', codAmount: r.codAmount })
   return r.tracking
 }
+
+/** Ask Steadfast for the latest status + rider notes of one parcel; the server saves it and returns the order. */
+export async function liveCourierRefresh(order) {
+  const r = await call('admin/courier/refresh', { method: 'POST', admin: true, body: { orderId: order.id } })
+  if (r?.order) {
+    replaceInPlace(order, r.order)
+    if (base) base.docs.orders.set(keyOf('orders', order), { str: JSON.stringify(r.order), obj: JSON.parse(JSON.stringify(r.order)) })
+    refresh()
+  }
+  return order
+}
+/** Refresh every open Steadfast parcel (max 40 per call), then pull the changes. */
+export async function liveCourierRefreshAll() {
+  const r = await call('admin/courier/refresh-all', { method: 'POST', admin: true, body: {} })
+  await poll()
+  return r
+}
+export const liveCourierBalance = () => call('admin/courier/balance', { method: 'POST', admin: true, body: {} })
 
 /** after the server rewrote image references, pull the fresh data */
 export async function refreshAfterMirror() { since = 0; await poll() }
 
 /** Live courier booking: Steadfast through the server; Pathao / RedX need the consignment ID typed in (no API link yet). */
-export async function courierLive(o, c, by) {
+export async function courierLive(o, c, by, note = '') {
   let tracking
-  if (c === 'steadfast') tracking = await bookSteadfast(o)
+  if (c === 'steadfast') tracking = await bookSteadfast(o, note)
   else {
     tracking = (window.prompt(`${COURIERS[c].t} tracking / consignment ID for ${o.invoice}:`) || '').trim()
     if (!tracking) throw new Error('Tracking ID দিতে হবে')

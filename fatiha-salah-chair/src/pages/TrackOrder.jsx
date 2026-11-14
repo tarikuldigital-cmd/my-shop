@@ -79,6 +79,21 @@ export default function TrackOrder() {
           </ol>
         )}
 
+        {o.courierLog?.length > 0 && (
+          <div className="mx-5 mb-5 rounded-md border border-line p-4 text-sm">
+            <p className="mb-3 font-semibold">🚚 কুরিয়ারের সর্বশেষ আপডেট</p>
+            <ol className="space-y-2.5 border-l-2 border-accent/30 pl-4">
+              {[...o.courierLog].reverse().map((e, i) => (
+                <li key={i} className="relative">
+                  <span className={`absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full ${i === 0 ? 'bg-accent ring-4 ring-accent/20' : 'bg-gray-300'}`} />
+                  <p className={i === 0 ? 'font-medium' : 'text-ink/80'}>{e.message}</p>
+                  <p className="text-xs text-muted">{when(e.at)}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
+
         {url && !stopped && (
           <div className="mx-5 mb-5 flex flex-wrap items-center justify-between gap-3 rounded-md border border-accent/30 bg-accent/5 p-3 text-sm">
             <span><Icon name="truck" className="mr-1 inline h-5 w-5 text-accent" /> {COURIERS[o.courier].t}-এর সাইটে পার্সেলের সর্বশেষ অবস্থান দেখুন</span>

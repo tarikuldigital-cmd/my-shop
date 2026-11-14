@@ -43,6 +43,9 @@ function routes(): array {
     ['POST', 'admin/mirror-images', 'h_mirror'],
     ['POST', 'sms/send', 'h_sms_send'],
     ['POST', 'webhook/steadfast', 'h_steadfast_hook'],
+    ['POST', 'admin/courier/refresh', 'h_courier_refresh'],
+    ['POST', 'admin/courier/refresh-all', 'h_courier_refresh_all'],
+    ['POST', 'admin/courier/balance', 'h_courier_balance'],
   ];
 }
 
@@ -69,7 +72,18 @@ function h_track_code(string $code): void {
   limit_or_fail('track:' . client_ip(), 60, 3600);
   $o = doc_by('orders', 'k2', strtoupper($code));
   if (!$o) fail(404, 'এই ট্র্যাকিং লিংকে কোনো অর্ডার পাওয়া যায়নি');
-  out(public_order($o));
+  out(public_order(courier_auto_refresh($o)));
+}
+/** Customer opens the tracking page → ask Steadfast for the latest status (at most every 10 minutes per order). */
+function courier_auto_refresh(array $o): array {
+  if (($o['courier'] ?? '') !== 'steadfast' || empty($o['tracking']) || !in_array($o['status'], ['ready', 'transit', 'hold'], true)) return $o;
+  if (now_ms() - (int)($o['courierCheckedAt'] ?? 0) < 10 * 60000 || rate_hit('sfauto', 120, 3600)) return $o;
+  $event = null;
+  try {
+    $o = tx(function () use ($o, &$event) { $cur = doc_get('orders', $o['id'], true) ?? $o; $event = steadfast_refresh($cur); doc_put('orders', $cur); return $cur; });
+    if ($event) sms_order_event($o, $event);
+  } catch (Throwable $e) { error_log('courier_auto_refresh: ' . $e->getMessage()); }
+  return $o;
 }
 function h_track_by_phone(): void {
   limit_or_fail('trackp:' . client_ip(), 30, 3600);
@@ -365,16 +379,64 @@ function h_upload(): void {
 
 function h_steadfast(): void {
   require_admin();
-  $id = (string)(body()['orderId'] ?? '');
-  $o = tx(function () use ($id) {
-    $o = doc_get('orders', $id, true); if (!$o) fail(404, 'অর্ডার পাওয়া যায়নি');
-    if (!empty($o['tracking']) && ($o['courier'] ?? '') === 'steadfast') return $o; // already booked — do not create a duplicate parcel
+  $b = body(); $id = (string)($b['orderId'] ?? ''); $note = s($b['note'] ?? '', 250);
+  $o = tx(function () use ($id, $note) {
+    $o = doc_get('orders', $id, true); if (!$o) fail(404, 'Order not found');
+    if (!empty($o['tracking']) && ($o['courier'] ?? '') === 'steadfast') return $o; // already booked — never a duplicate parcel
+    if (in_array($o['status'], ['cancelled', 'delivered', 'returned'], true)) fail(422, 'This order is ' . $o['status'] . ' and cannot be sent to the courier');
+    if ($note !== '') $o['courierNote'] = $note;
     $r = steadfast_create($o);
-    $o['courier'] = 'steadfast'; $o['tracking'] = $r['tracking']; $o['consignmentId'] = $r['consignmentId'];
+    $o['courier'] = 'steadfast'; $o['tracking'] = $r['tracking']; $o['consignmentId'] = $r['consignmentId']; $o['courierStatus'] = $r['status']; $o['codAmount'] = $r['cod'];
+    courier_log_add($o, $r['status'], 'Steadfast-এ পার্সেল বুক হয়েছে · COD ৳' . $r['cod']);
     doc_put('orders', $o);
     return $o;
   });
-  out(['tracking' => $o['tracking'], 'consignmentId' => $o['consignmentId'] ?? null]);
+  out(['tracking' => $o['tracking'], 'consignmentId' => $o['consignmentId'] ?? null, 'courierLog' => $o['courierLog'] ?? [], 'courierStatus' => $o['courierStatus'] ?? '', 'codAmount' => $o['codAmount'] ?? null]);
+}
+
+/** Admin "Refresh status" on one order: latest status + full tracking history (rider notes). */
+function h_courier_refresh(): void {
+  require_admin();
+  $id = (string)(body()['orderId'] ?? '');
+  $event = null;
+  $o = tx(function () use ($id, &$event) {
+    $o = doc_get('orders', $id, true); if (!$o) fail(404, 'Order not found');
+    if (($o['courier'] ?? '') !== 'steadfast' || empty($o['tracking'])) fail(422, 'Live status works for Steadfast parcels booked from this panel');
+    $event = steadfast_refresh($o);
+    doc_put('orders', $o);
+    return $o;
+  });
+  if ($event) sms_order_event($o, $event);
+  out(['order' => $o]);
+}
+
+/** Refresh every open Steadfast parcel (ready / in transit / on hold), oldest check first, max 40 per call. */
+function h_courier_refresh_all(): void {
+  require_admin();
+  $open = array_values(array_filter(doc_all('orders'), fn($o) => ($o['courier'] ?? '') === 'steadfast' && !empty($o['tracking']) && in_array($o['status'], ['ready', 'transit', 'hold'], true)));
+  usort($open, fn($a, $b) => (int)($a['courierCheckedAt'] ?? 0) <=> (int)($b['courierCheckedAt'] ?? 0));
+  $done = 0; $changed = 0; $errors = [];
+  foreach (array_slice($open, 0, 40) as $x) {
+    try {
+      $event = null;
+      $o = tx(function () use ($x, &$event, &$changed) {
+        $o = doc_get('orders', $x['id'], true); if (!$o) return null;
+        $before = $o['status']; $event = steadfast_refresh($o);
+        if ($o['status'] !== $before) $changed++;
+        doc_put('orders', $o);
+        return $o;
+      });
+      if ($o && $event) sms_order_event($o, $event);
+      $done++;
+    } catch (HttpError $e) { $errors[] = $x['invoice'] . ': ' . $e->getMessage(); if (count($errors) > 3) break; }
+  }
+  out(['checked' => $done, 'statusChanged' => $changed, 'open' => count($open), 'errors' => $errors]);
+}
+
+function h_courier_balance(): void {
+  require_admin();
+  $j = steadfast_get('/get_balance');
+  out(['balance' => $j['current_balance'] ?? null]);
 }
 
 function h_sms_send(): void {
@@ -386,21 +448,32 @@ function h_sms_send(): void {
   out(['ok' => $ok, 'info' => $info], $ok ? 200 : 502);
 }
 
+/**
+ * Steadfast webhook (Steadfast panel → API → Webhook): https://YOUR-DOMAIN/api/v1/webhook/steadfast
+ * Auth: "Authorization: Bearer <steadfast_webhook_token from api/config.php>".
+ * delivery_status → order status + courier log; tracking_update → rider / hub note (admin notification + customer tracking page).
+ */
 function h_steadfast_hook(): void {
   $tok = (string)cfg('steadfast_webhook_token', '');
-  $got = bearer() ?: preg_replace('/^Bearer\s+/i', '', (string)($_SERVER['HTTP_AUTHORIZATION'] ?? ''));
+  $got = bearer() ?: preg_replace('/^Bearer\s+/i', '', (string)($_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? ''));
   if ($tok === '' || !hash_equals($tok, (string)$got)) fail(401, 'Unauthorized');
   $b = body();
-  if (($b['notification_type'] ?? '') !== 'delivery_status') out(['status' => 'success', 'message' => 'ignored']);
-  $inv = (string)($b['invoice'] ?? ''); $st = steadfast_status_map((string)($b['status'] ?? ''));
-  if (!$st || !preg_match('/^BS\d+$/', $inv)) out(['status' => 'success', 'message' => 'ignored']);
+  $type = (string)($b['notification_type'] ?? '');
+  $inv = (string)($b['invoice'] ?? '');
+  if (!in_array($type, ['delivery_status', 'tracking_update'], true) || !preg_match('/^[A-Z]{1,4}\d+$/', $inv)) out(['status' => 'success', 'message' => 'ignored']);
   $event = null;
-  $o = tx(function () use ($inv, $st, $b, &$event) {
+  $o = tx(function () use ($inv, $type, $b, &$event) {
     $o = doc_by('orders', 'k', $inv, true); if (!$o || ($o['courier'] ?? '') !== 'steadfast') return null;
-    if (in_array($o['status'], ['delivered', 'cancelled', 'returned'], true) || $o['status'] === $st) return null;
-    set_status_server($o, $st, 'Steadfast', (string)($b['tracking_message'] ?? ''));
+    $msg = s($b['tracking_message'] ?? '', 500); $at = ts_ms($b['updated_at'] ?? null);
+    if ($type === 'delivery_status') {
+      $st = strtolower((string)($b['status'] ?? ''));
+      if (isset($b['cod_amount'])) $o['codCollected'] = (float)$b['cod_amount'];
+      if (isset($b['delivery_charge'])) $o['courierCharge'] = (float)$b['delivery_charge'];
+      $event = apply_courier_status($o, $st, $msg !== '' ? $msg : (SF_STATUS_TEXT[$st] ?? $st), 'Steadfast', $at);
+    } else {
+      $event = apply_courier_status($o, '', $msg, 'Steadfast', $at);
+    }
     doc_put('orders', $o);
-    $event = $st === 'delivered' ? 'delivered' : null;
     return $o;
   });
   if ($o && $event) sms_order_event($o, $event);

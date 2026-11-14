@@ -40,7 +40,8 @@ function make_track_code(string $invoice): string {
 
 /** Fields a customer may see on the tracking page / their order list. */
 function public_order(array $o): array {
-  unset($o['customerPhone'], $o['demo']);
+  unset($o['customerPhone'], $o['demo'], $o['courierCheckedAt'], $o['consignmentId']);
+  $o['courierLog'] = array_values(array_map(fn($e) => ['at' => (int)($e['at'] ?? 0), 'status' => (string)($e['status'] ?? ''), 'message' => (string)($e['message'] ?? '')], $o['courierLog'] ?? []));
   $o['history'] = array_map(fn($h) => ['s' => $h['s'] ?? '', 'at' => $h['at'] ?? 0, 'by' => ($h['by'] ?? '') === 'Customer' ? 'Customer' : 'Fatiha Ayat Salah Chair', 'note' => in_array($h['s'] ?? '', ['cancelled', 'returned'], true) ? '' : ($h['note'] ?? '')], $o['history'] ?? []);
   return $o;
 }
@@ -152,28 +153,102 @@ function set_status_server(array &$o, string $s, string $by, string $note = ''):
 }
 
 /* ---------------- Steadfast courier ---------------- */
-function steadfast_create(array $o): array {
+const SF_API = 'https://portal.packzy.com/api/v1';
+/** Steadfast delivery_status → readable text (tracking page + admin) */
+const SF_STATUS_TEXT = [
+  'in_review' => 'পার্সেল বুক হয়েছে — রাইডার পিকআপের অপেক্ষায়', 'pending' => 'রাইডার পার্সেল নিয়েছে — ডেলিভারির পথে', 'hold' => 'কুরিয়ারে হোল্ডে আছে',
+  'delivered_approval_pending' => 'ডেলিভারি হয়েছে (কুরিয়ারের অনুমোদনের অপেক্ষায়)', 'partial_delivered_approval_pending' => 'আংশিক ডেলিভারি (অনুমোদনের অপেক্ষায়)',
+  'cancelled_approval_pending' => 'ডেলিভারি বাতিল (অনুমোদনের অপেক্ষায়)', 'unknown_approval_pending' => 'স্ট্যাটাস যাচাই হচ্ছে',
+  'delivered' => 'ডেলিভারি সম্পন্ন', 'partial_delivered' => 'আংশিক ডেলিভারি', 'cancelled' => 'ডেলিভারি বাতিল — মার্চেন্টের কাছে ফেরত যাচ্ছে', 'exceptional' => 'কুরিয়ারে সমস্যা', 'unknown' => 'স্ট্যাটাস অজানা',
+];
+function sf_base(): string { return rtrim((string)cfg('steadfast_api', SF_API), '/'); }
+function steadfast_keys(): array {
   $set = kv_get('settings', []);
   $k = trim((string)($set['courier']['steadfastApiKey'] ?? '')); $sec = trim((string)($set['courier']['steadfastSecret'] ?? ''));
   if ($k === '' || $sec === '') fail(422, 'Steadfast API Key / Secret সেট করা নেই (Admin → Settings → Courier)');
-  $cod = ($o['payment']['status'] ?? '') === 'paid' ? 0 : (int)$o['total'];
-  $payload = ['invoice' => $o['invoice'], 'recipient_name' => $o['name'], 'recipient_phone' => $o['phone'], 'recipient_address' => $o['address'], 'cod_amount' => $cod, 'note' => (string)($o['note'] ?? '')];
-  [$code, $b, $err] = http_call('https://portal.packzy.com/api/v1/create_order', [CURLOPT_POST => true, CURLOPT_HTTPHEADER => ["Api-Key: $k", "Secret-Key: $sec", 'Content-Type: application/json'], CURLOPT_POSTFIELDS => jenc($payload)]);
+  return ["Api-Key: $k", "Secret-Key: $sec", 'Content-Type: application/json', 'Accept: application/json'];
+}
+function steadfast_get(string $path): array {
+  [$code, $b, $err] = http_call(sf_base() . $path, [CURLOPT_HTTPHEADER => steadfast_keys(), CURLOPT_TIMEOUT => 15]);
+  if ($err) fail(502, 'Steadfast-এর সাথে যোগাযোগ করা যায়নি: ' . $err);
+  $j = json_decode($b, true);
+  if ($code >= 300 || !is_array($j)) fail(502, 'Steadfast: ' . (is_array($j) ? ($j['message'] ?? "HTTP $code") : substr($b, 0, 160)));
+  return $j;
+}
+function cod_amount(array $o): int { return ($o['payment']['status'] ?? '') === 'paid' ? 0 : (int)$o['total']; }
+function sf_clean(string $s, int $max): string { return mb_substr(trim(str_replace(['{', '}', ';', '<', '>', '$'], ' ', $s)), 0, $max); }
+function item_summary(array $o): string { return implode(', ', array_map(fn($i) => $i['name'] . ' x' . $i['quantity'], $o['items'] ?? [])); }
+
+function steadfast_create(array $o): array {
+  $note = trim((string)($o['courierNote'] ?? $o['note'] ?? ''));
+  if (!empty($o['abroadPhone'])) $note = trim($note . ' | বিদেশে অর্ডারদাতা: ' . $o['abroadPhone']);
+  $payload = [
+    'invoice' => $o['invoice'], 'recipient_name' => sf_clean((string)$o['name'], 100), 'recipient_phone' => norm_phone((string)$o['phone']),
+    'recipient_address' => sf_clean((string)$o['address'], 250), 'cod_amount' => cod_amount($o),
+    'note' => sf_clean($note, 250), 'item_description' => sf_clean(item_summary($o), 250),
+    'total_lot' => array_sum(array_map(fn($i) => (int)$i['quantity'], $o['items'] ?? [])),
+  ];
+  [$code, $b, $err] = http_call(sf_base() . '/create_order', [CURLOPT_POST => true, CURLOPT_HTTPHEADER => steadfast_keys(), CURLOPT_POSTFIELDS => jenc($payload)]);
   $j = json_decode($b, true) ?: [];
   if ($err) fail(502, 'Steadfast-এর সাথে যোগাযোগ করা যায়নি: ' . $err);
   if ($code >= 300 || (int)($j['status'] ?? 0) !== 200 || empty($j['consignment']['tracking_code'])) {
     $msg = $j['message'] ?? (is_array($j['errors'] ?? null) ? implode(', ', array_map(fn($e) => is_array($e) ? implode(' ', $e) : (string)$e, $j['errors'])) : substr($b, 0, 160));
     fail(502, 'Steadfast: ' . $msg);
   }
-  return ['tracking' => (string)$j['consignment']['tracking_code'], 'consignmentId' => $j['consignment']['consignment_id'] ?? null];
+  return ['tracking' => (string)$j['consignment']['tracking_code'], 'consignmentId' => $j['consignment']['consignment_id'] ?? null, 'cod' => $payload['cod_amount'], 'status' => (string)($j['consignment']['status'] ?? 'in_review')];
 }
 
-/** Steadfast webhook → status mapping */
+/** Steadfast status → our order status (null = no change) */
 function steadfast_status_map(string $st): ?string {
   return match (strtolower($st)) {
-    'delivered' => 'delivered',
-    'cancelled', 'returned', 'partial_delivered' => 'returned',
+    'delivered', 'delivered_approval_pending' => 'delivered',
+    'partial_delivered', 'partial_delivered_approval_pending', 'cancelled', 'cancelled_approval_pending' => 'returned',
     'hold' => 'hold',
     default => null,
   };
+}
+
+/** add one courier event (rider note / status) unless the same text is already there */
+function courier_log_add(array &$o, string $status, string $message, int $at = 0): bool {
+  $message = trim($message); $status = trim($status);
+  if ($message === '' && $status === '') return false;
+  $o['courierLog'] ??= [];
+  foreach ($o['courierLog'] as $e) if (($e['message'] ?? '') === $message && ($e['status'] ?? '') === $status) return false;
+  $o['courierLog'][] = ['at' => $at ?: now_ms(), 'status' => $status, 'message' => $message !== '' ? $message : (SF_STATUS_TEXT[$status] ?? $status)];
+  usort($o['courierLog'], fn($a, $b) => ($a['at'] ?? 0) <=> ($b['at'] ?? 0));
+  return true;
+}
+/** Steadfast sends Bangladesh time without a zone ("2026-11-12 10:05:00") */
+function ts_ms(?string $s): int {
+  $s = trim((string)$s);
+  if ($s === '') return now_ms();
+  $t = strtotime(preg_match('/(Z|[+-]\d{2}:?\d{2})$/', $s) ? $s : "$s +06:00");
+  return $t ? $t * 1000 : now_ms();
+}
+
+/** Apply a courier status: log it, move the order (ready → transit → delivered / returned / hold); returns the SMS event or null. */
+function apply_courier_status(array &$o, string $st, string $message, string $by, int $at = 0): ?string {
+  $st = strtolower(trim($st));
+  if ($st !== '') $o['courierStatus'] = $st;
+  courier_log_add($o, $st, $message, $at);
+  if (in_array($o['status'], ['delivered', 'cancelled', 'returned'], true)) return null;
+  $to = steadfast_status_map($st);
+  if (!$to && in_array($o['status'], ['ready', 'hold'], true) && ($st === 'pending' || ($st === '' && $message !== '' && !preg_match('/created|booked|placed|review/i', $message)))) $to = 'transit';
+  if (!$to || $o['status'] === $to) return null;
+  set_status_server($o, $to, $by, $message);
+  return $to === 'delivered' ? 'delivered' : null;
+}
+
+/** Pull the latest status + full tracking history (rider notes) from Steadfast. */
+function steadfast_refresh(array &$o): ?string {
+  $inv = rawurlencode((string)$o['invoice']);
+  $st = steadfast_get(!empty($o['consignmentId']) ? '/status_by_cid/' . rawurlencode((string)$o['consignmentId']) : "/status_by_invoice/$inv");
+  $status = (string)($st['delivery_status'] ?? '');
+  try {
+    $t = steadfast_get("/trackings_by_invoice/$inv");
+    $rows = array_is_list($t) ? $t : ($t['data'] ?? $t['trackings'] ?? $t['tracking'] ?? []);
+    if (is_array($rows)) foreach ($rows as $r) if (is_array($r) && !empty($r['text'])) courier_log_add($o, (string)($r['tracking_type'] ?? ''), (string)$r['text'], ts_ms($r['created_at'] ?? null));
+  } catch (HttpError $e) { /* history is optional */ }
+  $o['courierCheckedAt'] = now_ms();
+  return $status !== '' ? apply_courier_status($o, $status, SF_STATUS_TEXT[$status] ?? '', 'Steadfast') : null;
 }
