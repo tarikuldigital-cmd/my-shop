@@ -19,6 +19,12 @@ import { formatPrice } from '../utils/format'
 const cleanIntl = (v = '') => v.trim().replace(/[\s()-]/g, '')
 const validIntl = (v) => /^\+?\d{8,15}$/.test(cleanIntl(v))
 
+/** Delivery details remembered on this device after an order, so the next checkout opens already filled in. */
+const SAVED_KEY = 'fatiha_checkout_info'
+const loadSaved = () => { try { return JSON.parse(localStorage.getItem(SAVED_KEY) || 'null') || {} } catch { return {} } }
+const storeSaved = (f) => { try { localStorage.setItem(SAVED_KEY, JSON.stringify({ name: f.name, phone: f.phone, address: f.address, shippingArea: f.shippingArea, abroad: f.abroad, abroadPhone: f.abroadPhone })) } catch { /* private mode */ } }
+const forgetSaved = () => { try { localStorage.removeItem(SAVED_KEY) } catch { /* ignore */ } }
+
 // NOTE: the live checkout page could not be inspected (blocked to crawlers). Fields follow the
 // site's own "Order procedure" page: name, mobile, full address, delivery area, payment method.
 export default function Checkout() {
@@ -28,7 +34,15 @@ export default function Checkout() {
   const navigate = useNavigate()
   useSeo({ title: 'অর্ডার করুন', noindex: true })
 
-  const [form, setForm] = useState({ name: user?.name || '', phone: user?.phone || '', address: user?.address || '', shippingArea: settings.shipping[0].id, paymentMethod: 'cod', trx: '', sender: '', note: '', abroad: false, abroadPhone: '' })
+  const [saved] = useState(loadSaved)
+  const [form, setForm] = useState(() => ({
+    name: user?.name || saved.name || '', phone: user?.phone || saved.phone || '', address: user?.address || saved.address || '',
+    shippingArea: settings.shipping.some((s) => s.id === saved.shippingArea) ? saved.shippingArea : settings.shipping[0].id,
+    paymentMethod: 'cod', trx: '', sender: '', note: '', abroad: !!saved.abroad, abroadPhone: saved.abroadPhone || '',
+  }))
+  const [prefilled, setPrefilled] = useState(!!(saved.name || saved.phone || saved.address))
+  // logged-in customer data can arrive after the first render
+  useEffect(() => { if (user) setForm((f) => ({ ...f, name: f.name || user.name || '', phone: f.phone || user.phone || '', address: f.address || user.address || '' })) }, [user])
   const [couponInput, setCouponInput] = useState('')
   const [coupon, setCoupon] = useState('')
   const [couponMsg, setCouponMsg] = useState(null)
@@ -95,6 +109,7 @@ export default function Checkout() {
         items: items.map(({ productId, slug, name, price, quantity, variation }) => ({ productId, slug, name, price, quantity, variation })),
       })
       await discardCheckoutDraft(draftId.current)
+      storeSaved(form)
       track('Purchase', { items: order.items, value: order.total, orderId: order.invoice, eventId, customer: customerData(form, settings.shipping.find((x) => x.id === form.shippingArea)?.label, user?.email) })
       clear()
       navigate(`/customer/order-success/${order.invoice}`, { state: { order } })
@@ -125,15 +140,16 @@ export default function Checkout() {
         <section className="card p-5">
           <h2 className="mb-1 font-bold">ডেলিভারি তথ্য</h2>
           <p className="mb-4 text-xs text-muted">অর্ডার কনফার্ম করতে আপনার নাম, মোবাইল নাম্বার ও ঠিকানা লিখুন।</p>
+          {prefilled && <p className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-md bg-green-50 px-3 py-2 text-xs text-green-800">✓ আপনার আগের অর্ডারের তথ্য বসানো হয়েছে — দেখে নিয়ে অর্ডার করুন।<button type="button" className="font-semibold underline" onClick={() => { forgetSaved(); setPrefilled(false); setForm((f) => ({ ...f, name: user?.name || '', phone: user?.phone || '', address: user?.address || '', abroad: false, abroadPhone: '' })) }}>মুছে নতুন করে লিখুন</button></p>}
           <div className="space-y-4">
             <div>
               <label className="field-label" htmlFor="name">আপনার নাম *</label>
-              <input id="name" className="field" value={form.name} onChange={set('name')} autoComplete="name" />
+              <input id="name" name="name" className="field" value={form.name} onChange={set('name')} autoComplete="name" />
               {err('name')}
             </div>
             <div>
               <label className="field-label" htmlFor="phone">{form.abroad ? 'বাংলাদেশের মোবাইল নাম্বার (যিনি চেয়ার গ্রহণ করবেন) *' : 'মোবাইল নাম্বার *'}</label>
-              <input id="phone" className="field" value={form.phone} onChange={set('phone')} inputMode="tel" placeholder="01XXXXXXXXX" autoComplete="tel" />
+              <input id="phone" name="phone" type="tel" className="field" value={form.phone} onChange={set('phone')} inputMode="tel" placeholder="01XXXXXXXXX" autoComplete="tel-national" />
               {err('phone')}
             </div>
             <div className={`rounded-lg border-2 p-3 transition ${form.abroad ? 'border-accent bg-accent/5' : 'border-dashed border-line'}`}>
@@ -144,7 +160,7 @@ export default function Checkout() {
               {form.abroad && (
                 <div className="mt-3">
                   <label className="field-label" htmlFor="abroadPhone">আপনার বিদেশের ফোন নাম্বার অথবা WhatsApp নাম্বার *</label>
-                  <input id="abroadPhone" className="field" value={form.abroadPhone} onChange={set('abroadPhone')} inputMode="tel" placeholder="+966 5X XXX XXXX" autoComplete="tel" />
+                  <input id="abroadPhone" name="abroadPhone" type="tel" className="field" value={form.abroadPhone} onChange={set('abroadPhone')} inputMode="tel" placeholder="+966 5X XXX XXXX" autoComplete="section-abroad tel" />
                   <p className="mt-1 text-xs text-muted">দেশের কোডসহ লিখুন (যেমন সৌদি +966, দুবাই +971, ওমান +968, মালয়েশিয়া +60, যুক্তরাজ্য +44)।</p>
                   {err('abroadPhone')}
                 </div>
@@ -152,7 +168,7 @@ export default function Checkout() {
             </div>
             <div>
               <label className="field-label" htmlFor="address">সম্পূর্ণ ঠিকানা *</label>
-              <textarea id="address" rows={3} className="field" value={form.address} onChange={set('address')} placeholder="বাসা/রোড, এলাকা, থানা, জেলা" autoComplete="street-address" />
+              <textarea id="address" name="address" rows={3} className="field" value={form.address} onChange={set('address')} placeholder="বাসা/রোড, এলাকা, থানা, জেলা" autoComplete="street-address" />
               {err('address')}
             </div>
             <fieldset>
