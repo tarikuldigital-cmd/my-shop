@@ -9,7 +9,7 @@ import {
 } from '../store/db'
 import { Empty, Field, Modal, Pill, tk, fdate, startOfDay, toast } from './ui'
 import { WhatsAppIcon } from '../components/common/Icon'
-import { busy, fraudCheck, getKey, ratioTone } from './fraud'
+import { busy, fraudCheck, getKey, ratioTone, fraudText } from './fraud'
 import { trackLink, renderSms, sendSms, SMS_EVENTS } from '../lib/sms'
 
 const PER_PAGE = 20
@@ -23,7 +23,8 @@ function FraudBadge({ phone }) {
   const run = (e) => { e.stopPropagation(); fraudCheck(p, !!c, () => re((x) => x + 1)).catch((err) => toast(err.message)) }
   if (busy.has(p)) return <span className="text-xs text-muted">Checking…</span>
   if (!c) return <button onClick={run} className="rounded border border-line px-2 py-0.5 text-xs hover:border-brand">Check</button>
-  if (!c.sum.total) return <button onClick={run}><Pill tone="sky">New customer</Pill></button>
+  if (!c.sum.total) return <button onClick={run} title={fraudText(c)}><Pill tone="sky">New customer</Pill></button>
+  if (c.sf) return <button onClick={run} title={fraudText(c)} className="flex flex-col items-start gap-0.5"><Pill tone={c.sf.reports ? 'red' : ratioTone(c.sf.delivery)}>{c.sf.delivery}% · {c.sf.range}</Pill>{c.sf.reports > 0 && <span className="text-[10px] font-semibold text-red-600">⚠ {c.sf.reports} report</span>}</button>
   return <button onClick={run} title={`Total ${c.sum.total} · Delivered ${c.sum.ok} · Cancelled ${c.sum.cancel}`}><Pill tone={ratioTone(c.sum.ratio)}>{Math.round(c.sum.ratio)}% · {c.sum.ok}/{c.sum.total}</Pill></button>
 }
 
@@ -122,8 +123,8 @@ function OrderDrawer({ order: o, onClose }) {
           </dd>
           <dt className="text-muted">Courier</dt><dd>{o.courier ? <>{COURIERS[o.courier].t} · {trackUrl(o) ? <a className="text-brand" href={trackUrl(o)} target="_blank" rel="noreferrer">{o.tracking} ↗</a> : o.tracking}</> : '—'}</dd>
           <dt className="text-muted">Courier history</dt>
-          <dd>{fr ? <>{fr.sum.total ? <><b>{Math.round(fr.sum.ratio)}%</b> success · {fr.sum.ok} delivered / {fr.sum.cancel} cancelled of {fr.sum.total}</> : 'New customer (no parcels with any courier)'}</>
-            : <button className="text-brand" onClick={() => fraudCheck(o.phone, true, () => re((x) => x + 1)).catch((e) => toast(e.message))}>{getKey() ? 'Check courier history' : 'Add BD Courier key in Settings → Courier'}</button>}</dd>
+          <dd>{fr ? <><span className={fr.sf?.reports ? 'font-semibold text-red-600' : ''}>{fraudText(fr)}</span> <button className="ml-1 text-xs text-brand" onClick={() => fraudCheck(o.phone, true, () => re((x) => x + 1)).catch((e) => toast(e.message))}>↻</button></>
+            : <button className="text-brand" onClick={() => fraudCheck(o.phone, true, () => re((x) => x + 1)).catch((e) => toast(e.message))}>{LIVE || getKey() ? 'Check courier history' : 'Add BD Courier key in Settings → Courier'}</button>}</dd>
           <dt className="text-muted">Previous orders</dt><dd>{prev.length ? prev.map((x) => <span key={x.id} className="mr-2 inline-flex items-center gap-1">{x.invoice} <Pill s={x.status} /></span>) : 'First order'}</dd>
         </dl>
 

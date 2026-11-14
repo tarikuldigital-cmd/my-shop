@@ -296,6 +296,9 @@ export function riskOf(o) {
   if (bad) out.push(`${bad} earlier order(s) from this number were cancelled or returned`)
   if (same.some((x) => Math.abs(x.createdAt - o.createdAt) < DAY && ['pending', 'confirmed', 'hold'].includes(x.status))) out.push('Another open order from this number within 24 hours — possible duplicate')
   if (!same.length && o.shippingArea === 'outside_dhaka' && o.total >= 3000) out.push('Large first order from outside Dhaka')
+  const sf = S.fraud?.[o.phone]?.sf
+  if (sf?.reports) out.push(`Steadfast: ${sf.reports} merchant report(s) against this number`)
+  if (sf && sf.delivery != null && sf.delivery < 60) out.push(`Steadfast: only ${sf.delivery}% of this customer's parcels were delivered (${sf.cancel}% cancelled)`)
   return out
 }
 

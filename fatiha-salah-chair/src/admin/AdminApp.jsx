@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { fraudCheck } from './fraud'
 import { liveCourierRefreshAll } from '../lib/live'
 import CourierBell from './CourierBell'
 import { Link, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
@@ -66,6 +67,7 @@ export default function AdminApp() {
   useEffect(() => {
     const on = (e) => {
       toast(`🛒 নতুন অর্ডার ${e.detail.invoice} — ${e.detail.name} · ৳${e.detail.total}`)
+      if (LIVE && e.detail.phone) fraudCheck(e.detail.phone).catch(() => {}) // Steadfast courier history for every new order
       document.title = `🛒 নতুন অর্ডার! | Admin`
       try { const a = new (window.AudioContext || window.webkitAudioContext)(), o = a.createOscillator(); o.frequency.value = 880; o.connect(a.destination); o.start(); setTimeout(() => { o.stop(); a.close() }, 250) } catch { /* no audio */ }
     }

@@ -246,6 +246,7 @@ export async function liveCourierRefreshAll() {
   await poll()
   return r
 }
+export const liveCourierHistory = (phone) => call('admin/courier/history', { method: 'POST', admin: true, body: { phone } })
 export const liveCourierBalance = () => call('admin/courier/balance', { method: 'POST', admin: true, body: {} })
 
 /** after the server rewrote image references, pull the fresh data */

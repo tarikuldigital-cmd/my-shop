@@ -46,6 +46,7 @@ function routes(): array {
     ['POST', 'admin/courier/refresh', 'h_courier_refresh'],
     ['POST', 'admin/courier/refresh-all', 'h_courier_refresh_all'],
     ['POST', 'admin/courier/balance', 'h_courier_balance'],
+    ['POST', 'admin/courier/history', 'h_courier_history'],
   ];
 }
 
@@ -431,6 +432,16 @@ function h_courier_refresh_all(): void {
     } catch (HttpError $e) { $errors[] = $x['invoice'] . ': ' . $e->getMessage(); if (count($errors) > 3) break; }
   }
   out(['checked' => $done, 'statusChanged' => $changed, 'open' => count($open), 'errors' => $errors]);
+}
+
+/** Customer courier history from Steadfast (all merchants' record for this phone): GET /fraud_check/score/{phone}. */
+function h_courier_history(): void {
+  require_admin();
+  $phone = norm_phone((string)(body()['phone'] ?? ''));
+  if (!valid_phone($phone)) fail(422, 'সঠিক মোবাইল নাম্বার দিন');
+  $j = steadfast_get('/fraud_check/score/' . rawurlencode($phone));
+  $keep = ['delivery_ratio', 'cancellation_ratio', 'volume_band', 'volume_range', 'delivered_count', 'cancelled_count', 'total_reports', 'fraud_categories', 'doubtful_reports'];
+  out(['phone' => $phone] + array_intersect_key($j, array_flip($keep)));
 }
 
 function h_courier_balance(): void {

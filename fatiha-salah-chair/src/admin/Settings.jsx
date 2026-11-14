@@ -175,9 +175,9 @@ export default function Settings() {
         <div className="grid gap-4 xl:grid-cols-2">
           <Panel title="Steadfast Courier">
             <div className="space-y-3">{txt('courier.steadfastApiKey', 'API key', '', { type: 'password' })}{txt('courier.steadfastSecret', 'Secret key', '', { type: 'password' })}</div>
-            <p className="mt-3 rounded bg-amber-50 p-2 text-xs text-amber-800">Saved here for the backend hand-over. “Send to courier” creates real Steadfast consignments only after the Laravel backend is connected (the keys stay on the server there).</p>
+            <p className="mt-3 rounded bg-green-50 p-2 text-xs text-green-800">এই key দিয়েই তিনটি কাজ হয়: “Send to courier”-এ Steadfast-এ পার্সেল বুক, স্ট্যাটাস ও রাইডার নোট আনা, আর অর্ডারের “Courier history”-তে কাস্টমারের Steadfast রেকর্ড (ডেলিভারি/বাতিলের হার ও মার্চেন্ট রিপোর্ট)। Key শুধু সার্ভারে থাকে।</p>
           </Panel>
-          <Panel title="BD Courier — courier history / fraud check">
+          <Panel title="BD Courier (ঐচ্ছিক) — demo / অন্য কুরিয়ারের হিস্টোরি">
             <Field label="API key (app.bdcourier.com → API)" hint="Saved only in this browser, never in backups or GitHub."><input type="password" className="field" value={bdKey} onChange={(e) => setBdKey(e.target.value)} autoComplete="off" /></Field>
             <button className="btn-brand mt-3" onClick={() => { setKey(bdKey.trim()); toast(bdKey.trim() ? 'BD Courier key saved in this browser' : 'Key removed') }}>Save key</button>
           </Panel>
