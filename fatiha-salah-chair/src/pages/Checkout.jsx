@@ -136,7 +136,7 @@ export default function Checkout() {
   return (
     <div className="container-x py-6">
       <h1 className="mb-4 text-xl font-bold text-brand">অর্ডার করুন</h1>
-      <form onSubmit={submit} className="grid gap-6 lg:grid-cols-[1.2fr_1fr]" noValidate>
+      <form onSubmit={submit} className="checkout-form grid gap-6 lg:grid-cols-[1.2fr_1fr]" noValidate>
         <section className="card p-5">
           <h2 className="mb-1 font-bold">ডেলিভারি তথ্য</h2>
           <p className="mb-4 text-xs text-muted">অর্ডার কনফার্ম করতে আপনার নাম, মোবাইল নাম্বার ও ঠিকানা লিখুন।</p>
