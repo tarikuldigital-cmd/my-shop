@@ -7,6 +7,7 @@ import { useCart } from '../../context/CartContext'
 import { useAuth } from '../../context/AuthContext'
 import CartDrawer from './CartDrawer'
 import { suggest } from '../../services/catalogService'
+import { visibleCategories } from '../../lib/categories'
 
 function SearchBox({ onDone, className = '' }) {
   const [params] = useSearchParams()
@@ -158,8 +159,8 @@ export default function Header() {
       </div>
       <div className="container-x pb-3 md:hidden"><SearchBox /></div>
 
-      <DesktopNav categories={categories} />
-      <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} categories={categories} />
+      <DesktopNav categories={visibleCategories(categories)} />
+      <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} categories={visibleCategories(categories)} />
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
     </header>
   )

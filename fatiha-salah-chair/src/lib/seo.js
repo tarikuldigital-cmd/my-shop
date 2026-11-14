@@ -18,7 +18,8 @@ export function useSeo({ title, description, image, jsonLd, noindex } = {}) {
     const seo = S.settings.seo
     const fullTitle = title ? `${title}${seo.titleSuffix || ''}` : seo.title
     const desc = (description || seo.description || '').replace(/<[^>]+>/g, '').slice(0, 160)
-    const img = assetUrl(image && !image.includes('idb:') ? image : seo.ogImage)
+    const src = image && !image.includes('idb:') ? image : seo.ogImage
+    const img = src?.startsWith?.('local:') ? new URL(`${import.meta.env.BASE_URL}${src.slice(6)}`, location.href).href : assetUrl(src)
     document.title = fullTitle
     setMeta('name', 'description', desc)
     setMeta('name', 'keywords', seo.keywords)
@@ -48,7 +49,7 @@ export function productJsonLd(p, url) {
     ...(p.material ? { material: p.material } : {}),
     ...(p.shortDescription ? { description: p.shortDescription } : {}),
     name: p.name,
-    image: p.images.filter((i) => !i.startsWith('idb:')).map((i) => assetUrl(i.includes('/') ? i : `product/${i}`)),
+    image: p.images.filter((i) => !i.startsWith('idb:')).map((i) => (i.startsWith('local:') ? new URL(`${import.meta.env.BASE_URL}${i.slice(6)}`, location.href).href : assetUrl(i.includes('/') ? i : `product/${i}`))),
     sku: p.sku || String(p.id),
     offers: {
       '@type': 'Offer',

@@ -10,6 +10,8 @@ import NotFound from './NotFound'
 import { useEffect } from 'react'
 import { useSeo } from '../lib/seo'
 import { track } from '../lib/tracking'
+import CategoryHero from '../components/product/CategoryHero'
+import { visibleCategories } from '../lib/categories'
 
 function CategoryTree({ categories, onPick }) {
   const linkCls = ({ isActive }) => `block rounded px-2 py-1.5 text-sm hover:bg-surface hover:text-brand ${isActive ? 'font-semibold text-brand' : ''}`
@@ -56,7 +58,8 @@ function PriceFilter({ params, setParams }) {
 export default function ProductList({ mode }) {
   const { slug } = useParams()
   const [params, setParams] = useSearchParams()
-  const { categories, findCategory, findSubcategory } = useSite()
+  const { categories: allCats, findCategory, findSubcategory, settings } = useSite()
+  const categories = visibleCategories(allCats)
   const [filtersOpen, setFiltersOpen] = useState(false)
 
   const keyword = params.get('keyword') || ''
@@ -69,8 +72,10 @@ export default function ProductList({ mode }) {
   let crumbs = [{ label: keyword }]
   const query = { sort, page, minPrice, maxPrice }
   let invalid = false
+  let cat = null
   if (mode === 'category') {
     const c = findCategory(slug)
+    cat = c
     if (c) { title = c.name; crumbs = [{ label: c.name }]; query.category = slug } else invalid = true
   } else if (mode === 'subcategory') {
     const s = findSubcategory(slug)
@@ -88,7 +93,7 @@ export default function ProductList({ mode }) {
     setParams(next)
   }
 
-  useSeo({ title: mode === 'search' ? `"${keyword}" search results` : title, description: mode === 'search' ? undefined : `${title} — Fatiha Ayat Salah Chair-এ ${title} এর সব পণ্য, সেরা দামে। ক্যাশ অন ডেলিভারি।`, noindex: mode === 'search' })
+  useSeo({ title: mode === 'search' ? `"${keyword}" search results` : (cat?.seoTitle || title), description: mode === 'search' ? undefined : (cat?.seoDescription || cat?.intro?.slice(0, 160) || `${title} — Fatiha Ayat Salah Chair-এ ${title} এর সব পণ্য, সেরা দামে। ক্যাশ অন ডেলিভারি।`), image: cat?.banner || cat?.image, noindex: mode === 'search' })
   useEffect(() => { if (mode === 'search' && keyword) track('Search', { query: keyword }) }, [mode, keyword])
 
   if (invalid) return <NotFound />
@@ -106,16 +111,17 @@ export default function ProductList({ mode }) {
   return (
     <div className="container-x py-5">
       <Breadcrumb items={crumbs} />
+      {cat && <div className="mt-4"><CategoryHero category={cat} settings={settings} count={data?.meta?.total} /></div>}
       <div className="mt-4 grid gap-6 lg:grid-cols-[250px_1fr]">
         <aside className="card hidden h-fit p-4 lg:block">
           <h2 className="mb-4 border-b border-line pb-2 text-lg font-bold">Filter</h2>
           {sidebar}
         </aside>
 
-        <div>
+        <div id="products" className="scroll-mt-32">
           <div className="card mb-4 flex flex-wrap items-center justify-between gap-3 p-3">
             <div>
-              <h1 className="text-lg font-bold text-brand">{title}</h1>
+              {cat?.headline ? <h2 className="text-lg font-bold text-brand">{title}</h2> : <h1 className="text-lg font-bold text-brand">{title}</h1>}
               {data && <p className="text-xs text-muted">Showing {data.meta.from}-{data.meta.to} of {data.meta.total} Results</p>}
             </div>
             <div className="flex items-center gap-2">

@@ -3,12 +3,35 @@
   "slug": "salah-chair",
   "name": "Salah Chair",
   "image": "local:img/green-poster.webp",
-  "subcategories": []
+  "subcategories": [],
+  "kicker": "Sit for Salah • Feel the Peace",
+  "headline": "নামাজ হবে আরামে — Fatiha Ayat Salah Chair",
+  "intro": "মাটিতে বসে বা দীর্ঘক্ষণ দাঁড়িয়ে নামাজ পড়তে যাদের কষ্ট হয়, তাদের জন্য ভাঁজযোগ্য সালাহ চেয়ার — নরম কুশন, মজবুত মেটাল ফ্রেম, সামনে রেহাল ও সাইড পকেট। পছন্দের কালার বেছে নিয়ে অর্ডার করুন, পণ্য হাতে পেয়ে টাকা দিন।",
+  "seoTitle": "Salah Chair — নামাজের চেয়ার | Fatiha Ayat",
+  "seoDescription": "Fatiha Ayat Salah Chair — ভাঁজযোগ্য নামাজের চেয়ার, নরম কুশন, রেহাল ও সাইড পকেট। অনেক কালার, সারাদেশে ক্যাশ অন ডেলিভারি।",
+  "showTrust": true,
+  "banner": ""
+ },
+ {
+  "slug": "islamic-products",
+  "name": "Islamic Products",
+  "image": "",
+  "subcategories": [],
+  "kicker": "",
+  "headline": "",
+  "intro": "",
+  "showTrust": true,
+  "banner": ""
  },
  {
   "slug": "furniture",
   "name": "Furniture",
   "image": "local:img/showroom.webp",
-  "subcategories": []
+  "subcategories": [],
+  "kicker": "",
+  "headline": "",
+  "intro": "",
+  "showTrust": true,
+  "banner": ""
  }
 ]
