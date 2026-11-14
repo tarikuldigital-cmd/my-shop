@@ -1,5 +1,7 @@
 # Smart China Gallery
 
+> **Fatiha Ayat Salah Chair (Nov 2026):** `fatiha-salah-chair/` — full e-commerce site for fatihaayatsalahchair.com (Bookshelf admin + PHP/MySQL backend). Preview: https://tarikuldigital-cmd.github.io/my-shop/fatiha-salah-chair/preview/ · cPanel package: `fatiha-salah-chair/cpanel/fatiha-cpanel-upload.zip` · Guide: `fatiha-salah-chair/docs/CPANEL_GUIDE_BN.md`
+
 > **New version (Nov 2026):** `smart-china/` — Bookshelf-style React + PHP/MySQL backend, Steadfast courier API, live courier tracking.
 > Preview: https://tarikuldigital-cmd.github.io/my-shop/smart-china/ · Admin: add `#/admin` (demo login admin@demo.com / 123456) · cPanel package: `smart-china/cpanel/smart-china-cpanel-upload.zip` · Source: `smart-china/source/`
 

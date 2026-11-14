@@ -1,0 +1,14 @@
+[
+ {
+  "slug": "salah-chair",
+  "name": "Salah Chair",
+  "image": "local:img/green-poster.webp",
+  "subcategories": []
+ },
+ {
+  "slug": "furniture",
+  "name": "Furniture",
+  "image": "local:img/showroom.webp",
+  "subcategories": []
+ }
+]

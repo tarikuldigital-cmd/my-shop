@@ -1,0 +1,94 @@
+{
+  "siteName": "Fatiha Ayat Salah Chair",
+  "logoDark": "local:logo.webp",
+  "logoWhite": "local:logo.webp",
+  "phone": "01994683008",
+  "phoneIntl": "+8801994683008",
+  "email": null,
+  "address": "Dhaka, Bangladesh",
+  "topBarText": "Fatiha Ayat Salah Chair — Sit for Salah • Feel the Peace | সারাদেশে ক্যাশ অন ডেলিভারি, ঢাকায় ৳২৫০ ও ঢাকার বাইরে ৳৩০০ ডেলিভারি চার্জ।",
+  "messengerUrl": "https://m.me/1306580832537353",
+  "whatsappUrl": "https://wa.me/8801994683008",
+  "socials": [
+    {
+      "name": "Facebook",
+      "url": "https://www.facebook.com/profile.php?id=1306580832537353"
+    },
+    {
+      "name": "YouTube",
+      "url": "#"
+    },
+    {
+      "name": "TikTok",
+      "url": "#"
+    },
+    {
+      "name": "Instagram",
+      "url": "#"
+    }
+  ],
+  "shipping": [
+    {
+      "id": "inside_dhaka",
+      "label": "ঢাকার ভিতরে",
+      "labelEn": "Inside Dhaka",
+      "charge": 250,
+      "eta": "১-২ কার্যদিবস"
+    },
+    {
+      "id": "outside_dhaka",
+      "label": "ঢাকার বাইরে",
+      "labelEn": "Outside Dhaka",
+      "charge": 300,
+      "eta": "২-৩ কার্যদিবস"
+    }
+  ],
+  "paymentMethods": [
+    {
+      "id": "cod",
+      "label": "ক্যাশ অন ডেলিভারি"
+    }
+  ],
+  "copyright": "© 2026 Fatiha Ayat Salah Chair. All Rights Reserved.",
+  "developer": {
+    "name": "Tarikul Islam",
+    "url": ""
+  },
+  "footerUsefulLinks": [
+    {
+      "label": "Contact Us",
+      "to": "/site/contact-us"
+    },
+    {
+      "label": "Order procedure",
+      "to": "/page/order-procedure"
+    },
+    {
+      "label": "Delivery Rules",
+      "to": "/page/delivery-rules"
+    },
+    {
+      "label": "Return Policy",
+      "to": "/page/return-policy"
+    }
+  ],
+  "footerLinks": [
+    {
+      "label": "Delivery Rules",
+      "to": "/page/delivery-rules"
+    },
+    {
+      "label": "Return Policy",
+      "to": "/page/return-policy"
+    },
+    {
+      "label": "Terms & Conditions",
+      "to": "/page/terms-&-conditions"
+    },
+    {
+      "label": "Privacy Policy",
+      "to": "/page/privacy-policy"
+    }
+  ],
+  "orderPolicyHtml": "<ul><li>ডেলিভারিম্যানের সামনে পার্সেল খুলে চেয়ারটি চেক করে নিন।</li><li>ভুল কালার/ডিজাইন বা ডেলিভারিতে ক্ষতিগ্রস্ত পণ্য পেলে সাথে সাথে ডেলিভারিম্যানকে ফেরত দিন অথবা ২৪ ঘণ্টার মধ্যে 01994-683008 নম্বরে জানান — আমরা পরিবর্তন করে দেব।</li><li>পণ্য ব্যবহারের পর ফেরত নেওয়া হয় না।</li></ul>"
+}

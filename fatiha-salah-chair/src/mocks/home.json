@@ -1,0 +1,39 @@
+{
+ "banners": [
+  {
+   "image": "local:img/banner-1.webp",
+   "link": "/category/salah-chair"
+  },
+  {
+   "image": "local:img/banner-2.webp",
+   "link": "/product/salah-chair-green"
+  }
+ ],
+ "flashSale": [],
+ "hotDeal": "sameAsFlashSale",
+ "allProducts": [
+  "salah-chair-green",
+  "salah-chair-red",
+  "salah-chair-black",
+  "salah-chair-royal-blue",
+  "salah-chair-purple",
+  "salah-chair-golden-floral",
+  "salah-chair-blue-mandala",
+  "salah-chair-black-white-geometric",
+  "salah-chair-grey-blue-damask"
+ ],
+ "categorySections": {
+  "salah-chair": [
+   "salah-chair-green",
+   "salah-chair-red",
+   "salah-chair-black",
+   "salah-chair-royal-blue",
+   "salah-chair-purple",
+   "salah-chair-golden-floral",
+   "salah-chair-blue-mandala",
+   "salah-chair-black-white-geometric",
+   "salah-chair-grey-blue-damask"
+  ]
+ },
+ "reviewBanner": null
+}

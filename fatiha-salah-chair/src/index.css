@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+/* Brand tokens — the ONLY place colours/fonts are defined. Deep green + gold from the Fatiha Ayat logo and posters. */
+@theme {
+  --font-sans: "Hind Siliguri", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Noto Serif Bengali", "Noto Serif", Georgia, "Times New Roman", serif;
+
+  --color-brand: #0b4a32;        /* deep Islamic green: header nav, headings */
+  --color-brand-dark: #073524;
+  --color-accent: #a8741f;       /* logo gold: buttons, badges, prices */
+  --color-accent-dark: #8a5d14;
+  --color-gold: #d9b45a;
+  --color-cream: #fbf6ea;
+  --color-sale: #b91c1c;         /* discount badge */
+  --color-surface: #f7f4ec;      /* page background (warm cream) */
+  --color-ink: #1f2937;
+  --color-muted: #6b7280;
+  --color-line: #e5e7eb;
+}
+
+html { scroll-behavior: smooth; }
+body { @apply bg-surface text-ink font-sans antialiased; }
+
+@utility container-x { @apply mx-auto w-full max-w-7xl px-3 sm:px-4; }
+
+@utility btn { @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition disabled:opacity-60; }
+@utility btn-accent { @apply btn bg-accent text-white hover:bg-accent-dark; }
+@utility btn-brand { @apply btn bg-brand text-white hover:bg-brand-dark; }
+@utility btn-outline { @apply btn border border-line bg-white text-ink hover:border-brand hover:text-brand; }
+
+@utility field-label { @apply mb-1 block text-sm font-medium text-ink; }
+@utility field { @apply w-full rounded-md border border-line bg-white px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15; }
+
+@utility card { @apply rounded-lg border border-line bg-white; }
+
+@utility section-title { @apply text-lg font-bold text-brand sm:text-xl; }
+
+/* Rich text coming from the CMS / Laravel pages table */
+.prose-bs h4 { @apply mt-5 mb-2 text-base font-bold text-brand; }
+.prose-bs p { @apply mb-3 leading-7; }
+.prose-bs ul { @apply mb-3 list-disc space-y-1 pl-6; }
+.prose-bs ol { @apply mb-3 list-decimal space-y-1 pl-6; }
+.prose-bs li { @apply leading-7; }
+
+@utility no-scrollbar { scrollbar-width: none; &::-webkit-scrollbar { display: none; } }
+
+/* ---------- rich text ---------- */
+.blog-prose { font-size: 1.05rem; line-height: 1.95; color: #1f2937; letter-spacing: .005em; }
+.blog-prose h2 { margin: 2rem 0 .75rem; padding-bottom: .35rem; border-bottom: 1px solid #e5e7eb; font-family: var(--font-serif); font-size: 1.4rem; line-height: 1.45; font-weight: 700; color: #0b4a32; scroll-margin-top: 90px; }
+.blog-prose h3 { margin: 1.5rem 0 .5rem; font-family: var(--font-serif); font-size: 1.15rem; font-weight: 700; }
+.blog-prose p { margin: .85rem 0; }
+.blog-prose ul, .blog-prose ol { margin: .85rem 0 .85rem 1.4rem; }
+.blog-prose ul { list-style: disc; } .blog-prose ol { list-style: decimal; }
+.blog-prose li { margin: .3rem 0; }
+.blog-prose blockquote { margin: 1.1rem 0; padding: .75rem 1rem; border-left: 3px solid #a8741f; background: #f6f8f6; font-family: var(--font-serif); border-radius: 0 .5rem .5rem 0; }
+.blog-prose hr { margin: 1.75rem 0; border-color: #e5e7eb; }
+@keyframes bk-marquee { from { transform: translateX(0) } to { transform: translateX(-50%) } }
+@keyframes bk-float { 0%,100% { transform: translateY(0) rotate(-1deg) } 50% { transform: translateY(-6px) rotate(1deg) } }
+@keyframes bk-glow { 0%,100% { box-shadow: 0 0 0 0 rgba(168,116,31,.55) } 50% { box-shadow: 0 0 0 10px rgba(168,116,31,0) } }
+@keyframes bk-slide { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: none } }
+@keyframes bk-shine { from { background-position: 0% 50% } to { background-position: 200% 50% } }
+.bk-marquee { animation: bk-marquee 38s linear infinite; width: max-content; }
+.bk-marquee:hover { animation-play-state: paused; }
+.bk-float { animation: bk-float 4s ease-in-out infinite; }
+.bk-glow { animation: bk-glow 2s ease-out infinite; }
+.bk-slide { animation: bk-slide .5s ease both; }
+.bk-shine { background-image: linear-gradient(90deg,#0b4a32,#1b6b4a,#d9b45a,#1b6b4a,#0b4a32); background-size: 200% 100%; animation: bk-shine 6s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .bk-marquee, .bk-float, .bk-glow, .bk-shine { animation: none } }
+@keyframes bk-fadeup { from { opacity: 0; transform: translateY(14px) } to { opacity: 1; transform: none } }
+.bk-fade { animation: bk-fadeup .7s ease both; }
+.bk-lead::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(8,20,14,.88) 0%, rgba(8,20,14,.35) 45%, rgba(8,20,14,0) 70%); }
+
+/* ---------- Fatiha Ayat home ---------- */
+.fa-hero { background: radial-gradient(120% 140% at 85% 10%, #1d6b4b 0%, #0b4a32 45%, #062a1c 100%); }
+.fa-pattern { background-image: radial-gradient(rgba(217,180,90,.18) 1.5px, transparent 1.6px); background-size: 22px 22px; }
+.fa-gold-text { background: linear-gradient(180deg,#f3dc93,#c9962f); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.fa-arch { border-radius: 999px 999px 14px 14px; }
