@@ -102,7 +102,7 @@ function h_draft(): void {
   }
   if (!$items) out(['ok' => false]);
   $d = doc_get('incomplete', $id) ?? ['id' => $id, 'at' => now_ms(), 'status' => 'new', 'log' => []];
-  $d = array_merge($d, ['name' => s($b['name'] ?? '', 120), 'phone' => $phone, 'address' => s($b['address'] ?? '', 500), 'shippingArea' => s($b['shippingArea'] ?? '', 40),
+  $d = array_merge($d, ['name' => s($b['name'] ?? '', 120), 'phone' => $phone, 'address' => s($b['address'] ?? '', 500), 'shippingArea' => s($b['shippingArea'] ?? '', 40), 'abroadPhone' => preg_replace('/[^\d+]/', '', s($b['abroadPhone'] ?? '', 20)),
     'items' => $items, 'subtotal' => array_sum(array_map(fn($i) => $i['price'] * $i['quantity'], $items)), 'updated' => now_ms()]);
   doc_put('incomplete', $d);
   out(['ok' => true]);

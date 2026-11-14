@@ -51,6 +51,8 @@ function create_order_public(array $in): array {
   $phone = norm_phone((string)($in['phone'] ?? ''));
   $address = s($in['address'] ?? '', 500);
   $note = s($in['note'] ?? '', 500);
+  $abroad = preg_replace('/[\s()-]/', '', (string)($in['abroadPhone'] ?? ''));
+  if ($abroad !== '' && !preg_match('/^\+?\d{8,15}$/', $abroad)) fail(422, 'বিদেশের ফোন বা WhatsApp নাম্বারটি দেশের কোডসহ সঠিকভাবে দিন');
   if ($name === '') fail(422, 'আপনার নাম লিখুন');
   if (!valid_phone($phone)) fail(422, 'সঠিক ১১ ডিজিটের মোবাইল নাম্বার দিন');
   if (mb_strlen($address) < 10) fail(422, 'সম্পূর্ণ ঠিকানা লিখুন (এলাকা, থানা, জেলা)');
@@ -75,7 +77,7 @@ function create_order_public(array $in): array {
   $landing = $source === 'Landing page' && preg_match('/^[a-z0-9-]{1,80}$/', (string)($in['landing'] ?? '')) ? (string)$in['landing'] : '';
   $cust = auth_user('customer');
 
-  $order = tx(function () use ($reqItems, $settings, $in, $name, $phone, $address, $note, $payment, $source, $landing, $cust) {
+  $order = tx(function () use ($reqItems, $settings, $in, $name, $phone, $address, $note, $abroad, $payment, $source, $landing, $cust) {
     $items = []; $subtotal = 0; $touched = [];
     foreach ($reqItems as $it) {
       $qty = (int)($it['quantity'] ?? 1);
@@ -101,7 +103,7 @@ function create_order_public(array $in): array {
       'id' => 'o' . $now . random_int(100, 999), 'invoice' => $inv, 'name' => $name, 'phone' => $phone, 'address' => $address,
       'shippingArea' => $areaId, 'items' => $items, 'subtotal' => $subtotal, 'shippingCharge' => $ship, 'discount' => $disc,
       'coupon' => $cc['coupon']['code'] ?? '', 'total' => $subtotal + $ship - $disc, 'payment' => $payment, 'status' => 'pending',
-      'courier' => '', 'tracking' => '', 'source' => $source, 'note' => $note, 'customerPhone' => $cust['phone'] ?? null,
+      'courier' => '', 'tracking' => '', 'source' => $source, 'note' => $note, 'abroadPhone' => $abroad, 'customerPhone' => $cust['phone'] ?? null,
       'createdAt' => $now, 'history' => [['s' => 'pending', 'by' => 'Customer', 'at' => $now, 'note' => $source !== 'Website' ? "$source order" : '']],
       'trackCode' => make_track_code($inv),
     ];

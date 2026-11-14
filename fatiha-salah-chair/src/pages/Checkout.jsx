@@ -15,6 +15,10 @@ import { track, customerData } from '../lib/tracking'
 import { useSeo } from '../lib/seo'
 import { formatPrice } from '../utils/format'
 
+/** Overseas / WhatsApp number: optional +, 8–15 digits (spaces, dashes allowed). */
+const cleanIntl = (v = '') => v.trim().replace(/[\s()-]/g, '')
+const validIntl = (v) => /^\+?\d{8,15}$/.test(cleanIntl(v))
+
 // NOTE: the live checkout page could not be inspected (blocked to crawlers). Fields follow the
 // site's own "Order procedure" page: name, mobile, full address, delivery area, payment method.
 export default function Checkout() {
@@ -24,7 +28,7 @@ export default function Checkout() {
   const navigate = useNavigate()
   useSeo({ title: 'অর্ডার করুন', noindex: true })
 
-  const [form, setForm] = useState({ name: user?.name || '', phone: user?.phone || '', address: user?.address || '', shippingArea: settings.shipping[0].id, paymentMethod: 'cod', trx: '', sender: '', note: '' })
+  const [form, setForm] = useState({ name: user?.name || '', phone: user?.phone || '', address: user?.address || '', shippingArea: settings.shipping[0].id, paymentMethod: 'cod', trx: '', sender: '', note: '', abroad: false, abroadPhone: '' })
   const [couponInput, setCouponInput] = useState('')
   const [coupon, setCoupon] = useState('')
   const [couponMsg, setCouponMsg] = useState(null)
@@ -43,11 +47,11 @@ export default function Checkout() {
   useEffect(() => {
     if (done.current || !validPhone(form.phone) || !items.length) return
     const t = setTimeout(() => saveCheckoutDraft(draftId.current, {
-      name: form.name.trim(), phone: form.phone, address: form.address.trim(), shippingArea: form.shippingArea,
+      name: form.name.trim(), phone: form.phone, address: form.address.trim(), shippingArea: form.shippingArea, abroadPhone: form.abroad ? cleanIntl(form.abroadPhone) : '',
       items: items.map(({ productId, slug, name, price, quantity }) => ({ productId, slug, name, price, quantity })), subtotal,
     }), 800)
     return () => clearTimeout(t)
-  }, [form.name, form.phone, form.address, form.shippingArea, items, subtotal])
+  }, [form.name, form.phone, form.address, form.shippingArea, form.abroad, form.abroadPhone, items, subtotal])
 
   const area = settings.shipping.find((s) => s.id === form.shippingArea)
   const shippingCharge = items.length ? shippingFor(form.shippingArea, subtotal) : 0
@@ -78,6 +82,7 @@ export default function Checkout() {
     if (!form.name.trim()) errs.name = 'আপনার নাম লিখুন'
     if (!validPhone(form.phone)) errs.phone = 'সঠিক ১১ ডিজিটের মোবাইল নাম্বার দিন'
     if (form.address.trim().length < 10) errs.address = 'সম্পূর্ণ ঠিকানা লিখুন (এলাকা, থানা, জেলা)'
+    if (form.abroad && !validIntl(form.abroadPhone)) errs.abroadPhone = 'বিদেশের ফোন বা WhatsApp নাম্বারটি দেশের কোডসহ দিন (যেমন +9665XXXXXXXX)'
     if (form.paymentMethod !== 'cod' && (!validPhone(form.sender) || form.trx.trim().length < 6)) errs.trx = 'যে নাম্বার থেকে টাকা পাঠিয়েছেন সেটি ও সঠিক TrxID দিন'
     setErrors(errs)
     if (Object.keys(errs).length) return
@@ -86,7 +91,7 @@ export default function Checkout() {
       done.current = true
       const eventId = `${Date.now()}.${Math.random().toString(36).slice(2, 9)}` // shared with Meta CAPI for deduplication
       const order = await placeOrder({
-        ...form, couponCode: coupon, eventId,
+        ...form, abroadPhone: form.abroad ? cleanIntl(form.abroadPhone) : '', couponCode: coupon, eventId,
         items: items.map(({ productId, slug, name, price, quantity, variation }) => ({ productId, slug, name, price, quantity, variation })),
       })
       await discardCheckoutDraft(draftId.current)
@@ -127,9 +132,23 @@ export default function Checkout() {
               {err('name')}
             </div>
             <div>
-              <label className="field-label" htmlFor="phone">মোবাইল নাম্বার *</label>
+              <label className="field-label" htmlFor="phone">{form.abroad ? 'বাংলাদেশের মোবাইল নাম্বার (যিনি চেয়ার গ্রহণ করবেন) *' : 'মোবাইল নাম্বার *'}</label>
               <input id="phone" className="field" value={form.phone} onChange={set('phone')} inputMode="tel" placeholder="01XXXXXXXXX" autoComplete="tel" />
               {err('phone')}
+            </div>
+            <div className={`rounded-lg border-2 p-3 transition ${form.abroad ? 'border-accent bg-accent/5' : 'border-dashed border-line'}`}>
+              <label className="flex cursor-pointer items-start gap-2 text-sm">
+                <input type="checkbox" className="mt-1 h-4 w-4 accent-[var(--color-accent)]" checked={form.abroad} onChange={(e) => setForm((f) => ({ ...f, abroad: e.target.checked }))} />
+                <span><b>🌍 আপনি কি বিদেশ থেকে অর্ডার করছেন?</b><span className="block text-xs text-muted">বাবা-মা বা আপনজনের জন্য বিদেশ থেকে অর্ডার করলে টিক দিন। উপরে বাংলাদেশের যে নাম্বারে চেয়ার পৌঁছাবে সেটি দিন, আর নিচে আপনার নিজের নাম্বার — যাতে অর্ডার কনফার্মের জন্য আমরা আপনার সাথেও যোগাযোগ করতে পারি।</span></span>
+              </label>
+              {form.abroad && (
+                <div className="mt-3">
+                  <label className="field-label" htmlFor="abroadPhone">আপনার বিদেশের ফোন নাম্বার অথবা WhatsApp নাম্বার *</label>
+                  <input id="abroadPhone" className="field" value={form.abroadPhone} onChange={set('abroadPhone')} inputMode="tel" placeholder="+966 5X XXX XXXX" autoComplete="tel" />
+                  <p className="mt-1 text-xs text-muted">দেশের কোডসহ লিখুন (যেমন সৌদি +966, দুবাই +971, ওমান +968, মালয়েশিয়া +60, যুক্তরাজ্য +44)।</p>
+                  {err('abroadPhone')}
+                </div>
+              )}
             </div>
             <div>
               <label className="field-label" htmlFor="address">সম্পূর্ণ ঠিকানা *</label>

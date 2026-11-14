@@ -35,7 +35,7 @@ function printInvoices(orders) {
         <div><h2 style="margin:0">${st.siteName}</h2><div>${st.address}</div><div>Hotline: ${st.phone}</div></div>
         <div style="text-align:right"><h3 style="margin:0">INVOICE</h3><div><b>${o.invoice}</b></div><div>${new Date(o.createdAt).toLocaleDateString('en-GB')}</div>${o.tracking ? `<div>${COURIERS[o.courier]?.t || ''}: ${o.tracking}</div>` : ''}</div>
       </div>
-      <hr/><div><b>Bill to:</b> ${o.name} · ${o.phone}<br/>${o.address}</div>
+      <hr/><div><b>Bill to:</b> ${o.name} · ${o.phone}${o.abroadPhone ? ` · Overseas: ${o.abroadPhone}` : ''}<br/>${o.address}</div>
       <table style="width:100%;border-collapse:collapse;margin-top:12px" border="1" cellpadding="6">
         <thead><tr style="background:#f3f4f6"><th style="text-align:left">Product</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>${rows(o)}</tbody>
       </table>
@@ -49,8 +49,8 @@ function printInvoices(orders) {
 }
 
 function exportCSV(list) {
-  const head = ['Invoice', 'Date', 'Name', 'Phone', 'Address', 'Area', 'Products', 'Subtotal', 'Delivery', 'Discount', 'Total', 'Status', 'Payment', 'Payment status', 'TrxID', 'Courier', 'Tracking', 'Source']
-  const rows = list.map((o) => [o.invoice, new Date(o.createdAt).toISOString().slice(0, 16).replace('T', ' '), o.name, o.phone, o.address, o.shippingArea, o.items.map((i) => `${i.name} x${i.quantity}`).join('; '), o.subtotal, o.shippingCharge, o.discount || 0, o.total, STATUS[o.status].t, PAY[o.payment?.method || 'cod'], PAY_ST[o.payment?.status || 'unpaid'], o.payment?.trx || '', o.courier ? COURIERS[o.courier].t : '', o.tracking, o.source])
+  const head = ['Invoice', 'Date', 'Name', 'Phone', 'Address', 'Area', 'Products', 'Subtotal', 'Delivery', 'Discount', 'Total', 'Status', 'Payment', 'Payment status', 'TrxID', 'Courier', 'Tracking', 'Source', 'Overseas phone/WhatsApp']
+  const rows = list.map((o) => [o.invoice, new Date(o.createdAt).toISOString().slice(0, 16).replace('T', ' '), o.name, o.phone, o.address, o.shippingArea, o.items.map((i) => `${i.name} x${i.quantity}`).join('; '), o.subtotal, o.shippingCharge, o.discount || 0, o.total, STATUS[o.status].t, PAY[o.payment?.method || 'cod'], PAY_ST[o.payment?.status || 'unpaid'], o.payment?.trx || '', o.courier ? COURIERS[o.courier].t : '', o.tracking, o.source, o.abroadPhone || ''])
   const csv = '﻿' + [head, ...rows].map((r) => r.map((v) => { v = String(v ?? ''); return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v }).join(',')).join('\n')
   const a = document.createElement('a')
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
@@ -106,6 +106,7 @@ function OrderDrawer({ order: o, onClose }) {
         <dl className="grid grid-cols-[110px_1fr] gap-x-3 gap-y-1.5">
           <dt className="text-muted">Customer</dt><dd className="font-semibold">{o.name}</dd>
           <dt className="text-muted">Phone</dt><dd className="flex items-center gap-2">{o.phone}<a href={`tel:${o.phone}`} className="text-brand">Call</a><a href={`https://wa.me/${waNum(o.phone)}?text=${encodeURIComponent(confirmMsg)}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-green-600"><WhatsAppIcon className="h-4 w-4" />Confirm on WhatsApp</a></dd>
+          {o.abroadPhone && <><dt className="text-muted">🌍 Overseas buyer</dt><dd className="flex flex-wrap items-center gap-2 font-semibold text-accent">{o.abroadPhone}<a href={`tel:${o.abroadPhone}`} className="font-normal text-brand">Call</a><a href={`https://wa.me/${o.abroadPhone.replace(/\D/g, '')}?text=${encodeURIComponent(confirmMsg)}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 font-normal text-green-600"><WhatsAppIcon className="h-4 w-4" />WhatsApp</a><span className="w-full text-xs font-normal text-muted">Ordered from abroad — the phone above is the receiver in Bangladesh</span></dd></>}
           <dt className="text-muted">Address</dt><dd>{o.address} · {o.shippingArea === 'inside_dhaka' ? 'Inside Dhaka' : 'Outside Dhaka'}</dd>
           <dt className="text-muted">Source</dt><dd>{o.source}{o.coupon && ` · coupon ${o.coupon}`}</dd>
           {o.note && <><dt className="text-muted">Customer note</dt><dd>{o.note}</dd></>}
@@ -348,7 +349,7 @@ export default function Orders() {
                 <tr key={o.id} className={`cursor-pointer hover:bg-surface ${sel.has(o.id) ? 'bg-brand/5' : ''}`} onClick={() => setOpenId(o.id)}>
                   <td className="p-3" onClick={(e) => e.stopPropagation()}><input type="checkbox" checked={sel.has(o.id)} onChange={(e) => { const s = new Set(sel); e.target.checked ? s.add(o.id) : s.delete(o.id); setSel(s) }} aria-label={`Select ${o.invoice}`} /></td>
                   <td className="p-3"><b>{o.invoice}</b> {risk.length > 0 && <Pill tone="red">Risk</Pill>}{o.demo && <Pill tone="gray">sample</Pill>}<div className="text-xs text-muted">{fdate(o.createdAt)}</div></td>
-                  <td className="p-3">{o.name}<div className="max-w-52 truncate text-xs text-muted">{o.address} · {o.items.reduce((n, i) => n + i.quantity, 0)} products</div></td>
+                  <td className="p-3">{o.name}{o.abroadPhone && <span className="ml-1 rounded bg-accent/15 px-1.5 py-0.5 text-[10px] font-semibold text-accent" title={`Overseas: ${o.abroadPhone}`}>🌍 Abroad</span>}<div className="max-w-52 truncate text-xs text-muted">{o.address} · {o.items.reduce((n, i) => n + i.quantity, 0)} products</div></td>
                   <td className="whitespace-nowrap p-3">{o.phone} <a href={`https://wa.me/${waNum(o.phone)}`} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="inline-block align-middle text-green-600" aria-label="WhatsApp"><WhatsAppIcon className="h-4 w-4" /></a></td>
                   <td className="p-3" onClick={(e) => e.stopPropagation()}><FraudBadge phone={o.phone} /></td>
                   <td className="p-3"><Pill s={o.status} /></td>

@@ -220,7 +220,7 @@ function adjustStock(items, sign) {
   }
 }
 
-export function createOrder({ name, phone, address, shippingArea, items, couponCode, note, source = 'Website', by = 'Customer', status = 'pending', payment, customerPhone }) {
+export function createOrder({ name, phone, address, shippingArea, items, couponCode, note, abroadPhone, source = 'Website', by = 'Customer', status = 'pending', payment, customerPhone }) {
   const subtotal = items.reduce((s, x) => s + x.price * x.quantity, 0)
   const shippingCharge = shippingFor(shippingArea, subtotal)
   const cc = couponCalc(couponCode, subtotal)
@@ -231,7 +231,7 @@ export function createOrder({ name, phone, address, shippingArea, items, couponC
     name, phone: normPhone(phone), address, shippingArea, items, subtotal, shippingCharge,
     discount: cc.discount || 0, coupon: cc.coupon?.code || '', total: subtotal + shippingCharge - (cc.discount || 0),
     payment: payment || { method: 'cod', status: 'unpaid' },
-    status: 'pending', courier: '', tracking: '', source, note: note || '', customerPhone: customerPhone || null,
+    status: 'pending', courier: '', tracking: '', source, note: note || '', abroadPhone: String(abroadPhone || '').slice(0, 20), customerPhone: customerPhone || null,
     createdAt: now, history: [{ s: 'pending', by, at: now, note: source !== 'Website' ? `${source} order` : '' }],
   }
   if (cc.coupon) cc.coupon.used = (cc.coupon.used || 0) + 1
