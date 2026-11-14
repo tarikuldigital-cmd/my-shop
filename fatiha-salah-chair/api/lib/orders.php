@@ -247,7 +247,7 @@ function steadfast_refresh(array &$o): ?string {
   try {
     $t = steadfast_get("/trackings_by_invoice/$inv");
     $rows = array_is_list($t) ? $t : ($t['data'] ?? $t['trackings'] ?? $t['tracking'] ?? []);
-    if (is_array($rows)) foreach ($rows as $r) if (is_array($r) && !empty($r['text'])) courier_log_add($o, (string)($r['tracking_type'] ?? ''), (string)$r['text'], ts_ms($r['created_at'] ?? null));
+    if (is_array($rows)) foreach ($rows as $r) if (is_array($r) && !empty($r['text'])) courier_log_add($o, '', (string)$r['text'], ts_ms($r['created_at'] ?? null)); // history rows are rider / hub notes
   } catch (HttpError $e) { /* history is optional */ }
   $o['courierCheckedAt'] = now_ms();
   return $status !== '' ? apply_courier_status($o, $status, SF_STATUS_TEXT[$status] ?? '', 'Steadfast') : null;

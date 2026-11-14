@@ -33,6 +33,6 @@ export const markCourierSeen = () => { try { localStorage.setItem(SEEN_KEY, Stri
 /** Every courier update across orders, newest first (for the notification bell). */
 export function courierFeed(limit = 40) {
   const out = []
-  for (const o of S.orders) for (const e of o.courierLog || []) if (e.message && !/বুক হয়েছে|booked/i.test(e.message)) out.push({ ...e, invoice: o.invoice, name: o.name, orderId: o.id, rider: !e.status })
+  for (const o of S.orders) for (const e of o.courierLog || []) if (e.message && !/বুক হয়েছে|booked|created by sender/i.test(e.message)) out.push({ ...e, invoice: o.invoice, name: o.name, orderId: o.id, rider: !e.status || /^\d+$/.test(e.status) })
   return out.sort((a, b) => b.at - a.at).slice(0, limit)
 }
