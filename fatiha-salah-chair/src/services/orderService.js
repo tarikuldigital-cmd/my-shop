@@ -13,7 +13,11 @@ const myPhone = () => localStorage.getItem(TOKEN_KEY)?.replace('mock-', '') || n
  * Totals are recalculated here (and by the backend) — never trusted from the browser.
  */
 export async function placeOrder(payload) {
-  if (!USE_MOCK) return unwrap(await api.post(ENDPOINTS.placeOrder, payload))
+  if (!USE_MOCK) {
+    let tz = ''
+    try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '' } catch { /* old browser */ }
+    return unwrap(await api.post(ENDPOINTS.placeOrder, { ...payload, tz }))
+  }
   await delay(400)
   const payment = payload.paymentMethod && payload.paymentMethod !== 'cod'
     ? { method: payload.paymentMethod, status: 'pending', trx: payload.trx?.trim().toUpperCase(), sender: normPhone(payload.sender) }

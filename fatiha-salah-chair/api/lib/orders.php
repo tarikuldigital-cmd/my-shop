@@ -57,6 +57,8 @@ function create_order_public(array $in): array {
   if ($name === '') fail(422, 'আপনার নাম লিখুন');
   if (!valid_phone($phone)) fail(422, 'সঠিক ১১ ডিজিটের মোবাইল নাম্বার দিন');
   if (mb_strlen($address) < 10) fail(422, 'সম্পূর্ণ ঠিকানা লিখুন (এলাকা, থানা, জেলা)');
+  // Where the customer ordered from (by IP; falls back to browser time zone). Looked up before the DB transaction.
+  $country = function_exists('visitor_country') ? visitor_country(s((string)($in['tz'] ?? ''), 60)) : '';
   $reqItems = $in['items'] ?? [];
   if (!is_array($reqItems) || !$reqItems || count($reqItems) > 40) fail(422, 'কার্টে কোনো পণ্য নেই');
 
@@ -104,7 +106,7 @@ function create_order_public(array $in): array {
       'id' => 'o' . $now . random_int(100, 999), 'invoice' => $inv, 'name' => $name, 'phone' => $phone, 'address' => $address,
       'shippingArea' => $areaId, 'items' => $items, 'subtotal' => $subtotal, 'shippingCharge' => $ship, 'discount' => $disc,
       'coupon' => $cc['coupon']['code'] ?? '', 'total' => $subtotal + $ship - $disc, 'payment' => $payment, 'status' => 'pending',
-      'courier' => '', 'tracking' => '', 'source' => $source, 'note' => $note, 'abroadPhone' => $abroad, 'customerPhone' => $cust['phone'] ?? null,
+      'courier' => '', 'tracking' => '', 'source' => $source, 'note' => $note, 'abroadPhone' => $abroad, 'country' => $country, 'customerPhone' => $cust['phone'] ?? null,
       'createdAt' => $now, 'history' => [['s' => 'pending', 'by' => 'Customer', 'at' => $now, 'note' => $source !== 'Website' ? "$source order" : '']],
       'trackCode' => make_track_code($inv),
     ];

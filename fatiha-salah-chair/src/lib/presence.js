@@ -31,7 +31,8 @@ function source() {
 function send(path, extra = {}) {
   const id = sid()
   if (!id) return
-  const payload = JSON.stringify({ sid: id, path, title: document.title.slice(0, 180), src: source(), ref: (() => { try { return sessionStorage.getItem('fatiha_ref') || '' } catch { return '' } })(), ...extra })
+  const tz = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || '' } catch { return '' } })()
+  const payload = JSON.stringify({ sid: id, path, tz, title: document.title.slice(0, 180), src: source(), ref: (() => { try { return sessionStorage.getItem('fatiha_ref') || '' } catch { return '' } })(), ...extra })
   try {
     if (extra.leave && navigator.sendBeacon) { navigator.sendBeacon(endpoint(), new Blob([payload], { type: 'application/json' })); return }
     fetch(endpoint(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload, keepalive: true }).catch(() => {})

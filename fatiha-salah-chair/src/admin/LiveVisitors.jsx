@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { LIVE } from '../config/env'
 import { liveApi } from '../lib/live'
 import { Panel, Empty } from './ui'
+import { flag, countryName as country } from './country'
 
 const POLL = 10000
 let data = null, err = '', timer = null, subs = new Set()
@@ -80,7 +81,7 @@ export function LiveVisitorsPanel() {
                   <li key={i} className="flex items-center justify-between gap-2 px-3 py-2">
                     <span className="min-w-0">
                       <span className="block truncate font-medium">{PAGE_NAME(v.path)}{clean(v.title) && v.path !== '/' ? <span className="font-normal text-muted"> · {clean(v.title)}</span> : null}</span>
-                      <span className="block text-xs text-muted">{DEV[v.device] || v.device} · {SRC(v.src)}</span>
+                      <span className="block text-xs text-muted">{flag(v.country)} {country(v.country)} · {DEV[v.device] || v.device} · {SRC(v.src)}</span>
                     </span>
                     <span className="shrink-0 text-xs text-muted">{dur(v.since)}</span>
                   </li>
@@ -88,6 +89,10 @@ export function LiveVisitorsPanel() {
               </ul>
             </div>
             <div className="space-y-4 text-sm">
+              <div>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">দেশ অনুযায়ী</p>
+                {Object.entries(data.countries || {}).map(([cc, c]) => <div key={cc} className="flex justify-between gap-2 py-0.5"><span className="truncate">{flag(cc)} {country(cc)}</span><b>{c}</b></div>)}
+              </div>
               <div>
                 <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">পেজ অনুযায়ী</p>
                 {data.pages.map((p) => <div key={p.path} className="flex justify-between gap-2 py-0.5"><span className="truncate">{PAGE_NAME(p.path)}{p.path.startsWith('/product/') && clean(p.title) ? ` · ${clean(p.title)}` : ''}</span><b>{p.count}</b></div>)}
