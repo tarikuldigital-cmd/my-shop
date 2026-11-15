@@ -43,6 +43,8 @@ function routes(): array {
     ['POST', 'admin/mirror-images', 'h_mirror'],
     ['POST', 'sms/send', 'h_sms_send'],
     ['POST', 'webhook/steadfast', 'h_steadfast_hook'],
+    ['POST', 'presence', 'h_presence'],
+    ['GET', 'admin/live', 'h_admin_live'],
     ['POST', 'admin/courier/refresh', 'h_courier_refresh'],
     ['POST', 'admin/courier/refresh-all', 'h_courier_refresh_all'],
     ['POST', 'admin/courier/balance', 'h_courier_balance'],

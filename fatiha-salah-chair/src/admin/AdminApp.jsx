@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { fraudCheck } from './fraud'
 import { liveCourierRefreshAll } from '../lib/live'
 import CourierBell from './CourierBell'
+import { LiveBadge } from './LiveVisitors'
 import { Link, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { S, save, useDb } from '../store/db'
 import { Toasts, toast } from './ui'
@@ -137,9 +138,10 @@ export default function AdminApp() {
         <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-line bg-white px-4 py-3 lg:hidden">
           <button onClick={() => setMenu(true)} aria-label="Open admin menu"><Icon name="menu" /></button>
           <span className="flex-1 font-bold">Fatiha Admin</span>
+          <LiveBadge />
           <CourierBell />
         </header>
-        <div className="sticky top-0 z-20 hidden justify-end border-b border-line bg-white/90 px-6 py-1.5 backdrop-blur lg:flex"><CourierBell /></div>
+        <div className="sticky top-0 z-20 hidden justify-end border-b border-line bg-white/90 px-6 py-1.5 backdrop-blur lg:flex lg:items-center lg:gap-3"><LiveBadge /><CourierBell /></div>
         <main className="p-4 sm:p-6">
           <Routes>
             <Route index element={<Dashboard />} />

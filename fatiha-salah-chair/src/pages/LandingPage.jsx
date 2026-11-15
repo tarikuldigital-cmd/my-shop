@@ -9,6 +9,7 @@ import { THEMES, embedUrl } from '../lib/landing'
 import { LIVE } from '../config/env'
 import { liveLandingView } from '../lib/live'
 import { formatPrice } from '../utils/format'
+import { usePresence } from '../lib/presence'
 import NotFound from './NotFound'
 
 function useCountdown(endsAt) {
@@ -50,6 +51,7 @@ function Faq({ items }) {
 
 export default function LandingPage() {
   const { slug } = useParams()
+  usePresence(`/lp/${slug}`)
   useDb()
   const lp = S.landings.find((l) => l.slug === slug)
   const product = lp && S.products.find((p) => p.id === lp.productId)

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { S, STATUS, ST_KEYS, COURIERS, DAY, HOUR, riskOf, useDb, clearDemoData } from '../store/db'
 import { Chips, HBars, Kpi, Panel, tk, startOfDay, toast } from './ui'
+import { LiveVisitorsPanel } from './LiveVisitors'
 
 const RANGES = [['today', 'Today'], ['yesterday', 'Yesterday'], ['7', '7 days'], ['30', '30 days'], ['all', 'All time']]
 function bounds(r) {
@@ -93,6 +94,7 @@ export default function Dashboard() {
         <h1 className="text-2xl font-bold">Dashboard</h1>
         <Chips items={RANGES} value={range} onChange={setRange} />
       </div>
+      <LiveVisitorsPanel />
       {hasDemo && (
         <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
           <span>The dashboard shows <b>sample orders</b> so you can try every feature. Real orders from the website appear here too.</span>
