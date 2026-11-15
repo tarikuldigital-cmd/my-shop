@@ -43,6 +43,7 @@ export const normPhone = (p = '') => String(p).replace(/[^\d]/g, '').replace(/^8
 export const validPhone = (p) => /^01[3-9]\d{8}$/.test(normPhone(p))
 
 /* ---------------- seed ---------------- */
+const DEMO_COUNTRIES = ['BD', 'BD', 'SA', 'BD', 'AE', 'BD', 'BD', 'QA', 'BD', 'MY', 'BD', 'OM', 'BD', 'GB']
 function demoOrders(products, now) {
   // Clearly-marked sample orders so the dashboard is not empty in the demo. "Clear demo data" removes them.
   const names = ['Rahim Uddin', 'Nusrat Jahan', 'Tanvir Ahmed', 'Sadia Islam', 'Mahmudul Hasan', 'Farhana Akter', 'Arif Hossain', 'Jannatul Ferdous', 'Shakil Khan', 'Tasnim Rahman']
@@ -72,6 +73,7 @@ function demoOrders(products, now) {
       payment: { method: 'cod', status: status === 'delivered' ? 'paid' : 'unpaid' },
       status, courier, tracking: courier ? COURIERS[courier].p + (10000000 + i * 7919) : '', courierLog: courier ? demoCourierLog(status, at) : [], courierStatus: courier ? { ready: 'in_review', transit: 'pending', delivered: 'delivered', returned: 'cancelled' }[status] : '', source: pick(SOURCES.filter((x) => x !== 'Landing page')), note: '',
       cancelReason: status === 'cancelled' ? history[history.length - 1].note : '', createdAt: at, history,
+      country: DEMO_COUNTRIES[i % DEMO_COUNTRIES.length],
     })
   }
   return list.sort((a, b) => b.createdAt - a.createdAt)
@@ -130,6 +132,8 @@ function load() {
       // the new Fatiha Ayat Salah Chair logo replaces the old remote logo files (a logo the admin typed in is left alone)
       for (const k of ['logoDark', 'logoWhite']) if (/^settings\/fatiha-logo/.test(raw.settings[k] || '')) raw.settings[k] = d[k]
       raw.landings ||= []
+      // sample orders saved before the "order country" feature get a sample country too
+      ;(raw.orders || []).forEach((o, i) => { if (o.demo && !o.country) o.country = DEMO_COUNTRIES[i % DEMO_COUNTRIES.length] })
       raw.chats ||= []
       // the first, shorter order-received text is replaced by the new formal one (edited texts are left alone)
       if (['সম্মানিত {name}, Fatiha Ayat Salah Chair থেকে আপনার অর্ডার ({invoice}) পেয়েছি। পণ্য: {product}, মূল্য {price}৳, ডেলিভারিসহ মোট {total}৳। অর্ডার করার জন্য ধন্যবাদ! আমাদের প্রতিনিধি কল করে অর্ডারটি কনফার্ম করবেন। ট্র্যাক: {link}'].includes(raw.settings.sms?.templates?.placed) || raw.settings.sms?.templates?.placed === '{name}, Fatiha Ayat Salah Chair-এ অর্ডার {invoice} গ্রহণ হয়েছে। মোট {total}৳। ট্র্যাক: {link}') raw.settings.sms.templates.placed = defaultSettings().sms.templates.placed

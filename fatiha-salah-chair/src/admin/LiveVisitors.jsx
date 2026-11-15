@@ -12,15 +12,32 @@ async function load() {
   try { data = await liveApi('admin/live', { admin: true }); err = '' } catch (e) { err = e.message || 'Error' }
   subs.forEach((f) => f({}))
 }
+// Demo site (no server): a moving sample so the panel can be seen.
+function demoData() {
+  const t = Math.floor(Date.now() / 1000)
+  const wob = Math.floor(t / 10) % 3
+  const v = [
+    ['/product/salah-chair-green', 'Green Salah Chair', 'mobile', 'facebook', 'SA', 240],
+    ['/customer/checkout', 'অর্ডার করুন', 'mobile', 'facebook', 'BD', 410],
+    ['/', 'Home', 'mobile', 'direct', 'BD', 60],
+    ['/category/salah-chair', 'Salah Chair', 'desktop', 'google', 'AE', 130],
+    ['/product/salah-chair-royal-blue', 'Royal Blue Salah Chair', 'mobile', 'facebook', 'BD', 30],
+    ['/product/salah-chair-purple', 'Purple Salah Chair', 'mobile', 'instagram', 'QA', 90],
+  ].slice(0, 4 + wob).map(([path, title, device, src, country, ago]) => ({ path, title, device, src, country, since: t - ago, seen: t }))
+  const count = (k) => v.reduce((m, x) => ({ ...m, [x[k]]: (m[x[k]] || 0) + 1 }), {})
+  const pages = Object.entries(count('path')).map(([path, c]) => ({ path, title: v.find((x) => x.path === path).title, count: c }))
+  return { now: v.length, last30: 17 + wob, today: 63 + wob, visitors: v, pages, devices: { mobile: 0, desktop: 0, tablet: 0, ...count('device') }, sources: count('src'), countries: count('country'), demo: true }
+}
+
 function useLive() {
   const [, force] = useState({})
   useEffect(() => {
-    if (!LIVE) return
+    if (!LIVE) { const iv = setInterval(() => force({}), POLL); return () => clearInterval(iv) }
     subs.add(force)
     if (subs.size === 1) { load(); timer = setInterval(() => { if (document.visibilityState === 'visible') load() }, POLL) }
     return () => { subs.delete(force); if (!subs.size) { clearInterval(timer); timer = null } }
   }, [])
-  return { data, err }
+  return LIVE ? { data, err } : { data: demoData(), err: '' }
 }
 
 const PAGE_NAME = (p) => {
@@ -42,7 +59,6 @@ const SRC = (s) => (/facebook|fb|instagram|ig|meta/i.test(s) ? '📘 Facebook/In
 /** Small "● 5 live" indicator for the admin header. */
 export function LiveBadge() {
   const { data } = useLive()
-  if (!LIVE) return null
   const n = data?.now ?? 0
   return (
     <Link to="/admin#live" title="এই মুহূর্তে ওয়েবসাইটে থাকা ভিজিটর" className="flex items-center gap-1.5 rounded-full border border-green-200 bg-green-50 px-2.5 py-1 text-xs font-semibold text-green-800">
@@ -55,11 +71,10 @@ export function LiveBadge() {
 /** Full panel for the Dashboard. */
 export function LiveVisitorsPanel() {
   const { data, err } = useLive()
-  if (!LIVE) return <Panel title="🟢 লাইভ ভিজিটর"><p className="text-sm text-muted">লাইভ ভিজিটর শুধু আসল ওয়েবসাইটে (fatihaayatsalahchair.com/admin) দেখা যাবে।</p></Panel>
   const n = data?.now ?? 0
   return (
     <div id="live">
-      <Panel title="🟢 লাইভ ভিজিটর" sub="প্রতি ১০ সেকেন্ডে আপডেট হয়">
+      <Panel title="🟢 লাইভ ভিজিটর" sub={LIVE ? 'প্রতি ১০ সেকেন্ডে আপডেট হয়' : 'ডেমো — নমুনা ডেটা, আসল সাইটে আসল ভিজিটর দেখাবে'}>
         {err && !data && <p className="text-sm text-red-600">লোড হয়নি: {err}</p>}
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="rounded-lg bg-green-50 p-4 text-center">
