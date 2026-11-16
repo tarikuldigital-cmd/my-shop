@@ -38,7 +38,8 @@ export const RETURN_REASONS = ['Wrong colour sent', 'Damaged in transit', 'Missi
 export const INC_ST = { new: 'New, follow-up pending', contacted: 'Contacted', converted: 'Converted to order', dropped: 'Dropped' }
 export const SOURCES = ['Website', 'Landing page', 'Facebook', 'Phone', 'WhatsApp', 'Messenger']
 
-export const meName = () => S.settings.staff[S.me ?? 0] || 'Admin'
+/** who is acting (shown in the order timeline) — the logged-in team member */
+export const meName = () => S.account?.name || S.settings.staff[S.me ?? 0] || 'Admin'
 export const normPhone = (p = '') => String(p).replace(/[^\d]/g, '').replace(/^88/, '')
 export const validPhone = (p) => /^01[3-9]\d{8}$/.test(normPhone(p))
 
@@ -95,6 +96,13 @@ function demoIncomplete(products, now) {
   })
 }
 
+/** demo mode only: sample team so roles can be tried without a server (the live site keeps the team in the database) */
+export const demoTeam = () => [
+  { id: 1, name: 'Admin', email: 'admin@fatihaayatsalahchair.com', pass: '123456', role: 'super_admin', active: true, created: Date.now() - 30 * DAY, lastLogin: Date.now() },
+  { id: 2, name: 'Rafi (Order Manager)', email: 'rafi@fatihaayatsalahchair.com', pass: '123456', role: 'order_manager', active: true, created: Date.now() - 10 * DAY, lastLogin: 0 },
+  { id: 3, name: 'Lina (Content)', email: 'lina@fatihaayatsalahchair.com', pass: '123456', role: 'content', active: true, created: Date.now() - 5 * DAY, lastLogin: 0 },
+]
+
 function seed() {
   const now = Date.now()
   const products = seedProducts.map((p) => ({ ...BOOK_FIELDS, ...p }))
@@ -115,6 +123,7 @@ function seed() {
     nextInvoice: 100101,
     fraud: {},
     smsLog: [],
+    team: LIVE ? [] : demoTeam(),
     lastSeen: now,
   }
 }
@@ -132,6 +141,7 @@ function load() {
       // the new Fatiha Ayat Salah Chair logo replaces the old remote logo files (a logo the admin typed in is left alone)
       for (const k of ['logoDark', 'logoWhite']) if (/^settings\/fatiha-logo/.test(raw.settings[k] || '')) raw.settings[k] = d[k]
       raw.landings ||= []
+      raw.team ||= demoTeam()
       // sample orders saved before the "order country" feature get a sample country too
       ;(raw.orders || []).forEach((o, i) => { if (o.demo && !o.country) o.country = DEMO_COUNTRIES[i % DEMO_COUNTRIES.length] })
       raw.chats ||= []

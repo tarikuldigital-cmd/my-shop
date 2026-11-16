@@ -35,6 +35,10 @@ function routes(): array {
     ['GET', 'admin/me', 'h_admin_me'],
     ['POST', 'admin/logout', 'h_admin_logout'],
     ['POST', 'admin/password', 'h_admin_password'],
+    ['GET', 'admin/team', 'h_team_list'],
+    ['POST', 'admin/team', 'h_team_add'],
+    ['PUT', 'admin/team/(\d+)', 'h_team_update'],
+    ['DELETE', 'admin/team/(\d+)', 'h_team_delete'],
     ['GET', 'admin/state', 'h_admin_state'],
     ['GET', 'admin/poll', 'h_admin_poll'],
     ['POST', 'admin/sync', 'h_admin_sync'],
@@ -281,14 +285,18 @@ function h_reset(): void {
 
 /* =============== admin =============== */
 function h_admin_login(): void {
+  admin_migrate();
   $b = body(); $email = strtolower(trim((string)($b['email'] ?? '')));
   $msg = 'অনেকবার ভুল চেষ্টা হয়েছে। ১৫ মিনিট পরে আবার চেষ্টা করুন।';
   if (rate_blocked('alogin:' . client_ip(), 20, 900) || rate_blocked("alogine:$email", 8, 900)) fail(429, $msg);
   $u = q('SELECT * FROM admins WHERE email = ?', [$email])->fetch();
   if (!$u || !password_verify((string)($b['password'] ?? ''), $u['pass'])) { rate_add('alogin:' . client_ip()); rate_add("alogine:$email"); fail(422, 'Wrong email or password'); }
-  out(['token' => new_token('admin', (int)$u['id'], 14), 'user' => ['name' => $u['name'], 'email' => $u['email']]]);
+  if ((int)$u['active'] !== 1) fail(403, 'এই অ্যাকাউন্টটি বন্ধ করা আছে — Super Admin এর সাথে যোগাযোগ করুন');
+  q('UPDATE admins SET last_login = ? WHERE id = ?', [now_ms(), $u['id']]);
+  $u['last_login'] = now_ms();
+  out(['token' => new_token('admin', (int)$u['id'], 14), 'user' => admin_public($u)]);
 }
-function h_admin_me(): void { $u = require_admin(); out(['name' => $u['name'], 'email' => $u['email']]); }
+function h_admin_me(): void { out(admin_public(require_admin())); }
 function h_admin_logout(): void { drop_token(); out(['ok' => true]); }
 function h_admin_password(): void {
   $u = require_admin(); $b = body();
@@ -301,33 +309,40 @@ function h_admin_password(): void {
 
 const KV_KEYS = ['settings', 'home', 'pages', 'fraud'];
 function h_admin_state(): void {
-  require_admin();
+  $me = require_admin();
   $d = ['t' => now_ms(), 'docs' => new stdClass(), 'kv' => new stdClass()];
   $docs = []; foreach (array_keys(KEYS) as $c) $docs[$c] = doc_all($c);
   $kv = []; foreach (KV_KEYS as $k) $kv[$k] = objectify(kv_get($k, in_array($k, ['settings', 'home'], true) ? new stdClass() : []));
   $kv['nextInvoice'] = (int)kv_get('nextInvoice', 100101);
-  $d['docs'] = $docs; $d['kv'] = $kv;
+  $kv['settings'] = settings_for_admin($me, $kv['settings']);
+  $d['docs'] = $docs; $d['kv'] = $kv; $d['me'] = admin_public($me);
   out($d);
 }
 function h_admin_poll(): void {
-  require_admin();
+  $me = require_admin();
   $since = max(0, (int)($_GET['since'] ?? 0));
   $docs = []; foreach (array_keys(KEYS) as $c) { $l = doc_all($c, $since); if ($l) $docs[$c] = $l; }
   $kv = []; foreach (KV_KEYS as $k) if (kv_updated($k) > $since) $kv[$k] = objectify(kv_get($k, []));
   $kv['nextInvoice'] = (int)kv_get('nextInvoice', 100101);
-  out(['t' => now_ms(), 'docs' => $docs ?: new stdClass(), 'kv' => $kv]);
+  if (isset($kv['settings'])) $kv['settings'] = settings_for_admin($me, $kv['settings']);
+  out(['t' => now_ms(), 'docs' => $docs ?: new stdClass(), 'kv' => $kv, 'me' => admin_public($me)]);
 }
 
 /** Field-level patches from the admin panel — safe against two admins/customers writing at the same time. */
 function h_admin_sync(): void {
-  require_admin();
+  $me = require_admin();
   $b = body();
   $ops = array_slice((array)($b['ops'] ?? []), 0, 2000);
   $remap = [];
-  tx(function () use ($ops, $b, &$remap) {
+  tx(function () use ($ops, $b, &$remap, $me) {
     foreach ($ops as $op) {
       $c = (string)($op['c'] ?? ''); if (!isset(KEYS[$c])) continue;
       $kf = KEYS[$c]; $id = (string)($op['id'] ?? ''); if ($id === '') continue;
+      if (!admin_can($me, COLL_PERM[$c])) {
+        // an order manager changing an order also moves stock / coupon / landing counters — allow those counter deltas only
+        $counterOnly = !empty($op['delta']) && empty($op['del']) && empty($op['create']) && empty($op['set']) && empty($op['unset']);
+        if (!($counterOnly && admin_can($me, 'orders'))) continue;
+      }
       if (!empty($op['del'])) { doc_del($c, $id); continue; }
       if (isset($op['create']) && is_array($op['create'])) {
         $d = $op['create']; $d[$kf] = $op['create'][$kf] ?? $id;
@@ -352,12 +367,12 @@ function h_admin_sync(): void {
       doc_put($c, $d);
     }
     foreach ((array)($b['order'] ?? []) as $c => $ids) {
-      if (!isset(KEYS[$c]) || isset(SORT_BY[$c]) || !is_array($ids)) continue;
+      if (!isset(KEYS[$c]) || isset(SORT_BY[$c]) || !is_array($ids) || !admin_can($me, COLL_PERM[$c])) continue;
       foreach (array_values($ids) as $i => $id) q('UPDATE docs SET seq = ?, updated = ? WHERE coll = ? AND id = ?', [$i, now_ms(), $c, (string)$id]);
     }
     foreach ((array)($b['kv'] ?? []) as $k => $v) {
-      if ($k === 'nextInvoice') { if ((int)$v > (int)kv_get('nextInvoice', 100101)) kv_set('nextInvoice', (int)$v); continue; }
-      if (in_array($k, KV_KEYS, true) && strlen(jenc($v)) < 2000000) kv_set($k, $v);
+      if ($k === 'nextInvoice') { if (admin_can($me, 'orders') && (int)$v > (int)kv_get('nextInvoice', 100101)) kv_set('nextInvoice', (int)$v); continue; }
+      if (in_array($k, KV_KEYS, true) && admin_can($me, KV_PERM[$k]) && strlen(jenc($v)) < 2000000) kv_set($k, $v);
     }
   });
   out(['ok' => true, 't' => now_ms(), 'remap' => $remap ?: new stdClass(), 'nextInvoice' => (int)kv_get('nextInvoice', 100101)]);
@@ -381,7 +396,7 @@ function h_upload(): void {
 }
 
 function h_steadfast(): void {
-  require_admin();
+  require_admin('orders');
   $b = body(); $id = (string)($b['orderId'] ?? ''); $note = s($b['note'] ?? '', 250);
   $o = tx(function () use ($id, $note) {
     $o = doc_get('orders', $id, true); if (!$o) fail(404, 'Order not found');
@@ -399,7 +414,7 @@ function h_steadfast(): void {
 
 /** Admin "Refresh status" on one order: latest status + full tracking history (rider notes). */
 function h_courier_refresh(): void {
-  require_admin();
+  require_admin('orders');
   $id = (string)(body()['orderId'] ?? '');
   $event = null;
   $o = tx(function () use ($id, &$event) {
@@ -415,7 +430,7 @@ function h_courier_refresh(): void {
 
 /** Refresh every open Steadfast parcel (ready / in transit / on hold), oldest check first, max 40 per call. */
 function h_courier_refresh_all(): void {
-  require_admin();
+  require_admin('orders');
   $open = array_values(array_filter(doc_all('orders'), fn($o) => ($o['courier'] ?? '') === 'steadfast' && !empty($o['tracking']) && in_array($o['status'], ['ready', 'transit', 'hold'], true)));
   usort($open, fn($a, $b) => (int)($a['courierCheckedAt'] ?? 0) <=> (int)($b['courierCheckedAt'] ?? 0));
   $done = 0; $changed = 0; $errors = [];
@@ -438,7 +453,7 @@ function h_courier_refresh_all(): void {
 
 /** Customer courier history from Steadfast (all merchants' record for this phone): GET /fraud_check/score/{phone}. */
 function h_courier_history(): void {
-  require_admin();
+  require_admin('orders');
   $phone = norm_phone((string)(body()['phone'] ?? ''));
   if (!valid_phone($phone)) fail(422, 'সঠিক মোবাইল নাম্বার দিন');
   $j = steadfast_get('/fraud_check/score/' . rawurlencode($phone));
@@ -447,7 +462,7 @@ function h_courier_history(): void {
 }
 
 function h_courier_balance(): void {
-  require_admin();
+  require_admin('orders');
   $j = steadfast_get('/get_balance');
   out(['balance' => $j['current_balance'] ?? null]);
 }

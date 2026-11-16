@@ -5,10 +5,11 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   S, STATUS, ST_KEYS, COURIERS, PAY, PAY_ST, CANCEL_REASONS, RETURN_REASONS, SOURCES, DAY,
-  save, useDb, setStatus, sendToCourier, createOrder, riskOf, trackUrl, waNum, validPhone, meName, shippingFor,
+  save, useDb, setStatus, product, productById, sendToCourier, createOrder, riskOf, trackUrl, waNum, validPhone, meName, shippingFor,
 } from '../store/db'
 import { Empty, Field, Modal, Pill, tk, fdate, startOfDay, toast } from './ui'
-import { WhatsAppIcon } from '../components/common/Icon'
+import Icon, { WhatsAppIcon } from '../components/common/Icon'
+import Img from '../components/common/Img'
 import { busy, fraudCheck, getKey, ratioTone, fraudText } from './fraud'
 import { flag, countryName } from './country'
 import { trackLink, renderSms, sendSms, SMS_EVENTS } from '../lib/sms'
@@ -75,6 +76,28 @@ const NEXT = {
   partial: [], returned: [],
 }
 
+/* ---------- drawer helpers ---------- */
+const itemImage = (i) => i.image || productById(i.productId)?.images?.[0] || product(i.slug)?.images?.[0] || null
+
+function ContactRow({ label, phone, wa, msg, highlight }) {
+  return (
+    <div className={`flex flex-wrap items-center justify-between gap-3 rounded-lg border px-3 py-2.5 ${highlight ? 'border-accent/40 bg-accent/5' : 'border-line bg-surface/60'}`}>
+      <div className="min-w-0">
+        <p className="text-[11px] font-medium uppercase tracking-wide text-muted">{label}</p>
+        <p className={`text-base font-bold tabular-nums ${highlight ? 'text-accent' : 'text-ink'}`}>{phone}</p>
+      </div>
+      <div className="flex gap-2">
+        <a href={`tel:${phone}`} className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-dark"><Icon name="phone" className="h-4 w-4" />Call</a>
+        <a href={`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`} target="_blank" rel="noreferrer" title="Confirm on WhatsApp" className="inline-flex items-center gap-1.5 rounded-lg bg-[#25D366] px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1ebe5a]"><WhatsAppIcon className="h-4 w-4" />WhatsApp</a>
+      </div>
+    </div>
+  )
+}
+
+function DetailRow({ label, children }) {
+  return <div className="grid grid-cols-[110px_1fr] gap-3 px-4 py-2.5"><dt className="text-muted">{label}</dt><dd className="min-w-0">{children}</dd></div>
+}
+
 function OrderDrawer({ order: o, onClose }) {
   useDb()
   const [extra, setExtra] = useState(null)
@@ -105,41 +128,93 @@ function OrderDrawer({ order: o, onClose }) {
   const payStatus = (s) => { o.payment.status = s; o.history.push({ s: 'note', by: meName(), at: Date.now(), note: `Payment: ${PAY_ST[s]}` }); save(); toast('Payment updated') }
 
   return (
-    <Modal open onClose={onClose} drawer title={<>{o.invoice} <Pill s={o.status} /></>}>
+    <Modal open onClose={onClose} drawer title={<>{o.invoice} <Pill s={o.status} /> <span className="text-xs font-normal text-muted">{fdate(o.createdAt)}</span></>}>
       <div className="space-y-5 text-sm">
         {risk.length > 0 && <div className="rounded-md border border-red-200 bg-red-50 p-3 text-red-800">{risk.map((r) => <p key={r}>⚠ {r}</p>)}</div>}
 
-        <dl className="grid grid-cols-[110px_1fr] gap-x-3 gap-y-1.5">
-          <dt className="text-muted">Customer</dt><dd className="font-semibold">{o.name}</dd>
-          <dt className="text-muted">Phone</dt><dd className="flex items-center gap-2">{o.phone}<a href={`tel:${o.phone}`} className="text-brand">Call</a><a href={`https://wa.me/${waNum(o.phone)}?text=${encodeURIComponent(confirmMsg)}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-green-600"><WhatsAppIcon className="h-4 w-4" />Confirm on WhatsApp</a></dd>
-          {o.country && <><dt className="text-muted">অর্ডারের দেশ</dt><dd><span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold ${o.country === 'BD' ? 'border-line' : 'border-accent/40 bg-accent/10 text-accent'}`}>{flag(o.country)} {countryName(o.country)}</span> <span className="text-xs text-muted">(IP অনুযায়ী)</span></dd></>}
-          {o.abroadPhone && <><dt className="text-muted">🌍 Overseas buyer</dt><dd className="flex flex-wrap items-center gap-2 font-semibold text-accent">{o.abroadPhone}<a href={`tel:${o.abroadPhone}`} className="font-normal text-brand">Call</a><a href={`https://wa.me/${o.abroadPhone.replace(/\D/g, '')}?text=${encodeURIComponent(confirmMsg)}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 font-normal text-green-600"><WhatsAppIcon className="h-4 w-4" />WhatsApp</a><span className="w-full text-xs font-normal text-muted">Ordered from abroad — the phone above is the receiver in Bangladesh</span></dd></>}
-          <dt className="text-muted">Address</dt><dd>{o.address} · {o.shippingArea === 'inside_dhaka' ? 'Inside Dhaka' : 'Outside Dhaka'}</dd>
-          <dt className="text-muted">Source</dt><dd>{o.source}{o.coupon && ` · coupon ${o.coupon}`}</dd>
-          {o.note && <><dt className="text-muted">Customer note</dt><dd>{o.note}</dd></>}
-          <dt className="text-muted">Payment</dt>
-          <dd>
-            {PAY[p.method]} · <Pill tone={p.status === 'paid' ? 'green' : p.status === 'pending' ? 'amber' : p.status === 'failed' ? 'red' : 'gray'}>{PAY_ST[p.status]}</Pill>
-            {p.trx && <p className="mt-1">TrxID <b>{p.trx}</b> · from {p.sender}</p>}
-            {p.method !== 'cod' && p.status !== 'paid' && <div className="mt-2 flex gap-2"><button className="btn-accent" onClick={() => payStatus('paid')}>Payment received</button><button className="btn-outline text-red-600" onClick={() => payStatus('failed')}>TrxID doesn't match</button></div>}
-          </dd>
-          <dt className="text-muted">Courier</dt><dd>{o.courier ? <>{COURIERS[o.courier].t} · {trackUrl(o) ? <a className="text-brand" href={trackUrl(o)} target="_blank" rel="noreferrer">{o.tracking} ↗</a> : o.tracking}</> : '—'}</dd>
-          <dt className="text-muted">Courier history</dt>
-          <dd>{fr ? <><span className={fr.sf?.reports ? 'font-semibold text-red-600' : ''}>{fraudText(fr)}</span> <button className="ml-1 text-xs text-brand" onClick={() => fraudCheck(o.phone, true, () => re((x) => x + 1)).catch((e) => toast(e.message))}>↻</button></>
-            : <button className="text-brand" onClick={() => fraudCheck(o.phone, true, () => re((x) => x + 1)).catch((e) => toast(e.message))}>{LIVE || getKey() ? 'Check courier history' : 'Add BD Courier key in Settings → Courier'}</button>}</dd>
-          <dt className="text-muted">Previous orders</dt><dd>{prev.length ? prev.map((x) => <span key={x.id} className="mr-2 inline-flex items-center gap-1">{x.invoice} <Pill s={x.status} /></span>) : 'First order'}</dd>
-        </dl>
+        {/* ---------- customer & contact card ---------- */}
+        <section className="overflow-hidden rounded-xl border border-line bg-white shadow-sm">
+          <div className="flex items-center gap-3 bg-gradient-to-r from-brand to-brand-dark px-4 py-3 text-white">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/15 text-lg font-bold ring-2 ring-gold/70">{(o.name || '?').trim().charAt(0).toUpperCase()}</span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-base font-bold leading-tight">{o.name}</p>
+              <p className="text-xs text-white/75">Customer · ordered {fdate(o.createdAt)}</p>
+            </div>
+            {o.country && <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-xs font-semibold" title="IP অনুযায়ী">{flag(o.country)} {countryName(o.country)}</span>}
+          </div>
+          <div className="space-y-3 p-4">
+            <ContactRow label="Phone" phone={o.phone} wa={waNum(o.phone)} msg={confirmMsg} />
+            {o.abroadPhone && (
+              <div>
+                <ContactRow label="🌍 Overseas buyer" phone={o.abroadPhone} wa={o.abroadPhone.replace(/\D/g, '')} msg={confirmMsg} highlight />
+                <p className="mt-1 px-1 text-xs text-muted">Ordered from abroad — the phone above is the receiver in Bangladesh</p>
+              </div>
+            )}
+            <div className="flex items-start gap-3 rounded-lg border border-line bg-surface/60 px-3 py-2.5">
+              <Icon name="location" className="mt-0.5 h-5 w-5 shrink-0 text-brand" />
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-muted">Delivery address</p>
+                <p className="break-words font-medium leading-snug">{o.address}</p>
+              </div>
+              <span className="shrink-0 rounded-full bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand">{o.shippingArea === 'inside_dhaka' ? 'Inside Dhaka' : 'Outside Dhaka'}</span>
+            </div>
+            {o.note && <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-amber-900"><p className="text-[11px] font-semibold uppercase tracking-wide">Customer note</p><p>{o.note}</p></div>}
+          </div>
+        </section>
 
-        <table className="w-full">
-          <thead className="bg-surface text-left text-xs text-muted"><tr><th className="p-2">Product</th><th className="p-2">Qty</th><th className="p-2 text-right">Total</th></tr></thead>
-          <tbody>{o.items.map((i) => <tr key={i.slug} className="border-b border-line"><td className="p-2">{i.name}<div className="text-xs text-muted">{tk(i.price)} each</div></td><td className="p-2">{i.quantity}</td><td className="p-2 text-right">{tk(i.price * i.quantity)}</td></tr>)}</tbody>
-          <tfoot>
-            <tr><td colSpan={2} className="p-2 text-right text-muted">Subtotal</td><td className="p-2 text-right">{tk(o.subtotal)}</td></tr>
-            <tr><td colSpan={2} className="p-2 text-right text-muted">Delivery</td><td className="p-2 text-right">{tk(o.shippingCharge)}</td></tr>
-            {o.discount > 0 && <tr><td colSpan={2} className="p-2 text-right text-muted">Discount</td><td className="p-2 text-right">−{tk(o.discount)}</td></tr>}
-            <tr className="font-bold"><td colSpan={2} className="p-2 text-right">Total</td><td className="p-2 text-right">{tk(o.total)}</td></tr>
-          </tfoot>
-        </table>
+        {/* ---------- ordered products (with photos) ---------- */}
+        <section className="overflow-hidden rounded-xl border border-line bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
+            <h3 className="font-semibold">Ordered products</h3>
+            <span className="rounded-full bg-surface px-2.5 py-0.5 text-xs font-semibold text-muted">{(() => { const n = o.items.reduce((s, i) => s + i.quantity, 0); return `${n} ${n > 1 ? 'pcs' : 'pc'}` })()}</span>
+          </div>
+          <ul className="divide-y divide-line">
+            {o.items.map((i) => (
+              <li key={i.slug || i.productId} className="flex items-center gap-3 p-3">
+                <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-line bg-surface sm:h-20 sm:w-20">
+                  <Img src={itemImage(i)} alt={i.name} className="h-full w-full object-cover text-[9px]" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold leading-snug">{i.name}</p>
+                  <p className="mt-0.5 text-xs text-muted">{tk(i.price)} each</p>
+                </div>
+                <div className="shrink-0 text-right">
+                  <span className="inline-block rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-bold text-brand">× {i.quantity}</span>
+                  <p className="mt-1 font-bold">{tk(i.price * i.quantity)}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <div className="space-y-1 border-t border-line bg-surface/60 px-4 py-3 text-sm">
+            <div className="flex justify-between"><span className="text-muted">Subtotal</span><span>{tk(o.subtotal)}</span></div>
+            <div className="flex justify-between"><span className="text-muted">Delivery</span><span>{tk(o.shippingCharge)}</span></div>
+            {o.discount > 0 && <div className="flex justify-between"><span className="text-muted">Discount{o.coupon && ` (${o.coupon})`}</span><span className="text-green-700">−{tk(o.discount)}</span></div>}
+            <div className="mt-1 flex items-center justify-between border-t border-dashed border-line pt-2">
+              <span className="font-semibold">Total</span>
+              <span className="text-xl font-bold text-brand">{tk(o.total)}</span>
+            </div>
+            {p.method === 'cod' && p.status !== 'paid' && <p className="text-right text-xs font-medium text-accent">Cash on delivery — collect {tk(o.total)}</p>}
+          </div>
+        </section>
+
+        {/* ---------- order details ---------- */}
+        <section className="overflow-hidden rounded-xl border border-line bg-white shadow-sm">
+          <h3 className="border-b border-line px-4 py-2.5 font-semibold">Order details</h3>
+          <dl className="divide-y divide-line text-sm">
+            <DetailRow label="Source">{o.source}{o.coupon && ` · coupon ${o.coupon}`}</DetailRow>
+            <DetailRow label="Payment">
+              {PAY[p.method]} · <Pill tone={p.status === 'paid' ? 'green' : p.status === 'pending' ? 'amber' : p.status === 'failed' ? 'red' : 'gray'}>{PAY_ST[p.status]}</Pill>
+              {p.trx && <p className="mt-1">TrxID <b>{p.trx}</b> · from {p.sender}</p>}
+              {p.method !== 'cod' && p.status !== 'paid' && <div className="mt-2 flex gap-2"><button className="btn-accent" onClick={() => payStatus('paid')}>Payment received</button><button className="btn-outline text-red-600" onClick={() => payStatus('failed')}>TrxID doesn't match</button></div>}
+            </DetailRow>
+            <DetailRow label="Courier">{o.courier ? <>{COURIERS[o.courier].t} · {trackUrl(o) ? <a className="text-brand" href={trackUrl(o)} target="_blank" rel="noreferrer">{o.tracking} ↗</a> : o.tracking}</> : '—'}</DetailRow>
+            <DetailRow label="Courier history">
+              {fr ? <><span className={fr.sf?.reports ? 'font-semibold text-red-600' : ''}>{fraudText(fr)}</span> <button className="ml-1 text-xs text-brand" onClick={() => fraudCheck(o.phone, true, () => re((x) => x + 1)).catch((e) => toast(e.message))}>↻</button></>
+                : <button className="text-brand" onClick={() => fraudCheck(o.phone, true, () => re((x) => x + 1)).catch((e) => toast(e.message))}>{LIVE || getKey() ? 'Check courier history' : 'Add BD Courier key in Settings → Courier'}</button>}
+            </DetailRow>
+            <DetailRow label="Previous orders">{prev.length ? prev.map((x) => <span key={x.id} className="mr-2 inline-flex items-center gap-1">{x.invoice} <Pill s={x.status} /></span>) : 'First order'}</DetailRow>
+          </dl>
+        </section>
 
         <div>
           <p className="mb-2 font-semibold">Actions</p>

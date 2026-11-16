@@ -49,7 +49,7 @@ function mirror_fetch(string $url): ?string {
 
 /** One batch (≈20 s). Returns progress; the admin page calls it repeatedly until remaining = 0. */
 function h_mirror(): void {
-  require_admin();
+  require_admin('products');
   @set_time_limit(60);
   $map = kv_get('mirrorMap', []); $fail = kv_get('mirrorFail', []);
   if (!empty(body()['retry'])) $fail = [];

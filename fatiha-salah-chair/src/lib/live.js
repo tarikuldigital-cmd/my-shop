@@ -83,6 +83,8 @@ export async function adminLogin(email, password) {
   const r = await call('admin/login', { method: 'POST', body: { email, password } })
   localStorage.setItem(ADMIN_TOKEN_KEY, r.token)
   await hydrateAdmin()
+  S.account = r.user
+  refresh()
   return r.user
 }
 export async function adminLogout() {
@@ -100,6 +102,7 @@ export async function resumeAdmin() {
 
 export async function hydrateAdmin() {
   const d = await call('admin/state', { admin: true })
+  S.account = d.me
   for (const c of Object.keys(COLLS)) S[c] = d.docs[c] || []
   for (const k of KV) S[k] = d.kv[k]
   for (const k of OBJECT_KEYS) if (Array.isArray(S[k])) S[k] = {}
@@ -190,6 +193,7 @@ export async function poll() {
   try { d = await call(`admin/poll?since=${since}`, { admin: true }) } catch (e) { if (e.status === 401) { localStorage.removeItem(ADMIN_TOKEN_KEY); location.reload() } return }
   if (!d || !base) return
   let changed = false
+  if (d.me && JSON.stringify(d.me) !== JSON.stringify(S.account)) { S.account = d.me; changed = true } // role changed by a Super Admin → menu updates by itself
   for (const [c, list] of Object.entries(d.docs || {})) {
     if (!COLLS[c]) continue
     for (const doc of list) {
@@ -264,3 +268,9 @@ export async function courierLive(o, c, by, note = '') {
 }
 
 export { DAY }
+
+/* ---------------- team & roles (Super Admin only on the server) ---------------- */
+export const liveTeamList = async () => (await call('admin/team', { admin: true })).members
+export const liveTeamAdd = async (m) => (await call('admin/team', { method: 'POST', admin: true, body: m })).member
+export const liveTeamUpdate = async (id, patch) => (await call(`admin/team/${id}`, { method: 'PUT', admin: true, body: patch })).member
+export const liveTeamDelete = (id) => call(`admin/team/${id}`, { method: 'DELETE', admin: true })

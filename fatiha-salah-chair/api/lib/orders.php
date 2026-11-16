@@ -90,7 +90,7 @@ function create_order_public(array $in): array {
       if (!$p || ($p['active'] ?? true) === false) fail(422, 'একটি পণ্য আর পাওয়া যাচ্ছে না — কার্ট রিফ্রেশ করুন');
       if (isset($p['stock']) && is_numeric($p['stock']) && (int)$p['stock'] < $qty) fail(409, '"' . $p['name'] . '" স্টকে ' . max(0, (int)$p['stock']) . 'টি আছে');
       $price = (int)$p['price'];
-      $items[] = ['productId' => $p['id'], 'slug' => $p['slug'], 'name' => $p['name'], 'price' => $price, 'quantity' => $qty];
+      $items[] = ['productId' => $p['id'], 'slug' => $p['slug'], 'name' => $p['name'], 'price' => $price, 'quantity' => $qty, 'image' => (string)($p['images'][0] ?? '')];
       $subtotal += $price * $qty;
       $touched[(string)$p['id']] = ($touched[(string)$p['id']] ?? 0) + $qty;
     }

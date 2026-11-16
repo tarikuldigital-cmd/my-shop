@@ -83,7 +83,7 @@ function create_schema(): void {
     "CREATE INDEX {$ine}docs_k3 ON docs (coll, k3)",
     "CREATE INDEX {$ine}docs_upd ON docs (coll, updated)",
     "CREATE TABLE IF NOT EXISTS kv (k VARCHAR(64) NOT NULL PRIMARY KEY, v $txt NOT NULL, updated $big NOT NULL DEFAULT 0)$tail",
-    "CREATE TABLE IF NOT EXISTS admins (id $ai, email VARCHAR(190) NOT NULL UNIQUE, name VARCHAR(120) NOT NULL, pass VARCHAR(255) NOT NULL, created $big NOT NULL)$tail",
+    "CREATE TABLE IF NOT EXISTS admins (id $ai, email VARCHAR(190) NOT NULL UNIQUE, name VARCHAR(120) NOT NULL, pass VARCHAR(255) NOT NULL, created $big NOT NULL, role VARCHAR(20) NOT NULL DEFAULT 'admin', active TINYINT NOT NULL DEFAULT 1, last_login $big NOT NULL DEFAULT 0)$tail",
     "CREATE TABLE IF NOT EXISTS customers (id $ai, phone VARCHAR(20) NOT NULL UNIQUE, name VARCHAR(120) NOT NULL, pass VARCHAR(255) NOT NULL, address VARCHAR(500) NOT NULL DEFAULT '', email VARCHAR(190) NOT NULL DEFAULT '', created $big NOT NULL)$tail",
     "CREATE TABLE IF NOT EXISTS tokens (h CHAR(64) NOT NULL PRIMARY KEY, kind VARCHAR(10) NOT NULL, uid INT NOT NULL, exp $big NOT NULL)$tail",
     "CREATE TABLE IF NOT EXISTS rl (k VARCHAR(120) NOT NULL, at $big NOT NULL)$tail",
@@ -165,11 +165,18 @@ function auth_user(string $kind): ?array {
   if (!$t) return null;
   $r = q('SELECT uid, exp FROM tokens WHERE h = ? AND kind = ?', [hash('sha256', $t), $kind])->fetch();
   if (!$r || (int)$r['exp'] < time()) return null;
+  if ($kind === 'admin') admin_migrate();
   $table = $kind === 'admin' ? 'admins' : 'customers';
   $u = q("SELECT * FROM $table WHERE id = ?", [(int)$r['uid']])->fetch();
+  if ($u && $kind === 'admin' && (int)($u['active'] ?? 1) !== 1) return null; // disabled account
   return $u ?: null;
 }
-function require_admin(): array { $u = auth_user('admin'); if (!$u) fail(401, 'Admin login required'); return $u; }
+/** Logged-in admin; pass a permission name (see ADMIN_ROLES in team.php) to also require that the role allows it. */
+function require_admin(?string $perm = null): array {
+  $u = auth_user('admin'); if (!$u) fail(401, 'Admin login required');
+  if ($perm !== null && !admin_can($u, $perm)) fail(403, 'এই কাজের অনুমতি আপনার রোলে নেই');
+  return $u;
+}
 function drop_token(): void { $t = bearer(); if ($t) q('DELETE FROM tokens WHERE h = ?', [hash('sha256', $t)]); }
 
 /* ---------------- request helpers ---------------- */

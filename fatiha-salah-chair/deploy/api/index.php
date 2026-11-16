@@ -9,6 +9,7 @@ ini_set('display_errors', '0');
 ini_set('log_errors', '1');
 
 require __DIR__ . '/lib/core.php';
+require __DIR__ . '/lib/team.php';
 require __DIR__ . '/lib/sms.php';
 require __DIR__ . '/lib/orders.php';
 require __DIR__ . '/lib/sitemap.php';
