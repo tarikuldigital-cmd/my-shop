@@ -123,6 +123,7 @@ export default function Products() {
   const all = S.products.filter((p) => (!cat || p.categories.includes(cat)) && (!term || `${p.name} ${p.color || ''} ${p.sku}`.toLowerCase().includes(term)))
   const pages = Math.max(1, Math.ceil(all.length / 25))
   const list = all.slice((Math.min(page, pages) - 1) * 25, Math.min(page, pages) * 25)
+  const dup = (p) => setEdit({ ...JSON.parse(JSON.stringify(p)), id: undefined, slug: '', sku: '', name: `${p.name} (কপি)`, sold: 0, duplicateOf: p.name })
   const missing = (p) => [!p.images.length && 'image', !p.description && 'description', !p.color && 'color'].filter(Boolean)
 
   return (
@@ -136,12 +137,16 @@ export default function Products() {
         <select className="field w-auto" value={cat} onChange={(e) => { setCat(e.target.value); setPage(1) }}><option value="">All categories</option>{S.categories.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}</select>
       </div>
       <div className="overflow-x-auto rounded-lg border border-line bg-white">
-        <table className="w-full min-w-[820px] text-sm">
+        <table className="w-full min-w-[640px] text-sm md:min-w-[820px]">
           <thead className="bg-surface text-left text-xs uppercase text-muted"><tr><th className="p-3">Product</th><th className="p-3">Category</th><th className="p-3">Price</th><th className="p-3">Stock</th><th className="p-3">Missing info</th><th className="p-3">Status</th><th className="p-3" /></tr></thead>
           <tbody className="divide-y divide-line">
             {list.length ? list.map((p) => (
               <tr key={p.id}>
-                <td className="p-3"><div className="flex items-center gap-3"><Img src={p.images[0]} alt="" className="h-14 w-11 shrink-0 rounded border border-line object-cover text-[8px]" /><div className="min-w-0"><p className="line-clamp-2 font-medium">{p.name}</p><p className="text-xs text-muted">{p.sku || `#${p.id}`}{p.color && <> · <span className="inline-block h-2.5 w-2.5 rounded-full border align-middle" style={{ background: p.colorHex }} /> {p.color}</>}</p></div></div></td>
+                <td className="p-3"><div className="flex items-center gap-3"><Img src={p.images[0]} alt="" className="h-14 w-11 shrink-0 rounded border border-line object-cover text-[8px]" /><div className="min-w-0"><p className="line-clamp-2 font-medium">{p.name}</p><p className="text-xs text-muted">{p.sku || `#${p.id}`}{p.color && <> · <span className="inline-block h-2.5 w-2.5 rounded-full border align-middle" style={{ background: p.colorHex }} /> {p.color}</>}</p>
+                  <div className="mt-1.5 flex flex-wrap gap-1.5 md:hidden">
+                    <button className="rounded border border-line px-2 py-0.5 text-xs font-semibold text-brand" onClick={() => setEdit(p)}>✏️ Edit</button>
+                    <button className="rounded border border-brand bg-brand px-2 py-0.5 text-xs font-semibold text-white" onClick={() => dup(p)}>⧉ Duplicate</button>
+                  </div></div></div></td>
                 <td className="p-3 text-xs">{p.categories.map((c) => S.categories.find((x) => x.slug === c)?.name).join(', ')}</td>
                 <td className="whitespace-nowrap p-3"><b>{tk(p.price)}</b>{p.oldPrice > p.price && <div className="text-xs text-muted line-through">{tk(p.oldPrice)}</div>}</td>
                 <td className="p-3"><StockCell p={p} /></td>
@@ -149,7 +154,7 @@ export default function Products() {
                 <td className="p-3">{p.active !== false ? <Pill tone="green">Live</Pill> : <Pill tone="gray">Hidden</Pill>}</td>
                 <td className="whitespace-nowrap p-3 text-right">
                   <button className="text-brand" onClick={() => setEdit(p)}>Edit</button>
-                  <button className="ml-3 font-semibold text-brand" title="এই প্রোডাক্টের হুবহু কপি — শুধু নাম আর ছবি বদলে সেভ করুন" onClick={() => setEdit({ ...JSON.parse(JSON.stringify(p)), id: undefined, slug: '', sku: '', name: `${p.name} (কপি)`, sold: 0, duplicateOf: p.name })}>⧉ Duplicate</button>
+                  <button className="ml-3 font-semibold text-brand" title="এই প্রোডাক্টের হুবহু কপি — শুধু নাম আর ছবি বদলে সেভ করুন" onClick={() => dup(p)}>⧉ Duplicate</button>
                   <button className="ml-3 text-accent" title="নতুন কালার যোগ করুন (এই পণ্যের কপি)" onClick={() => setEdit({ ...p, id: undefined, slug: '', sku: '', color: '', name: p.name.replace(p.color || '\u0000', '').trim(), images: [], sold: 0 })}>+ Color</button>
                   <a className="ml-3 text-muted" href={storeUrl(`/product/${p.slug}`)} target="_blank" rel="noreferrer">View</a>
                 </td>
