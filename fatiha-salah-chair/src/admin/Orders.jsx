@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   S, STATUS, ST_KEYS, COURIERS, PAY, PAY_ST, CANCEL_REASONS, RETURN_REASONS, SOURCES, DAY,
-  save, useDb, setStatus, product, productById, sendToCourier, createOrder, riskOf, trackUrl, waNum, validPhone, meName, shippingFor,
+  save, useDb, setStatus, product, productById, sendToCourier, createOrder, riskOf, trackUrl, waNum, validPhone, meName, shippingFor, normPhone,
 } from '../store/db'
 import { Empty, Field, Modal, Pill, tk, fdate, startOfDay, toast } from './ui'
 import Icon, { WhatsAppIcon } from '../components/common/Icon'
@@ -44,7 +44,7 @@ function printInvoices(orders) {
       <table style="width:100%;border-collapse:collapse;margin-top:12px" border="1" cellpadding="6">
         <thead><tr style="background:#f3f4f6"><th style="text-align:left">Product</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>${rows(o)}</tbody>
       </table>
-      <table style="margin-left:auto;margin-top:8px"><tr><td>Subtotal</td><td style="text-align:right">৳${o.subtotal}</td></tr><tr><td>Delivery</td><td style="text-align:right">৳${o.shippingCharge}</td></tr>${o.discount ? `<tr><td>Discount</td><td style="text-align:right">-৳${o.discount}</td></tr>` : ''}<tr><td><b>${o.payment?.status === 'paid' ? 'Paid' : 'Collect (COD)'}</b></td><td style="text-align:right"><b>৳${o.payment?.status === 'paid' ? 0 : o.total}</b></td></tr></table>
+      <table style="margin-left:auto;margin-top:8px"><tr><td>Subtotal</td><td style="text-align:right">৳${o.subtotal}</td></tr><tr><td>Delivery</td><td style="text-align:right">৳${o.shippingCharge}</td></tr>${o.discount ? `<tr><td>Discount</td><td style="text-align:right">-৳${o.discount}</td></tr>` : ''}${o.adminDiscount ? `<tr><td>Special discount</td><td style="text-align:right">-৳${o.adminDiscount}</td></tr>` : ''}<tr><td><b>${o.payment?.status === 'paid' ? 'Paid' : 'Collect (COD)'}</b></td><td style="text-align:right"><b>৳${o.payment?.status === 'paid' ? 0 : o.total}</b></td></tr></table>
       <p style="margin-top:24px;color:#555">ধন্যবাদ! পণ্য পেয়ে ডেলিভারি ম্যানের সামনে চেক করে নিন।</p>
     </section>`).join('')
   const w = window.open('', '_blank')
@@ -55,7 +55,7 @@ function printInvoices(orders) {
 
 function exportCSV(list) {
   const head = ['Invoice', 'Date', 'Name', 'Phone', 'Address', 'Area', 'Products', 'Subtotal', 'Delivery', 'Discount', 'Total', 'Status', 'Payment', 'Payment status', 'TrxID', 'Courier', 'Tracking', 'Source', 'Overseas phone/WhatsApp', 'Country (IP)']
-  const rows = list.map((o) => [o.invoice, new Date(o.createdAt).toISOString().slice(0, 16).replace('T', ' '), o.name, o.phone, o.address, o.shippingArea, o.items.map((i) => `${i.name} x${i.quantity}`).join('; '), o.subtotal, o.shippingCharge, o.discount || 0, o.total, STATUS[o.status].t, PAY[o.payment?.method || 'cod'], PAY_ST[o.payment?.status || 'unpaid'], o.payment?.trx || '', o.courier ? COURIERS[o.courier].t : '', o.tracking, o.source, o.abroadPhone || '', o.country ? countryName(o.country) : ''])
+  const rows = list.map((o) => [o.invoice, new Date(o.createdAt).toISOString().slice(0, 16).replace('T', ' '), o.name, o.phone, o.address, o.shippingArea, o.items.map((i) => `${i.name} x${i.quantity}`).join('; '), o.subtotal, o.shippingCharge, (o.discount || 0) + (o.adminDiscount || 0), o.total, STATUS[o.status].t, PAY[o.payment?.method || 'cod'], PAY_ST[o.payment?.status || 'unpaid'], o.payment?.trx || '', o.courier ? COURIERS[o.courier].t : '', o.tracking, o.source, o.abroadPhone || '', o.country ? countryName(o.country) : ''])
   const csv = '﻿' + [head, ...rows].map((r) => r.map((v) => { v = String(v ?? ''); return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v }).join(',')).join('\n')
   const a = document.createElement('a')
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
@@ -98,6 +98,76 @@ function DetailRow({ label, children }) {
   return <div className="grid grid-cols-[110px_1fr] gap-3 px-4 py-2.5"><dt className="text-muted">{label}</dt><dd className="min-w-0">{children}</dd></div>
 }
 
+
+/* ---------- edit customer info + special discount ---------- */
+export const orderTotal = (o) => Math.max(0, (o.subtotal || 0) + (o.shippingCharge || 0) - (o.discount || 0) - (o.adminDiscount || 0))
+
+function OrderEdit({ o, focus, onClose }) {
+  const [f, setF] = useState({ name: o.name || '', phone: o.phone || '', address: o.address || '', shippingArea: o.shippingArea || 'inside_dhaka', abroadPhone: o.abroadPhone || '', note: o.note || '', shippingCharge: o.shippingCharge ?? 0, disc: o.adminDiscount || 0, discType: 'tk' })
+  const [err, setErr] = useState('')
+  const set = (k) => (e) => setF({ ...f, [k]: e.target.value })
+  const base = (o.subtotal || 0) + (+f.shippingCharge || 0) - (o.discount || 0)
+  const discTk = Math.min(base, Math.max(0, Math.round(f.discType === 'pct' ? (base * (+f.disc || 0)) / 100 : +f.disc || 0)))
+  const newTotal = Math.max(0, base - discTk)
+  const booked = o.courier && o.tracking
+  const submit = (e) => {
+    e.preventDefault()
+    if (!f.name.trim()) return setErr('নাম লিখুন')
+    if (!validPhone(f.phone)) return setErr('সঠিক ১১ ডিজিটের মোবাইল নাম্বার দিন')
+    if (f.address.trim().length < 5) return setErr('ঠিকানা লিখুন')
+    const ab = f.abroadPhone.replace(/[\s()-]/g, '')
+    if (ab && !/^\+?\d{8,15}$/.test(ab)) return setErr('বিদেশের নাম্বারটি দেশের কোডসহ সঠিকভাবে দিন')
+    const changes = []
+    const upd = (k, v, label) => { if ((o[k] ?? '') !== v) { o[k] = v; changes.push(label) } }
+    upd('name', f.name.trim(), 'নাম')
+    upd('phone', normPhone(f.phone), 'ফোন')
+    upd('address', f.address.trim(), 'ঠিকানা')
+    upd('abroadPhone', ab, 'বিদেশের নাম্বার')
+    upd('note', f.note.trim(), 'নোট')
+    if (o.shippingArea !== f.shippingArea) { o.shippingArea = f.shippingArea; changes.push('ডেলিভারি এরিয়া') }
+    if ((o.shippingCharge ?? 0) !== Math.max(0, +f.shippingCharge || 0)) { o.shippingCharge = Math.max(0, +f.shippingCharge || 0); changes.push(`ডেলিভারি চার্জ ৳${o.shippingCharge}`) }
+    if ((o.adminDiscount || 0) !== discTk) { o.adminDiscount = discTk; changes.push(discTk ? `ডিসকাউন্ট ৳${discTk}` : 'ডিসকাউন্ট বাদ') }
+    if (!changes.length) return onClose()
+    o.total = orderTotal(o)
+    o.history.push({ s: 'note', by: meName(), at: Date.now(), note: `Edited: ${changes.join(', ')} · মোট ৳${o.total}` })
+    save(); toast(`${o.invoice} আপডেট হয়েছে`); onClose()
+  }
+  return (
+    <form onSubmit={submit} className="space-y-3 text-sm" noValidate>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field label="কাস্টমারের নাম *"><input className="field" value={f.name} onChange={set('name')} autoFocus={focus !== 'discount'} /></Field>
+        <Field label="মোবাইল নাম্বার *"><input className="field" type="tel" value={f.phone} onChange={set('phone')} /></Field>
+      </div>
+      <Field label="ঠিকানা *"><textarea className="field" rows={2} value={f.address} onChange={set('address')} /></Field>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field label="ডেলিভারি এরিয়া"><select className="field" value={f.shippingArea} onChange={(e) => { const a = e.target.value; setF({ ...f, shippingArea: a, shippingCharge: shippingFor(a, o.subtotal) }) }}>{S.settings.shipping.map((x) => <option key={x.id} value={x.id}>{x.labelEn} (৳{x.charge})</option>)}</select></Field>
+        <Field label="ডেলিভারি চার্জ (৳)"><input className="field" type="number" min={0} value={f.shippingCharge} onChange={set('shippingCharge')} /></Field>
+      </div>
+      <Field label="বিদেশের ফোন / WhatsApp (ঐচ্ছিক)"><input className="field" type="tel" value={f.abroadPhone} onChange={set('abroadPhone')} placeholder="+966…" /></Field>
+      <Field label="কাস্টমারের নোট"><input className="field" value={f.note} onChange={set('note')} /></Field>
+
+      <div className={`rounded-lg border-2 p-3 ${focus === 'discount' ? 'border-accent bg-accent/5' : 'border-line bg-surface/60'}`}>
+        <p className="mb-2 font-semibold">🎁 স্পেশাল ডিসকাউন্ট</p>
+        <div className="flex gap-2">
+          <input className="field" type="number" min={0} value={f.disc} onChange={set('disc')} autoFocus={focus === 'discount'} aria-label="Discount" />
+          <select className="field w-28" value={f.discType} onChange={set('discType')}><option value="tk">৳ টাকা</option><option value="pct">% পার্সেন্ট</option></select>
+        </div>
+        <div className="mt-2 space-y-0.5 text-xs">
+          <div className="flex justify-between"><span className="text-muted">প্রোডাক্ট</span><span>{tk(o.subtotal)}</span></div>
+          <div className="flex justify-between"><span className="text-muted">ডেলিভারি</span><span>{tk(+f.shippingCharge || 0)}</span></div>
+          {o.discount > 0 && <div className="flex justify-between"><span className="text-muted">কুপন{o.coupon && ` (${o.coupon})`}</span><span>−{tk(o.discount)}</span></div>}
+          {discTk > 0 && <div className="flex justify-between text-green-700"><span>স্পেশাল ডিসকাউন্ট</span><span>−{tk(discTk)}</span></div>}
+          <div className="flex justify-between border-t border-dashed border-line pt-1 text-sm font-bold"><span>নতুন মোট</span><span className="text-brand">{tk(newTotal)}</span></div>
+        </div>
+      </div>
+
+      {booked && <p className="rounded-md bg-amber-50 p-2 text-xs text-amber-900">⚠ এই অর্ডার আগেই {COURIERS[o.courier]?.t || o.courier}-এ বুক হয়েছে। এখানে বদলালে কুরিয়ারের পার্সেলে নাম/ঠিকানা/COD বদলাবে না — কুরিয়ার প্যানেলেও ঠিক করে নিন।</p>}
+      {err && <p className="text-red-600">{err}</p>}
+      <div className="flex gap-2"><button className="btn-accent flex-1 py-2.5">সেভ করুন</button><button type="button" className="btn-outline" onClick={onClose}>বাতিল</button></div>
+    </form>
+  )
+}
+
 function OrderDrawer({ order: o, onClose }) {
   useDb()
   const [extra, setExtra] = useState(null)
@@ -106,6 +176,7 @@ function OrderDrawer({ order: o, onClose }) {
   const [riderNote, setRiderNote] = useState('')
   const [busyRef, setBusyRef] = useState(false)
   const [reason, setReason] = useState('')
+  const [editing, setEditing] = useState(null)
   const [, re] = useState(0)
   if (!o) return null
   const risk = riskOf(o)
@@ -141,6 +212,7 @@ function OrderDrawer({ order: o, onClose }) {
               <p className="text-xs text-white/75">Customer · ordered {fdate(o.createdAt)}</p>
             </div>
             {o.country && <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-xs font-semibold" title="IP অনুযায়ী">{flag(o.country)} {countryName(o.country)}</span>}
+            <button type="button" className="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-bold text-brand shadow hover:bg-gold" onClick={() => setEditing('info')}>✏️ এডিট</button>
           </div>
           <div className="space-y-3 p-4">
             <ContactRow label="Phone" phone={o.phone} wa={waNum(o.phone)} msg={confirmMsg} />
@@ -189,6 +261,8 @@ function OrderDrawer({ order: o, onClose }) {
             <div className="flex justify-between"><span className="text-muted">Subtotal</span><span>{tk(o.subtotal)}</span></div>
             <div className="flex justify-between"><span className="text-muted">Delivery</span><span>{tk(o.shippingCharge)}</span></div>
             {o.discount > 0 && <div className="flex justify-between"><span className="text-muted">Discount{o.coupon && ` (${o.coupon})`}</span><span className="text-green-700">−{tk(o.discount)}</span></div>}
+            {o.adminDiscount > 0 && <div className="flex justify-between"><span className="text-muted">Special discount</span><span className="text-green-700">−{tk(o.adminDiscount)}</span></div>}
+            <div className="flex justify-end"><button type="button" className="text-xs font-semibold text-accent hover:underline" onClick={() => setEditing('discount')}>🎁 {o.adminDiscount > 0 ? 'ডিসকাউন্ট বদলান' : 'ডিসকাউন্ট দিন'}</button></div>
             <div className="mt-1 flex items-center justify-between border-t border-dashed border-line pt-2">
               <span className="font-semibold">Total</span>
               <span className="text-xl font-bold text-brand">{tk(o.total)}</span>
@@ -277,13 +351,14 @@ function OrderDrawer({ order: o, onClose }) {
           </div>
         </div>
       </div>
+      <Modal open={!!editing} onClose={() => setEditing(null)} title={`${o.invoice} — ${editing === 'discount' ? 'ডিসকাউন্ট দিন' : 'অর্ডার এডিট'}`}>{editing && <OrderEdit o={o} focus={editing} onClose={() => setEditing(null)} />}</Modal>
     </Modal>
   )
 }
 
 /* ---------- manual order (phone / Facebook / WhatsApp) ---------- */
 export function NewOrderForm({ onDone, initial }) {
-  const [f, setF] = useState({ name: initial?.name || '', phone: initial?.phone || '', address: initial?.address || '', shippingArea: initial?.shippingArea || 'inside_dhaka', source: initial ? 'Recovered from incomplete' : 'Phone', confirmed: true })
+  const [f, setF] = useState({ name: initial?.name || '', phone: initial?.phone || '', address: initial?.address || '', shippingArea: initial?.shippingArea || 'inside_dhaka', source: initial ? 'Recovered from incomplete' : 'Phone', confirmed: true, disc: '' })
   const [items, setItems] = useState(initial?.items?.map((i) => ({ ...i })) || [])
   const [q, setQ] = useState('')
   const [err, setErr] = useState('')
@@ -294,7 +369,9 @@ export function NewOrderForm({ onDone, initial }) {
   const submit = (e) => {
     e.preventDefault()
     if (!f.name.trim() || !validPhone(f.phone) || f.address.trim().length < 5 || !items.length) return setErr('Name, valid phone, address and at least one product are required')
-    const o = createOrder({ ...f, items, source: f.source, by: meName(), status: f.confirmed ? 'confirmed' : 'pending' })
+    const out = items.find((i) => { const p = productById(i.productId) || product(i.slug); return p && typeof p.stock === 'number' && p.stock < i.quantity })
+    if (out) { const p = productById(out.productId) || product(out.slug); return setErr(`"${out.name}" স্টকে ${p.stock}টি আছে`) }
+    const o = createOrder({ ...f, items, source: f.source, by: meName(), status: f.confirmed ? 'confirmed' : 'pending', adminDiscount: +f.disc || 0 })
     toast(`${o.invoice} created`)
     onDone(o)
   }
@@ -313,7 +390,7 @@ export function NewOrderForm({ onDone, initial }) {
         <input className="field" placeholder="Type a product name…" value={q} onChange={(e) => setQ(e.target.value)} />
         {matches.length > 0 && (
           <ul className="mt-1 divide-y divide-line rounded-md border border-line">
-            {matches.map((p) => <li key={p.slug}><button type="button" className="flex w-full justify-between px-3 py-2 text-left text-sm hover:bg-surface" onClick={() => { setItems((x) => x.some((i) => i.slug === p.slug) ? x : [...x, { productId: p.id, slug: p.slug, name: p.name, price: p.price, quantity: 1 }]); setQ('') }}><span className="truncate">{p.name}</span><span>{tk(p.price)}</span></button></li>)}
+            {matches.map((p) => <li key={p.slug}><button type="button" disabled={p.stock === 0} className="flex w-full justify-between px-3 py-2 text-left text-sm hover:bg-surface disabled:opacity-50" onClick={() => { setItems((x) => x.some((i) => i.slug === p.slug) ? x : [...x, { productId: p.id, slug: p.slug, name: p.name, price: p.price, quantity: 1 }]); setQ('') }}><span className="truncate">{p.name}{typeof p.stock === 'number' && <span className={`ml-2 text-xs ${p.stock ? 'text-muted' : 'font-semibold text-red-600'}`}>{p.stock ? `স্টক ${p.stock}` : 'স্টক আউট'}</span>}</span><span>{tk(p.price)}</span></button></li>)}
           </ul>
         )}
       </Field>
@@ -327,7 +404,8 @@ export function NewOrderForm({ onDone, initial }) {
               <button type="button" className="text-red-600" onClick={() => setItems((x) => x.filter((y) => y.slug !== i.slug))} aria-label="Remove">×</button>
             </li>
           ))}
-          <li className="flex justify-between p-2 font-semibold"><span>Total incl. delivery {tk(ship)}</span><span>{tk(sub + ship)}</span></li>
+          <li className="flex items-center justify-between gap-2 p-2"><span className="text-muted">🎁 ডিসকাউন্ট (৳)</span><input type="number" min={0} className="field w-28" value={f.disc} onChange={set('disc')} placeholder="0" /></li>
+          <li className="flex justify-between p-2 font-semibold"><span>Total incl. delivery {tk(ship)}</span><span>{tk(Math.max(0, sub + ship - (+f.disc || 0)))}</span></li>
         </ul>
       )}
       <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={f.confirmed} onChange={set('confirmed')} />Customer already confirmed by phone</label>

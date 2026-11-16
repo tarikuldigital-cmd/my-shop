@@ -23,11 +23,13 @@ function ProductForm({ product, onDone }) {
     e.preventDefault()
     const slug = f.slug.trim() || slugify(f.name)
     if (!f.name.trim() || !f.price) return setErr('Name and selling price are required')
+    if (f.duplicateOf && /\(কপি\)\s*$/.test(f.name.trim())) return setErr('ডুপ্লিকেট প্রোডাক্টের নামটা বদলে দিন (শেষের "(কপি)" মুছে নতুন নাম লিখুন)')
     if (!f.categories.length) return setErr('Choose at least one category')
     if (!f.images.length && !confirm('এই পণ্যের কোনো ছবি দেওয়া হয়নি। ছবি ছাড়াই সেভ করবেন?')) return
     if (S.products.some((p) => p.slug === slug && p.id !== product?.id)) return setErr('Another product already uses this URL slug')
     const data = { ...f, slug, name: f.name.trim(), comboItems: lines(f.comboText) }
     delete data.comboText
+    delete data.duplicateOf
     if (product?.id) Object.assign(S.products.find((p) => p.id === product.id), data)
     else S.products.unshift({ ...data, id: Math.floor(Date.now() / 1000) })
     save(); toast(product?.id ? 'Product updated' : 'Product added'); onDone()
@@ -35,13 +37,14 @@ function ProductForm({ product, onDone }) {
   const pct = discountPercent(f.price, f.oldPrice)
   return (
     <form onSubmit={submit} className="space-y-5" noValidate>
+      {f.duplicateOf && <p className="rounded-md border border-brand/30 bg-brand/5 p-3 text-sm">⧉ <b>{f.duplicateOf}</b>-এর সব তথ্য কপি হয়েছে। শুধু <b>নাম</b> বদলান আর নিচে পুরনো <b>ছবি</b> মুছে নতুন ছবি দিন, তারপর সেভ করুন। দরকার হলে দাম, স্টক, কালারও বদলাতে পারবেন।</p>}
       <section className="grid gap-3 sm:grid-cols-2">
         <Field label="Product name *" className="sm:col-span-2"><input className="field" value={f.name} onChange={set('name')} /></Field>
         <Field label="URL slug" hint={`/product/${f.slug || slugify(f.name) || '…'}`}><input className="field" value={f.slug} onChange={set('slug')} placeholder="auto from name" /></Field>
         <Field label="Product code (SKU)"><input className="field" value={f.sku || ''} onChange={set('sku')} placeholder="e.g. P0194" /></Field>
         <Field label="Selling price (৳) *"><input type="number" className="field" value={f.price ?? ''} onChange={set('price', true)} /></Field>
         <Field label="Original price (৳)" hint={pct ? `Shows "${pct}% ছাড়"` : 'Leave empty for no discount badge'}><input type="number" className="field" value={f.oldPrice ?? ''} onChange={set('oldPrice', true)} /></Field>
-        <Field label="Stock" hint="Empty = not tracked (always available). 0 = shows Out of stock."><input type="number" className="field" value={f.stock ?? ''} onChange={set('stock', true)} /></Field>
+        <Field label="স্টক (কয় পিস আছে)" hint="যত পিস আছে লিখুন — প্রতি অর্ডারে নিজে থেকে কমবে, ০ হলে ওয়েবসাইটে 'স্টকে নেই' দেখাবে ও অর্ডার বন্ধ হবে। অর্ডার ক্যানসেল হলে আবার ফিরে আসবে। খালি রাখলে স্টক গোনা হবে না।"><input type="number" className="field" value={f.stock ?? ''} onChange={set('stock', true)} /></Field>
         <div className="flex items-end gap-4 pb-2 text-sm">
           <label className="flex items-center gap-2"><input type="checkbox" checked={f.active} onChange={set('active')} />Visible on website</label>
           <label className="flex items-center gap-2"><input type="checkbox" checked={f.featured} onChange={set('featured')} />Featured</label>
@@ -92,6 +95,24 @@ function ProductForm({ product, onDone }) {
   )
 }
 
+
+/* Stock in the product list — click to change quickly */
+function StockCell({ p }) {
+  const [v, setV] = useState(null)
+  const tracked = typeof p.stock === 'number'
+  const commit = () => {
+    const n = v === '' ? null : Math.max(0, Math.round(+v))
+    if (v !== null && n !== (tracked ? p.stock : null)) { p.stock = n; save(); toast(n === null ? `${p.name}: স্টক গোনা বন্ধ` : `${p.name}: স্টক ${n}`) }
+    setV(null)
+  }
+  if (v !== null) return <input type="number" min={0} autoFocus className="field w-20 py-1" value={v} placeholder="—" onChange={(e) => setV(e.target.value)} onBlur={commit} onKeyDown={(e) => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') setV(null) }} />
+  return (
+    <button type="button" title="ক্লিক করে স্টক বদলান" onClick={() => setV(tracked ? String(p.stock) : '')} className="rounded px-1 hover:bg-surface">
+      {!tracked ? <span className="text-xs text-muted">— সেট করুন</span> : p.stock === 0 ? <Pill tone="red">স্টক আউট</Pill> : p.stock <= 3 ? <Pill tone="amber">{p.stock} পিস</Pill> : <span className="font-semibold">{p.stock} পিস</span>}
+    </button>
+  )
+}
+
 export default function Products() {
   useDb()
   const [q, setQ] = useState('')
@@ -123,11 +144,12 @@ export default function Products() {
                 <td className="p-3"><div className="flex items-center gap-3"><Img src={p.images[0]} alt="" className="h-14 w-11 shrink-0 rounded border border-line object-cover text-[8px]" /><div className="min-w-0"><p className="line-clamp-2 font-medium">{p.name}</p><p className="text-xs text-muted">{p.sku || `#${p.id}`}{p.color && <> · <span className="inline-block h-2.5 w-2.5 rounded-full border align-middle" style={{ background: p.colorHex }} /> {p.color}</>}</p></div></div></td>
                 <td className="p-3 text-xs">{p.categories.map((c) => S.categories.find((x) => x.slug === c)?.name).join(', ')}</td>
                 <td className="whitespace-nowrap p-3"><b>{tk(p.price)}</b>{p.oldPrice > p.price && <div className="text-xs text-muted line-through">{tk(p.oldPrice)}</div>}</td>
-                <td className="p-3">{p.stock === null || p.stock === undefined ? <span className="text-muted">—</span> : p.stock === 0 ? <Pill tone="red">Out</Pill> : p.stock <= 3 ? <Pill tone="amber">{p.stock}</Pill> : p.stock}</td>
+                <td className="p-3"><StockCell p={p} /></td>
                 <td className="p-3 text-xs text-amber-700">{missing(p).join(', ') || '✓'}</td>
                 <td className="p-3">{p.active !== false ? <Pill tone="green">Live</Pill> : <Pill tone="gray">Hidden</Pill>}</td>
                 <td className="whitespace-nowrap p-3 text-right">
                   <button className="text-brand" onClick={() => setEdit(p)}>Edit</button>
+                  <button className="ml-3 font-semibold text-brand" title="এই প্রোডাক্টের হুবহু কপি — শুধু নাম আর ছবি বদলে সেভ করুন" onClick={() => setEdit({ ...JSON.parse(JSON.stringify(p)), id: undefined, slug: '', sku: '', name: `${p.name} (কপি)`, sold: 0, duplicateOf: p.name })}>⧉ Duplicate</button>
                   <button className="ml-3 text-accent" title="নতুন কালার যোগ করুন (এই পণ্যের কপি)" onClick={() => setEdit({ ...p, id: undefined, slug: '', sku: '', color: '', name: p.name.replace(p.color || '\u0000', '').trim(), images: [], sold: 0 })}>+ Color</button>
                   <a className="ml-3 text-muted" href={storeUrl(`/product/${p.slug}`)} target="_blank" rel="noreferrer">View</a>
                 </td>
@@ -137,7 +159,7 @@ export default function Products() {
         </table>
       </div>
       <div className="flex justify-end gap-2 text-sm"><span className="self-center text-muted">Page {Math.min(page, pages)}/{pages}</span><button className="btn-outline" disabled={page <= 1} onClick={() => setPage(page - 1)}>‹</button><button className="btn-outline" disabled={page >= pages} onClick={() => setPage(page + 1)}>›</button></div>
-      <Modal open={!!edit} onClose={() => setEdit(null)} title={edit?.id ? 'Edit product' : 'Add a new product / color'} wide>{edit && <ProductForm product={edit.id ? edit : (Object.keys(edit).length ? edit : null)} onDone={() => setEdit(null)} />}</Modal>
+      <Modal open={!!edit} onClose={() => setEdit(null)} title={edit?.id ? 'Edit product' : edit?.duplicateOf ? `ডুপ্লিকেট: ${edit.duplicateOf} — নাম আর ছবি বদলে সেভ করুন` : 'Add a new product / color'} wide>{edit && <ProductForm product={edit.id ? edit : (Object.keys(edit).length ? edit : null)} onDone={() => setEdit(null)} />}</Modal>
     </div>
   )
 }

@@ -243,7 +243,7 @@ function adjustStock(items, sign) {
   }
 }
 
-export function createOrder({ name, phone, address, shippingArea, items, couponCode, note, abroadPhone, source = 'Website', by = 'Customer', status = 'pending', payment, customerPhone }) {
+export function createOrder({ name, phone, address, shippingArea, items, couponCode, note, abroadPhone, source = 'Website', by = 'Customer', status = 'pending', payment, customerPhone, adminDiscount = 0 }) {
   const subtotal = items.reduce((s, x) => s + x.price * x.quantity, 0)
   const shippingCharge = shippingFor(shippingArea, subtotal)
   const cc = couponCalc(couponCode, subtotal)
@@ -257,6 +257,8 @@ export function createOrder({ name, phone, address, shippingArea, items, couponC
     status: 'pending', courier: '', tracking: '', source, note: note || '', abroadPhone: String(abroadPhone || '').slice(0, 20), customerPhone: customerPhone || null,
     createdAt: now, history: [{ s: 'pending', by, at: now, note: source !== 'Website' ? `${source} order` : '' }],
   }
+  const extra = Math.min(Math.max(0, Math.round(+adminDiscount || 0)), o.total)
+  if (extra) { o.adminDiscount = extra; o.total -= extra }
   if (cc.coupon) cc.coupon.used = (cc.coupon.used || 0) + 1
   adjustStock(items, -1)
   if (status !== 'pending') { o.status = status; o.history.push({ s: status, by, at: now + 1, note: '' }) }
