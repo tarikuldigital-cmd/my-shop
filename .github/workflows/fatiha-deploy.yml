@@ -4,7 +4,7 @@
 #   FATIHA_FTP_SERVER    e.g. ftp.fatihaayatsalahchair.com   (hPanel → Files → FTP Accounts → "FTP IP / hostname")
 #   FATIHA_FTP_USERNAME  e.g. u552987600.fatihaayatsalahchair.com
 #   FATIHA_FTP_PASSWORD  the FTP password
-#   FATIHA_FTP_DIR       (optional) folder of the site as the FTP user sees it, default "public_html/"
+#   FATIHA_FTP_DIR       (optional) folder of the site as the FTP user sees it, default "./" (this FTP account already opens inside public_html)
 # The database settings (api/config.php), customer uploads and the installer are never touched.
 name: Deploy Fatiha site to Hostinger
 on:
@@ -32,7 +32,7 @@ jobs:
           password: ${{ secrets.FATIHA_FTP_PASSWORD }}
           protocol: ftp
           local-dir: ./fatiha-salah-chair/deploy/
-          server-dir: ${{ secrets.FATIHA_FTP_DIR || 'public_html/' }}
+          server-dir: ${{ secrets.FATIHA_FTP_DIR || './' }}
           state-name: .ftp-deploy-sync-state.json
           exclude: |
             **/.git*
