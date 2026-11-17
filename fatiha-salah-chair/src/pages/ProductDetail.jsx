@@ -206,7 +206,17 @@ export default function ProductDetail() {
 
           <ColorOptions product={product} />
 
-          {product.shortDescription && <p className="mt-3 rounded-md bg-surface p-3 text-sm leading-relaxed text-ink/80">{product.shortDescription}</p>}
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <QtyStepper value={qty} onChange={setQty} />
+            <button onClick={addToCart} disabled={!available} className="btn-outline h-10">{added ? <><Icon name="check" className="h-4 w-4" />কার্টে যোগ হয়েছে</> : <><Icon name="cart" className="h-4 w-4" />কার্টে যোগ করুন</>}</button>
+          </div>
+          <button onClick={orderNow} disabled={!available} className="btn-accent mt-3 w-full py-3 text-base">{available ? 'অর্ডার করুন' : 'স্টকে নেই'}</button>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <a href={`tel:${settings.phone}`} className="btn-brand py-2.5"><Icon name="phone" className="h-4 w-4" />কল করুন {settings.phone}</a>
+            <a href={`https://wa.me/${settings.phoneIntl.replace('+', '')}?text=${encodeURIComponent(`${product.name} পণ্যটি অর্ডার করতে চাই। ${shareUrl}`)}`} target="_blank" rel="noreferrer" className="btn bg-[#25d366] py-2.5 text-white hover:brightness-95"><WhatsAppIcon className="h-4 w-4" />WhatsApp-এ অর্ডার</a>
+          </div>
+
+          {product.shortDescription && <p className="mt-5 rounded-md bg-surface p-3 text-sm leading-relaxed text-ink/80">{product.shortDescription}</p>}
 
           <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
             <dt className="text-muted">Product Code</dt><dd>{product.sku || 'N/A'}</dd>
@@ -224,15 +234,6 @@ export default function ProductDetail() {
             </div>
           )}
 
-          <div className="mt-5 flex flex-wrap items-center gap-3">
-            <QtyStepper value={qty} onChange={setQty} />
-            <button onClick={addToCart} disabled={!available} className="btn-outline h-10">{added ? <><Icon name="check" className="h-4 w-4" />কার্টে যোগ হয়েছে</> : <><Icon name="cart" className="h-4 w-4" />কার্টে যোগ করুন</>}</button>
-          </div>
-          <button onClick={orderNow} disabled={!available} className="btn-accent mt-3 w-full py-3 text-base">{available ? 'অর্ডার করুন' : 'স্টকে নেই'}</button>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <a href={`tel:${settings.phone}`} className="btn-brand py-2.5"><Icon name="phone" className="h-4 w-4" />কল করুন {settings.phone}</a>
-            <a href={`https://wa.me/${settings.phoneIntl.replace('+', '')}?text=${encodeURIComponent(`${product.name} পণ্যটি অর্ডার করতে চাই। ${shareUrl}`)}`} target="_blank" rel="noreferrer" className="btn bg-[#25d366] py-2.5 text-white hover:brightness-95"><WhatsAppIcon className="h-4 w-4" />WhatsApp-এ অর্ডার</a>
-          </div>
           <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-muted">
             <span>শেয়ার করুন:</span>
             <a className="hover:text-brand" href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noreferrer">Facebook</a>
