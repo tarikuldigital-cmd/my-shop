@@ -3,54 +3,54 @@
 export const CMP_STEPS = ['submitted', 'received', 'reviewing', 'processing', 'resolved']
 
 export const CMP_STATUS = {
-  submitted: { bn: 'জমা হয়েছে', short: 'নতুন', en: 'New', tone: 'bg-sky-100 text-sky-800', dot: 'bg-sky-500', desc: 'আপনার অভিযোগ আমাদের কাছে পৌঁছেছে' },
-  received: { bn: 'অভিযোগটি গ্রহণ করা হয়েছে', short: 'গৃহীত', en: 'Received', tone: 'bg-indigo-100 text-indigo-800', dot: 'bg-indigo-500', desc: 'আমাদের টিম অভিযোগটি গ্রহণ করেছে' },
-  reviewing: { bn: 'পর্যালোচনা চলছে', short: 'পর্যালোচনা', en: 'Reviewing', tone: 'bg-amber-100 text-amber-800', dot: 'bg-amber-500', desc: 'ছবি/ভিডিও ও অর্ডার মিলিয়ে দেখা হচ্ছে' },
-  processing: { bn: 'সমাধান প্রক্রিয়াধীন', short: 'প্রক্রিয়াধীন', en: 'Processing', tone: 'bg-violet-100 text-violet-800', dot: 'bg-violet-500', desc: 'রিপ্লেসমেন্ট / রিফান্ড / রিটার্নের কাজ চলছে' },
-  resolved: { bn: 'সমাধান হয়েছে', short: 'সমাধান', en: 'Resolved', tone: 'bg-green-100 text-green-800', dot: 'bg-green-600', desc: 'অভিযোগের সমাধান সম্পন্ন হয়েছে' },
-  rejected: { bn: 'অভিযোগটি গ্রহণযোগ্য হয়নি', short: 'বাতিল', en: 'Rejected', tone: 'bg-red-100 text-red-800', dot: 'bg-red-500', desc: 'বিস্তারিত কারণ নিচে দেওয়া হয়েছে' },
+  submitted: { bn: 'Submitted', short: 'New', en: 'New', tone: 'bg-sky-100 text-sky-800', dot: 'bg-sky-500', desc: 'We have received your complaint' },
+  received: { bn: 'Complaint accepted', short: 'Accepted', en: 'Received', tone: 'bg-indigo-100 text-indigo-800', dot: 'bg-indigo-500', desc: 'Our team has accepted your complaint' },
+  reviewing: { bn: 'Under review', short: 'Reviewing', en: 'Reviewing', tone: 'bg-amber-100 text-amber-800', dot: 'bg-amber-500', desc: 'We are checking your photos/videos against the order' },
+  processing: { bn: 'Resolution in progress', short: 'In progress', en: 'Processing', tone: 'bg-violet-100 text-violet-800', dot: 'bg-violet-500', desc: 'Replacement / refund / return is being processed' },
+  resolved: { bn: 'Resolved', short: 'Resolved', en: 'Resolved', tone: 'bg-green-100 text-green-800', dot: 'bg-green-600', desc: 'Your complaint has been resolved' },
+  rejected: { bn: 'Complaint declined', short: 'Declined', en: 'Rejected', tone: 'bg-red-100 text-red-800', dot: 'bg-red-500', desc: 'See the reason below' },
 }
 export const CMP_STATUS_KEYS = Object.keys(CMP_STATUS)
 export const CMP_OPEN = ['submitted', 'received', 'reviewing', 'processing']
 
 export const CMP_TYPES = {
-  damaged: { bn: 'প্রোডাক্ট ভাঙা / ক্ষতিগ্রস্ত', hint: 'ডেলিভারিতে ভাঙা, ফাটা বা দাগ', seg: 'replace' },
-  wrong: { bn: 'ভুল প্রোডাক্ট / কালার', hint: 'অর্ডারের সাথে মিলছে না', seg: 'replace' },
-  missing: { bn: 'পার্টস বা আইটেম কম', hint: 'স্ক্রু, কুশন, রেহাল বা অন্য অংশ নেই', seg: 'replace' },
-  quality: { bn: 'মান / ত্রুটির সমস্যা', hint: 'ঠিকমতো কাজ করছে না, নড়বড়ে', seg: 'replace' },
-  return: { bn: 'রিটার্ন করতে চাই', hint: 'প্রোডাক্ট ফেরত দিতে চান', seg: 'return' },
-  refund: { bn: 'রিফান্ড চাই', hint: 'টাকা ফেরত পেতে চান', seg: 'refund' },
-  delivery: { bn: 'ডেলিভারি সমস্যা', hint: 'দেরি, খারাপ ব্যবহার, পার্সেল পাইনি', seg: 'delivery' },
-  other: { bn: 'অন্যান্য', hint: 'অন্য যেকোনো বিষয়', seg: 'general' },
+  damaged: { bn: 'Damaged product', hint: 'Broken, cracked or marked on arrival', seg: 'replace' },
+  wrong: { bn: 'Wrong product / colour', hint: 'Does not match the order', seg: 'replace' },
+  missing: { bn: 'Missing parts or items', hint: 'Screws, cushion, rehal or other part missing', seg: 'replace' },
+  quality: { bn: 'Quality / defect', hint: 'Not working properly, wobbly', seg: 'replace' },
+  return: { bn: 'Return', hint: 'You want to send the product back', seg: 'return' },
+  refund: { bn: 'Refund', hint: 'You want your money back', seg: 'refund' },
+  delivery: { bn: 'Delivery issue', hint: 'Late, rude courier or parcel not received', seg: 'delivery' },
+  other: { bn: 'Other', hint: 'Anything else', seg: 'general' },
 }
 
-export const CMP_WANTS = { replace: 'রিপ্লেসমেন্ট', refund: 'টাকা ফেরত', repair: 'মেরামত / পার্টস', return: 'রিটার্ন', other: 'অন্য কিছু' }
+export const CMP_WANTS = { replace: 'Replacement', refund: 'Refund', repair: 'Repair / parts', return: 'Return', other: 'Something else' }
 
 export const CMP_SEGMENTS = {
-  refund: { bn: 'রিফান্ড', tone: 'bg-rose-100 text-rose-800' },
-  return: { bn: 'রিটার্ন', tone: 'bg-orange-100 text-orange-800' },
-  replace: { bn: 'রিপ্লেসমেন্ট / ক্ষতিপূরণ', tone: 'bg-teal-100 text-teal-800' },
-  delivery: { bn: 'ডেলিভারি', tone: 'bg-blue-100 text-blue-800' },
-  general: { bn: 'সাধারণ', tone: 'bg-gray-100 text-gray-700' },
+  refund: { bn: 'Refund', tone: 'bg-rose-100 text-rose-800' },
+  return: { bn: 'Return', tone: 'bg-orange-100 text-orange-800' },
+  replace: { bn: 'Replacement', tone: 'bg-teal-100 text-teal-800' },
+  delivery: { bn: 'Delivery', tone: 'bg-blue-100 text-blue-800' },
+  general: { bn: 'General', tone: 'bg-gray-100 text-gray-700' },
 }
 
 export const CMP_PRIORITY = {
-  low: { bn: 'কম', tone: 'bg-gray-100 text-gray-600' },
-  normal: { bn: 'সাধারণ', tone: 'bg-slate-100 text-slate-700' },
-  high: { bn: 'জরুরি', tone: 'bg-amber-100 text-amber-800' },
-  urgent: { bn: 'অতি জরুরি', tone: 'bg-red-600 text-white' },
+  low: { bn: 'Low', tone: 'bg-gray-100 text-gray-600' },
+  normal: { bn: 'General', tone: 'bg-slate-100 text-slate-700' },
+  high: { bn: 'High', tone: 'bg-amber-100 text-amber-800' },
+  urgent: { bn: 'Urgent', tone: 'bg-red-600 text-white' },
 }
 
 /** which SMS events exist (customer unless noted) */
 export const CMP_SMS_EVENTS = {
-  submitted: 'অভিযোগ জমা হলে (আইডিসহ)',
-  received: 'অভিযোগ গ্রহণ করা হলে',
-  reviewing: 'পর্যালোচনা শুরু হলে',
-  processing: 'সমাধান প্রক্রিয়াধীন হলে',
-  resolved: 'সমাধান হলে',
-  rejected: 'অভিযোগ বাতিল হলে',
-  message: 'কাস্টমারকে মেসেজ পাঠালে',
-  assigned: 'টিম মেম্বারকে দায়িত্ব দিলে (মেম্বারের ফোনে)',
+  submitted: 'Complaint submitted (with ID)',
+  received: 'Complaint accepted',
+  reviewing: 'Review started',
+  processing: 'Resolution in progress',
+  resolved: 'Resolved',
+  rejected: 'Declined',
+  message: 'Message to customer',
+  assigned: 'Assigned to a team member (sent to the member)',
 }
 
 export const cmpDefaults = () => ({

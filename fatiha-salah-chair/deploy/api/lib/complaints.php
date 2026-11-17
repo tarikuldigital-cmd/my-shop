@@ -13,7 +13,7 @@ declare(strict_types=1);
 const CMP_STATUSES = ['submitted', 'received', 'reviewing', 'processing', 'resolved', 'rejected'];
 const CMP_STATUS_BN = ['submitted' => 'জমা হয়েছে', 'received' => 'অভিযোগটি গ্রহণ করা হয়েছে', 'reviewing' => 'পর্যালোচনা চলছে', 'processing' => 'সমাধান প্রক্রিয়াধীন', 'resolved' => 'সমাধান হয়েছে', 'rejected' => 'অভিযোগটি গ্রহণযোগ্য হয়নি'];
 const CMP_TYPES = ['damaged' => 'প্রোডাক্ট ভাঙা/ক্ষতিগ্রস্ত', 'wrong' => 'ভুল প্রোডাক্ট/কালার', 'missing' => 'পার্টস বা আইটেম কম', 'quality' => 'মান/ত্রুটির সমস্যা', 'return' => 'রিটার্ন', 'refund' => 'রিফান্ড', 'delivery' => 'ডেলিভারি সমস্যা', 'other' => 'অন্যান্য'];
-const CMP_SEGMENTS = ['refund' => 'রিফান্ড', 'return' => 'রিটার্ন', 'replace' => 'রিপ্লেসমেন্ট/ক্ষতিপূরণ', 'delivery' => 'ডেলিভারি', 'general' => 'সাধারণ'];
+const CMP_SEGMENTS = ['refund' => 'Refund', 'return' => 'Return', 'replace' => 'Replacement', 'delivery' => 'Delivery', 'general' => 'General'];
 const CMP_TYPE_SEGMENT = ['damaged' => 'replace', 'wrong' => 'replace', 'missing' => 'replace', 'quality' => 'replace', 'return' => 'return', 'refund' => 'refund', 'delivery' => 'delivery', 'other' => 'general'];
 const CMP_WANTS = ['replace' => 'রিপ্লেসমেন্ট', 'refund' => 'টাকা ফেরত', 'repair' => 'মেরামত/পার্টস', 'return' => 'রিটার্ন', 'other' => 'অন্য কিছু'];
 const CMP_MAX_FILES = 8;
@@ -111,11 +111,11 @@ function cmp_sms(array $c, string $event, string $to = '', bool $force = false):
 
 /* ---------------- media upload (public, before the complaint is created) ---------------- */
 function h_cmp_upload(): void {
-  limit_or_fail('cmpup:' . client_ip(), 40, 3600, 'অনেক ফাইল আপলোড হয়েছে — কিছুক্ষণ পরে আবার চেষ্টা করুন');
+  limit_or_fail('cmpup:' . client_ip(), 40, 3600, 'Too many uploads — please try again later');
   $f = $_FILES['file'] ?? null;
   if (!$f || ($f['error'] ?? 1) !== UPLOAD_ERR_OK) {
     $code = (int)($f['error'] ?? 4);
-    fail(422, in_array($code, [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], true) ? 'ফাইলটি অনেক বড় (সর্বোচ্চ ' . ini_get('upload_max_filesize') . ')' : 'ফাইল আপলোড হয়নি — আবার চেষ্টা করুন');
+    fail(422, in_array($code, [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], true) ? 'The file is too large (max ' . ini_get('upload_max_filesize') . ')' : 'Upload failed — please try again');
   }
   $mime = '';
   if (class_exists('finfo')) $mime = (string)(new finfo(FILEINFO_MIME_TYPE))->file($f['tmp_name']);
@@ -124,13 +124,13 @@ function h_cmp_upload(): void {
   if ($mime === '' && @getimagesize($f['tmp_name'])) $mime = (string)getimagesize($f['tmp_name'])['mime'];
   if (isset($img[$mime])) { $type = 'image'; $ext = $img[$mime]; $max = CMP_IMG_MB; }
   elseif (isset($vid[$mime])) { $type = 'video'; $ext = $vid[$mime]; $max = cmp_video_mb(); }
-  else fail(422, 'শুধু ছবি (JPG, PNG, WebP, HEIC) বা ভিডিও (MP4, MOV, WebM) দেওয়া যাবে');
-  if ($f['size'] > $max * 1024 * 1024) fail(422, ($type === 'video' ? 'ভিডিও' : 'ছবি') . " সর্বোচ্চ {$max}MB হতে পারবে");
+  else fail(422, 'Only photos (JPG, PNG, WebP, HEIC) or videos (MP4, MOV, WebM) are allowed');
+  if ($f['size'] > $max * 1024 * 1024) fail(422, ($type === 'video' ? 'Videos' : 'Photos') . " can be up to {$max}MB");
   $dir = cmp_dir();
-  if (!is_dir($dir) && !@mkdir($dir, 0755, true)) fail(500, 'ফাইল রাখার ফোল্ডার তৈরি করা যায়নি');
+  if (!is_dir($dir) && !@mkdir($dir, 0755, true)) fail(500, 'Could not create the upload folder');
   if (!is_file("$dir/.htaccess")) @file_put_contents("$dir/.htaccess", "Options -Indexes -ExecCGI\n<FilesMatch \"\\.(php|phtml|php\\d|phar|pl|py|cgi|sh|html?|svg|js)$\">\n  Require all denied\n</FilesMatch>\nRemoveHandler .php .phtml\n");
   $name = date('ym') . '-' . bin2hex(random_bytes(12)) . ".$ext";
-  if (!move_uploaded_file($f['tmp_name'], "$dir/$name")) fail(500, 'ফাইল সেভ করা যায়নি');
+  if (!move_uploaded_file($f['tmp_name'], "$dir/$name")) fail(500, 'Could not save the file');
   @chmod("$dir/$name", 0644);
   kv_set('cu:' . $name, ['at' => time(), 'type' => $type, 'size' => (int)$f['size']]); // pending until a complaint claims it
   if (random_int(1, 25) === 1) cmp_cleanup_orphans();
@@ -165,22 +165,22 @@ function cmp_find_for_customer(string $id, array $b): array {
   $c = doc_get('complaints', strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $id)));
   $phone = norm_phone((string)($b['phone'] ?? ''));
   $sig = (string)($b['sig'] ?? '');
-  if (!$c || !(($phone !== '' && $phone === $c['phone']) || ($sig !== '' && hash_equals(cmp_sig($c), $sig)))) fail(404, 'এই আইডি ও মোবাইল নাম্বার দিয়ে কোনো অভিযোগ পাওয়া যায়নি');
+  if (!$c || !(($phone !== '' && $phone === $c['phone']) || ($sig !== '' && hash_equals(cmp_sig($c), $sig)))) fail(404, 'No complaint found for this mobile number');
   return $c;
 }
 
 function h_cmp_create(): void {
-  limit_or_fail('cmpnew:' . client_ip(), 8, 3600, 'অনেকগুলো অভিযোগ জমা হয়েছে — কিছুক্ষণ পরে আবার চেষ্টা করুন');
+  limit_or_fail('cmpnew:' . client_ip(), 8, 3600, 'Too many complaints submitted — please try again later');
   $b = body();
   $name = s((string)($b['name'] ?? ''), 120);
   $phone = norm_phone((string)($b['phone'] ?? ''));
   $type = (string)($b['type'] ?? '');
   $desc = s((string)($b['description'] ?? ''), 3000);
   $want = (string)($b['want'] ?? '');
-  if ($name === '') fail(422, 'আপনার নাম লিখুন');
-  if (!valid_phone($phone)) fail(422, 'সঠিক ১১ ডিজিটের মোবাইল নাম্বার দিন');
-  if (!isset(CMP_TYPES[$type])) fail(422, 'সমস্যার ধরন বেছে নিন');
-  if (mb_strlen($desc) < 10) fail(422, 'সমস্যাটি একটু বিস্তারিত লিখুন (কমপক্ষে ১০ অক্ষর)');
+  if ($name === '') fail(422, 'Enter your name');
+  if (!valid_phone($phone)) fail(422, 'Enter a valid 11-digit mobile number');
+  if (!isset(CMP_TYPES[$type])) fail(422, 'Select the type of problem');
+  if (mb_strlen($desc) < 10) fail(422, 'Please describe the problem (at least 10 characters)');
   if (!isset(CMP_WANTS[$want])) $want = 'other';
   // a linked order must belong to this phone number
   $invoice = strtoupper(s((string)($b['invoice'] ?? ''), 20));
@@ -210,7 +210,7 @@ function h_cmp_create(): void {
     'orderTotal' => (int)($order['total'] ?? 0), 'orderDate' => (int)($order['createdAt'] ?? 0), 'orderStatus' => (string)($order['status'] ?? ''),
     'items' => $items, 'description' => $desc, 'files' => $files, 'assignee' => null, 'unread' => true, 'rating' => null,
     'country' => function_exists('visitor_country') ? visitor_country(s((string)($b['tz'] ?? ''), 60)) : '',
-    'history' => [['at' => $now, 'type' => 'status', 's' => 'submitted', 'by' => 'customer', 'public' => true, 'text' => 'অভিযোগ জমা দেওয়া হয়েছে' . ($files ? ' · ' . count($files) . 'টি ফাইল সংযুক্ত' : '')]],
+    'history' => [['at' => $now, 'type' => 'status', 's' => 'submitted', 'by' => 'customer', 'public' => true, 'text' => 'Complaint submitted' . ($files ? ' · ' . count($files) . ' file(s) attached' : '')]],
   ];
   // automatic routing: segment → team member (Admin → Complain Box → Settings)
   $cs = cmp_settings();
@@ -218,7 +218,7 @@ function h_cmp_create(): void {
   $who = $aid ? q('SELECT * FROM admins WHERE id = ? AND active = 1', [$aid])->fetch() : null;
   if ($who) {
     $c['assignee'] = ['id' => (int)$who['id'], 'name' => $who['name'], 'phone' => (string)($who['phone'] ?? '')];
-    $c['history'][] = ['at' => $now + 1, 'type' => 'assign', 'by' => 'system', 'public' => false, 'text' => 'স্বয়ংক্রিয়ভাবে ' . $who['name'] . '-কে দেওয়া হয়েছে (' . (CMP_SEGMENTS[$segment] ?? $segment) . ')'];
+    $c['history'][] = ['at' => $now + 1, 'type' => 'assign', 'by' => 'system', 'public' => false, 'text' => 'Auto-assigned to ' . $who['name'] . ' (' . (CMP_SEGMENTS[$segment] ?? $segment) . ')'];
   }
   doc_put('complaints', $c);
   cmp_sms($c, 'submitted');
@@ -237,11 +237,11 @@ function h_cmp_track(): void {
 function h_cmp_by_phone(): void {
   limit_or_fail('cmpph:' . client_ip(), 30, 3600);
   $phone = norm_phone((string)(body()['phone'] ?? ''));
-  if (!valid_phone($phone)) fail(422, 'সঠিক ১১ ডিজিটের মোবাইল নাম্বার দিন');
+  if (!valid_phone($phone)) fail(422, 'Enter a valid 11-digit mobile number');
   $rows = q("SELECT data FROM docs WHERE coll = 'complaints' AND k = ? ORDER BY updated DESC LIMIT 20", [$phone])->fetchAll();
   $list = array_map(fn($r) => cmp_public(jdec($r['data'])), $rows);
   usort($list, fn($a, $b) => $b['createdAt'] <=> $a['createdAt']);
-  if (!$list) fail(404, 'এই নাম্বার দিয়ে কোনো অভিযোগ পাওয়া যায়নি');
+  if (!$list) fail(404, 'No complaints found for this number');
   out(['complaints' => $list]);
 }
 
@@ -249,11 +249,11 @@ function h_cmp_reply(): void {
   limit_or_fail('cmprep:' . client_ip(), 20, 3600);
   $b = body();
   $c = cmp_find_for_customer((string)($b['id'] ?? ''), $b);
-  if (in_array($c['status'], ['resolved', 'rejected'], true)) fail(422, 'এই অভিযোগটি বন্ধ হয়ে গেছে — নতুন সমস্যা হলে নতুন অভিযোগ দিন');
+  if (in_array($c['status'], ['resolved', 'rejected'], true)) fail(422, 'This complaint is closed — please submit a new one for a new problem');
   $text = s((string)($b['text'] ?? ''), 2000);
   $files = cmp_claim_files((array)($b['files'] ?? []), 'customer');
-  if ($text === '' && !$files) fail(422, 'কিছু লিখুন বা ফাইল দিন');
-  if (count($c['files'] ?? []) + count($files) > 20) fail(422, 'এই অভিযোগে আর ফাইল যোগ করা যাবে না');
+  if ($text === '' && !$files) fail(422, 'Write something or add a file');
+  if (count($c['files'] ?? []) + count($files) > 20) fail(422, 'No more files can be added to this complaint');
   $c['files'] = array_merge($c['files'] ?? [], $files);
   $c['history'][] = ['at' => now_ms(), 'type' => 'reply', 'by' => 'customer', 'public' => true, 'text' => $text, 'files' => array_column($files, 'name')];
   $c['updated'] = now_ms(); $c['unread'] = true;
@@ -265,7 +265,7 @@ function h_cmp_rate(): void {
   limit_or_fail('cmprate:' . client_ip(), 10, 3600);
   $b = body();
   $c = cmp_find_for_customer((string)($b['id'] ?? ''), $b);
-  if ($c['status'] !== 'resolved') fail(422, 'সমাধান হওয়ার পর মতামত দিতে পারবেন');
+  if ($c['status'] !== 'resolved') fail(422, 'You can rate once the complaint is resolved');
   $stars = max(1, min(5, (int)($b['stars'] ?? 0)));
   $c['rating'] = ['stars' => $stars, 'text' => s((string)($b['text'] ?? ''), 1000), 'at' => now_ms()];
   $c['history'][] = ['at' => now_ms(), 'type' => 'rating', 'by' => 'customer', 'public' => true, 'text' => str_repeat('★', $stars) . ($c['rating']['text'] ? ' — ' . $c['rating']['text'] : '')];
@@ -292,7 +292,7 @@ function h_cmp_action(): void {
   $sent = [];
   $c = tx(function () use ($id, $b, $me, &$sent) {
     $c = doc_get('complaints', $id, true);
-    if (!$c) fail(404, 'অভিযোগ পাওয়া যায়নি');
+    if (!$c) fail(404, 'Complaint not found');
     $now = now_ms(); $by = $me['name']; $act = (string)($b['action'] ?? '');
     $msg = s((string)($b['message'] ?? ''), 1000);
     $wantSms = !empty($b['sms']);
@@ -300,19 +300,19 @@ function h_cmp_action(): void {
       case 'status':
         $s = (string)($b['status'] ?? '');
         if (!in_array($s, CMP_STATUSES, true)) fail(422, 'Unknown status');
-        if ($s === $c['status'] && $msg === '') fail(422, 'স্ট্যাটাস আগের মতোই আছে');
+        if ($s === $c['status'] && $msg === '') fail(422, 'Status is unchanged');
         $c['status'] = $s; $c['steps'][$s] = $now;
         if ($s === 'resolved' && isset($b['refundAmount']) && is_numeric($b['refundAmount'])) $c['refundAmount'] = max(0, (int)$b['refundAmount']);
         $c['history'][] = ['at' => $now, 'type' => 'status', 's' => $s, 'by' => $by, 'public' => true, 'text' => $msg];
         if ($wantSms) $sent[] = ['event' => $s, 'to' => ''];
         break;
       case 'message':
-        if ($msg === '') fail(422, 'মেসেজ লিখুন');
+        if ($msg === '') fail(422, 'Write a message');
         $c['history'][] = ['at' => $now, 'type' => 'message', 'by' => $by, 'public' => true, 'text' => $msg];
         if ($wantSms) $sent[] = ['event' => 'message', 'to' => '', 'extra' => ['{message}' => $msg]];
         break;
       case 'note':
-        if ($msg === '') fail(422, 'নোট লিখুন');
+        if ($msg === '') fail(422, 'Write a note');
         $c['history'][] = ['at' => $now, 'type' => 'note', 'by' => $by, 'public' => false, 'text' => $msg];
         break;
       case 'assign':
@@ -321,20 +321,20 @@ function h_cmp_action(): void {
         $aid = (int)($b['assigneeId'] ?? 0);
         if ($aid) {
           $u = q('SELECT * FROM admins WHERE id = ? AND active = 1', [$aid])->fetch();
-          if (!$u) fail(422, 'এই টিম মেম্বার পাওয়া যায়নি');
+          if (!$u) fail(422, 'Team member not found');
           $c['assignee'] = ['id' => (int)$u['id'], 'name' => $u['name'], 'phone' => (string)($u['phone'] ?? '')];
           $c['history'][] = ['at' => $now, 'type' => 'assign', 'by' => $by, 'public' => false, 'text' => (CMP_SEGMENTS[$c['segment']] ?? '') . ' → ' . $u['name'] . ($msg ? " · $msg" : '')];
           if ($wantSms && !empty($u['phone'])) $sent[] = ['event' => 'assigned', 'to' => (string)$u['phone'], 'force' => true];
         } else {
           $c['assignee'] = null;
-          $c['history'][] = ['at' => $now, 'type' => 'assign', 'by' => $by, 'public' => false, 'text' => 'সেগমেন্ট: ' . (CMP_SEGMENTS[$c['segment']] ?? '') . ' · কাউকে দেওয়া হয়নি'];
+          $c['history'][] = ['at' => $now, 'type' => 'assign', 'by' => $by, 'public' => false, 'text' => 'Segment: ' . (CMP_SEGMENTS[$c['segment']] ?? '') . ' · unassigned'];
         }
         break;
       case 'priority':
         $p = (string)($b['priority'] ?? 'normal');
         if (!in_array($p, ['low', 'normal', 'high', 'urgent'], true)) fail(422, 'Unknown priority');
         $c['priority'] = $p;
-        $c['history'][] = ['at' => $now, 'type' => 'note', 'by' => $by, 'public' => false, 'text' => "প্রায়োরিটি: $p"];
+        $c['history'][] = ['at' => $now, 'type' => 'note', 'by' => $by, 'public' => false, 'text' => "Priority: $p"];
         break;
       case 'files_delete':
         $names = $b['names'] ?? 'all';
@@ -345,8 +345,8 @@ function h_cmp_action(): void {
           $f['deleted'] = true; $f['deletedAt'] = $now; $f['url'] = ''; $n++; $freed += (int)$f['size'];
         }
         unset($f);
-        if (!$n) fail(422, 'মুছে ফেলার মতো কোনো ফাইল নেই');
-        $c['history'][] = ['at' => $now, 'type' => 'files', 'by' => $by, 'public' => false, 'text' => "{$n}টি ফাইল সার্ভার থেকে মুছে ফেলা হয়েছে (" . round($freed / 1048576, 1) . ' MB)'];
+        if (!$n) fail(422, 'No files to delete');
+        $c['history'][] = ['at' => $now, 'type' => 'files', 'by' => $by, 'public' => false, 'text' => "{$n} file(s) deleted from the server (" . round($freed / 1048576, 1) . ' MB)'];
         break;
       case 'read':
         $c['unread'] = false;
@@ -372,7 +372,7 @@ function h_cmp_action(): void {
   }
   if ($log) {
     $c = doc_get('complaints', $c['id']) ?? $c;
-    foreach ($log as $l) $c['history'][] = ['at' => now_ms(), 'type' => 'sms', 'by' => 'system', 'public' => false, 'text' => 'SMS → ' . $l['to'] . ' · ' . ($l['status'] === 'sent' ? 'পাঠানো হয়েছে' : 'যায়নি: ' . ($l['info'] ?? $l['status']))];
+    foreach ($log as $l) $c['history'][] = ['at' => now_ms(), 'type' => 'sms', 'by' => 'system', 'public' => false, 'text' => 'SMS → ' . $l['to'] . ' · ' . ($l['status'] === 'sent' ? 'sent' : 'not sent: ' . ($l['info'] ?? $l['status']))];
     doc_put('complaints', $c);
   }
   out(['complaint' => $c, 'sms' => $log]);
@@ -390,7 +390,7 @@ function h_cmp_cleanup(): void {
     $k = 0;
     foreach ($c['files'] as &$f) { if (!empty($f['deleted'])) continue; @unlink(cmp_dir() . '/' . basename($f['name'])); $f['deleted'] = true; $f['deletedAt'] = now_ms(); $f['url'] = ''; $k++; $freed += (int)$f['size']; }
     unset($f);
-    if ($k) { $c['history'][] = ['at' => now_ms(), 'type' => 'files', 'by' => $me['name'], 'public' => false, 'text' => "{$k}টি ফাইল মুছে ফেলা হয়েছে (বাল্ক ক্লিনআপ)"]; $c['updated'] = now_ms(); doc_put('complaints', $c); $n += $k; $cases++; }
+    if ($k) { $c['history'][] = ['at' => now_ms(), 'type' => 'files', 'by' => $me['name'], 'public' => false, 'text' => "{$k} file(s) deleted (bulk cleanup)"]; $c['updated'] = now_ms(); doc_put('complaints', $c); $n += $k; $cases++; }
   }
   out(['ok' => true, 'files' => $n, 'cases' => $cases, 'freedMB' => round($freed / 1048576, 1)]);
 }

@@ -83,7 +83,7 @@ function MemberDialog({ member, onClose, onDone, meId }) {
     if (!editing && !/^\S+@\S+\.\S+$/.test(f.email.trim())) return toast('সঠিক ইমেইল দিন')
     if ((!editing || f.password) && f.password.length < 8) return toast('পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে')
     const phone = f.phone.replace(/[^\d]/g, '').replace(/^88/, '')
-    if (phone && !/^01[3-9]\d{8}$/.test(phone)) return toast('সঠিক ১১ ডিজিটের মোবাইল নাম্বার দিন')
+    if (phone && !/^01[3-9]\d{8}$/.test(phone)) return toast('Enter a valid 11-digit mobile number')
     setBusy(true)
     try {
       if (editing) {
@@ -119,7 +119,7 @@ function MemberDialog({ member, onClose, onDone, meId }) {
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="নাম"><input className="field" value={f.name} onChange={set('name')} placeholder="যেমন: Rafi Ahmed" autoFocus /></Field>
           <Field label="ইমেইল (লগইনের জন্য)"><input className="field disabled:bg-surface" type="email" value={f.email} onChange={set('email')} disabled={editing} placeholder="name@example.com" autoComplete="off" /></Field>
-          <Field label="মোবাইল নাম্বার (Complain Box-এর SMS এই নাম্বারে যাবে)" className="sm:col-span-2"><input className="field" type="tel" value={f.phone} onChange={set('phone')} placeholder="01XXXXXXXXX" /></Field>
+          <Field label="Mobile number (Complain Box SMS are sent here)" className="sm:col-span-2"><input className="field" type="tel" value={f.phone} onChange={set('phone')} placeholder="01XXXXXXXXX" /></Field>
         </div>
         <Field label={editing ? 'নতুন পাসওয়ার্ড (বদলাতে চাইলে লিখুন, না চাইলে ফাঁকা রাখুন)' : 'পাসওয়ার্ড (কমপক্ষে ৮ অক্ষর)'}>
           <div className="flex gap-2">

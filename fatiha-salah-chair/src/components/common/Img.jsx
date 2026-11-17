@@ -26,7 +26,7 @@ export default function Img({ src, alt = '', className = '', folder = 'product',
   if (!src || failed || (!url && !isIdb)) {
     return (
       <div className={`flex items-center justify-center bg-gray-100 text-center text-xs text-muted ${className}`} role="img" aria-label={alt}>
-        ছবি পাওয়া যায়নি
+        No image
       </div>
     )
   }

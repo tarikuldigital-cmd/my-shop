@@ -7,8 +7,8 @@ import { S, useDb } from '../../store/db'
 import { CMP_STATUS, CMP_STEPS } from '../../store/complaintsConfig'
 import { cmpSettings, cmpUpload, fmtSize, mediaSrc } from '../../lib/complaints'
 
-export const bnNum = (n) => String(n).replace(/\d/g, (d) => '০১২৩৪৫৬৭৮৯'[d])
-export const bnDate = (t, time = true) => (t ? new Date(t).toLocaleString('bn-BD', { day: 'numeric', month: 'short', ...(time ? { hour: 'numeric', minute: '2-digit' } : { year: 'numeric' }) }) : '')
+export const bnNum = (n) => String(n)
+export const bnDate = (t, time = true) => (t ? new Date(t).toLocaleString('en-GB', { day: 'numeric', month: 'short', ...(time ? { hour: 'numeric', minute: '2-digit' } : { year: 'numeric' }) }) : '')
 const LAST_PHONE = 'fatiha_cmp_phone'
 export const rememberPhone = (p) => { try { localStorage.setItem(LAST_PHONE, p) } catch { /* private mode */ } }
 export const lastPhone = () => { try { return localStorage.getItem(LAST_PHONE) || '' } catch { return '' } }
@@ -19,7 +19,7 @@ export const STATUS_STYLE = {
 }
 export function StatusBadge({ s, long = false, className = '' }) {
   const st = CMP_STATUS[s]
-  return <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${STATUS_STYLE[s]} ${className}`}><span className={`h-1.5 w-1.5 rounded-full ${st?.dot}`} />{long ? st?.bn : s === 'submitted' ? 'জমা হয়েছে' : st?.short}</span>
+  return <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${STATUS_STYLE[s]} ${className}`}><span className={`h-1.5 w-1.5 rounded-full ${st?.dot}`} />{long ? st?.bn : s === 'submitted' ? 'Submitted' : st?.short}</span>
 }
 
 /* ---------------- shell ---------------- */
@@ -42,23 +42,24 @@ export function Shell({ children, tab }) {
       </header>
       <section className="bg-brand text-white">
         <div className="mx-auto max-w-5xl px-4 pb-16 pt-8 sm:pt-10">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Complaint & Resolution Center</p>
-          <h1 className="mt-2 text-2xl font-bold leading-snug sm:text-3xl">অভিযোগ ও সমাধান কেন্দ্র</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/80">প্রোডাক্ট ক্ষতিগ্রস্ত, ভুল প্রোডাক্ট, পার্টস কম, রিটার্ন বা রিফান্ড — ছবি বা ভিডিওসহ জানান। প্রতিটি ধাপের আপডেট এখানে ও SMS-এ পাবেন।</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Customer Care</p>
+          <h1 className="mt-2 text-2xl font-bold leading-snug sm:text-3xl">Complaint & Resolution Center</h1>
+          <p className="mt-1 text-sm text-gold/90">ছবি বা ভিডিওসহ সমস্যা জানান — প্রতিটি আপডেট SMS-এ পাবেন</p>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/80">Damaged product, wrong item, missing parts, return or refund — tell us with photos or videos. Follow every step here and by SMS.</p>
           <ul className="mt-5 grid gap-2 text-sm sm:grid-cols-3">
-            {[['clock', `${bnNum(hours)} ঘণ্টার মধ্যে সাড়া`], ['chat', 'প্রতিটি ধাপে SMS আপডেট'], ['lock', 'আপনার তথ্য সুরক্ষিত']].map(([i, t]) => <li key={t} className="flex items-center gap-2 text-white/90"><Icon name={i} className="h-4 w-4 text-gold" />{t}</li>)}
+            {[['clock', `${hours}-hour response`], ['chat', 'SMS update at every step'], ['lock', 'Your data is secure']].map(([i, t]) => <li key={t} className="flex items-center gap-2 text-white/90"><Icon name={i} className="h-4 w-4 text-gold" />{t}</li>)}
           </ul>
         </div>
       </section>
       <main className="mx-auto -mt-8 max-w-5xl px-3 pb-16 sm:px-4">
         <nav className="mb-4 grid grid-cols-2 rounded-xl border border-line bg-white p-1 shadow-sm sm:max-w-sm" aria-label="Complain center">
-          <Link to="/complain" className={`rounded-lg px-3 py-2.5 text-center text-sm font-semibold transition ${tab === 'new' ? 'bg-brand text-white' : 'text-muted hover:text-brand'}`}>নতুন অভিযোগ</Link>
-          <Link to="/complain/track" className={`rounded-lg px-3 py-2.5 text-center text-sm font-semibold transition ${tab === 'track' ? 'bg-brand text-white' : 'text-muted hover:text-brand'}`}>অভিযোগের অবস্থা</Link>
+          <Link to="/complain" className={`rounded-lg px-3 py-2.5 text-center text-sm font-semibold transition ${tab === 'new' ? 'bg-brand text-white' : 'text-muted hover:text-brand'}`}>New complaint</Link>
+          <Link to="/complain/track" className={`rounded-lg px-3 py-2.5 text-center text-sm font-semibold transition ${tab === 'track' ? 'bg-brand text-white' : 'text-muted hover:text-brand'}`}>Complaint status</Link>
         </nav>
         {children}
       </main>
       <footer className="border-t border-line bg-white py-6 text-center text-xs text-muted">
-        <p>© {new Date().getFullYear()} {st.siteName} · <Link to="/" className="text-brand">শপে ফিরে যান</Link> · হেল্পলাইন <a href={`tel:${st.phone}`} className="text-brand">{st.phone}</a></p>
+        <p>© {new Date().getFullYear()} {st.siteName} · <Link to="/" className="text-brand">Back to shop</Link> · Helpline <a href={`tel:${st.phone}`} className="text-brand">{st.phone}</a></p>
       </footer>
     </div>
   )
@@ -73,9 +74,9 @@ export function Stepper({ c }) {
   const rejected = c.status === 'rejected'
   const steps = rejected ? [...CMP_STEPS.filter((s) => c.steps?.[s] && s !== 'resolved'), 'rejected'] : CMP_STEPS
   const cur = steps.indexOf(c.status)
-  const label = (s) => (s === 'submitted' ? 'জমা হয়েছে' : CMP_STATUS[s].short)
+  const label = (s) => (s === 'submitted' ? 'Submitted' : CMP_STATUS[s].short)
   return (
-    <ol className="grid gap-0 sm:grid-cols-5" aria-label="অভিযোগের ধাপ">
+    <ol className="grid gap-0 sm:grid-cols-5" aria-label="Complaint steps">
       {steps.map((s, i) => {
         const done = i <= cur, now = i === cur, bad = s === 'rejected'
         return (
@@ -86,7 +87,7 @@ export function Stepper({ c }) {
             </span>
             <span className="min-w-0 sm:pt-2">
               <span className={`block text-sm font-semibold ${done ? (bad ? 'text-red-700' : 'text-ink') : 'text-muted'}`}>{label(s)}</span>
-              <span className="block text-xs text-muted">{c.steps?.[s] ? bnDate(c.steps[s]) : 'অপেক্ষমাণ'}</span>
+              <span className="block text-xs text-muted">{c.steps?.[s] ? bnDate(c.steps[s]) : 'Pending'}</span>
             </span>
           </li>
         )
@@ -97,7 +98,7 @@ export function Stepper({ c }) {
 
 /* ---------------- media viewer ---------------- */
 export function MediaThumb({ f, onOpen, className = 'h-24 w-24' }) {
-  if (f.deleted || !f.url) return <div className={`flex flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-line bg-surface p-2 text-center text-[10px] text-muted ${className}`}><Icon name="doc" className="h-4 w-4" />সংরক্ষণ শেষে মুছে ফেলা হয়েছে</div>
+  if (f.deleted || !f.url) return <div className={`flex flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-line bg-surface p-2 text-center text-[10px] text-muted ${className}`}><Icon name="doc" className="h-4 w-4" />Removed after the case closed</div>
   return (
     <button type="button" onClick={() => onOpen?.(f)} className={`group relative overflow-hidden rounded-lg bg-gray-900 ring-1 ring-line ${className}`}>
       {f.type === 'video' ? <video src={mediaSrc(f.url)} className="h-full w-full object-cover opacity-90" muted preload="metadata" /> : <img src={mediaSrc(f.url)} alt="" className="h-full w-full object-cover transition group-hover:opacity-90" loading="lazy" />}
@@ -110,7 +111,7 @@ export function Lightbox({ f, onClose }) {
   if (!f) return null
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/90 p-3" onClick={onClose} role="dialog" aria-modal="true">
-      <button className="absolute right-4 top-4 rounded-full bg-white/15 p-2 text-white" onClick={onClose} aria-label="বন্ধ করুন"><Icon name="close" className="h-5 w-5" /></button>
+      <button className="absolute right-4 top-4 rounded-full bg-white/15 p-2 text-white" onClick={onClose} aria-label="Close"><Icon name="close" className="h-5 w-5" /></button>
       <div onClick={(e) => e.stopPropagation()} className="max-h-full max-w-4xl">
         {f.type === 'video' ? <video src={mediaSrc(f.url)} controls autoPlay playsInline className="max-h-[85vh] w-full rounded-lg" /> : <img src={mediaSrc(f.url)} alt="" className="max-h-[85vh] rounded-lg object-contain" />}
       </div>
@@ -133,10 +134,10 @@ export function Uploader({ items, setItems, max = 8, maxVideos = 2 }) {
     setNote('')
     let list = [...live.current]
     for (const file of [...files]) {
-      if (list.length >= max) { setNote(`সর্বোচ্চ ${bnNum(max)}টি ফাইল দেওয়া যাবে`); break }
+      if (list.length >= max) { setNote(`Up to ${max} files allowed`); break }
       const isV = file.type.startsWith('video/')
-      if (!isV && !file.type.startsWith('image/')) { setNote('শুধু ছবি বা ভিডিও দেওয়া যাবে'); continue }
-      if (isV && list.filter((x) => x.type === 'video').length >= maxVideos) { setNote(`সর্বোচ্চ ${bnNum(maxVideos)}টি ভিডিও দেওয়া যাবে`); continue }
+      if (!isV && !file.type.startsWith('image/')) { setNote('Only photos or videos are allowed'); continue }
+      if (isV && list.filter((x) => x.type === 'video').length >= maxVideos) { setNote(`Up to ${maxVideos} videos allowed`); continue }
       const it = { key: `u${++seq}`, file, type: isV ? 'video' : 'image', preview: URL.createObjectURL(file), progress: 0, token: '', error: '' }
       list = [...list, it]
       setItems(list)
@@ -150,12 +151,12 @@ export function Uploader({ items, setItems, max = 8, maxVideos = 2 }) {
       <div onDragOver={(e) => { e.preventDefault(); setDrag(true) }} onDragLeave={() => setDrag(false)} onDrop={(e) => { e.preventDefault(); setDrag(false); add(e.dataTransfer.files) }}
         className={`rounded-xl border-2 border-dashed p-5 text-center transition ${drag ? 'border-brand bg-brand/5' : 'border-line bg-surface/50'}`}>
         <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-white text-brand ring-1 ring-line"><Icon name="upload" className="h-5 w-5" /></span>
-        <p className="mt-2 text-sm font-semibold text-ink">ছবি বা ভিডিও যোগ করুন</p>
-        <p className="mt-0.5 text-xs text-muted">সর্বোচ্চ {bnNum(max)}টি ফাইল · ভিডিও {bnNum(maxV)}MB পর্যন্ত · JPG, PNG, MP4, MOV</p>
+        <p className="mt-2 text-sm font-semibold text-ink">Add photos or videos</p>
+        <p className="mt-0.5 text-xs text-muted">Up to {max} files · videos up to {maxV}MB · JPG, PNG, MP4, MOV</p>
         <div className="mt-4 flex flex-wrap justify-center gap-2">
-          <button type="button" className={btn} onClick={() => cam.current.click()}><Icon name="camera" className="h-4 w-4" />ছবি তুলুন</button>
-          <button type="button" className={btn} onClick={() => vid.current.click()}><Icon name="video" className="h-4 w-4" />ভিডিও</button>
-          <button type="button" className={btn} onClick={() => pick.current.click()}><Icon name="image" className="h-4 w-4" />গ্যালারি থেকে</button>
+          <button type="button" className={btn} onClick={() => cam.current.click()}><Icon name="camera" className="h-4 w-4" />Take photo</button>
+          <button type="button" className={btn} onClick={() => vid.current.click()}><Icon name="video" className="h-4 w-4" />Video</button>
+          <button type="button" className={btn} onClick={() => pick.current.click()}><Icon name="image" className="h-4 w-4" />From gallery</button>
         </div>
         <input ref={pick} type="file" accept="image/*,video/*" multiple hidden onChange={(e) => { add(e.target.files); e.target.value = '' }} />
         <input ref={cam} type="file" accept="image/*" capture="environment" hidden onChange={(e) => { add(e.target.files); e.target.value = '' }} />
@@ -171,9 +172,9 @@ export function Uploader({ items, setItems, max = 8, maxVideos = 2 }) {
               {!it.token && !it.error && (
                 <span className="absolute inset-x-0 bottom-0 bg-black/55 p-1.5"><span className="block h-1 overflow-hidden rounded-full bg-white/30"><span className="block h-full rounded-full bg-white transition-all" style={{ width: `${Math.round(it.progress * 100)}%` }} /></span><span className="mt-0.5 block text-center text-[10px] text-white">{bnNum(Math.round(it.progress * 100))}%</span></span>
               )}
-              {it.token && <span className="absolute bottom-1.5 left-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-white" title="আপলোড হয়েছে"><Icon name="check" className="h-3 w-3" strokeWidth={3} /></span>}
-              {it.error && <button type="button" onClick={() => { patch(it.key, { error: '', progress: 0 }); start(it) }} className="absolute inset-0 flex flex-col items-center justify-center bg-red-900/80 p-1 text-center text-[10px] font-semibold text-white">{it.error}<span className="mt-1 rounded bg-white/20 px-1.5 py-0.5">আবার চেষ্টা</span></button>}
-              <button type="button" onClick={() => remove(it.key)} className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white" aria-label="সরিয়ে দিন"><Icon name="close" className="h-3.5 w-3.5" strokeWidth={2.5} /></button>
+              {it.token && <span className="absolute bottom-1.5 left-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-white" title="Uploaded"><Icon name="check" className="h-3 w-3" strokeWidth={3} /></span>}
+              {it.error && <button type="button" onClick={() => { patch(it.key, { error: '', progress: 0 }); start(it) }} className="absolute inset-0 flex flex-col items-center justify-center bg-red-900/80 p-1 text-center text-[10px] font-semibold text-white">{it.error}<span className="mt-1 rounded bg-white/20 px-1.5 py-0.5">Retry</span></button>}
+              <button type="button" onClick={() => remove(it.key)} className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white" aria-label="Remove"><Icon name="close" className="h-3.5 w-3.5" strokeWidth={2.5} /></button>
             </li>
           ))}
         </ul>

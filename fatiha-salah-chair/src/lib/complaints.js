@@ -36,7 +36,7 @@ const toDataUrl = (blob) => new Promise((res, rej) => { const r = new FileReader
 /** the customer's recent orders (by phone) so they can pick the one with the problem */
 export async function cmpFindOrders(phone) {
   const p = normPhone(phone)
-  if (!validPhone(p)) throw new Error('সঠিক ১১ ডিজিটের মোবাইল নাম্বার দিন')
+  if (!validPhone(p)) throw new Error('Enter a valid 11-digit mobile number')
   if (LIVE) {
     try { return await liveApi('orders/track', { method: 'POST', body: { phone: p } }) } catch (e) { if (e.status === 404) return []; throw e }
   }
@@ -47,10 +47,10 @@ export async function cmpFindOrders(phone) {
 export async function cmpUpload(file, onProgress = () => {}) {
   const isVideo = file.type.startsWith('video/')
   const maxV = cmpSettings().maxVideoMB || 60
-  if (!isVideo && !file.type.startsWith('image/')) throw new Error('শুধু ছবি বা ভিডিও দেওয়া যাবে')
-  if (isVideo && file.size > maxV * 1048576) throw new Error(`ভিডিও সর্বোচ্চ ${maxV}MB হতে পারবে — ছোট করে দিন`)
+  if (!isVideo && !file.type.startsWith('image/')) throw new Error('Only photos or videos are allowed')
+  if (isVideo && file.size > maxV * 1048576) throw new Error(`Video max ${maxV}MB — please use a shorter video`)
   const f = isVideo ? file : await compressImage(file)
-  if (!isVideo && f.size > 12 * 1048576) throw new Error('ছবি সর্বোচ্চ 12MB হতে পারবে')
+  if (!isVideo && f.size > 12 * 1048576) throw new Error('Photos can be up to 12MB')
   if (!LIVE) {
     // demo: keep a small copy in the browser
     for (let i = 1; i <= 5; i++) { await new Promise((r) => setTimeout(r, 70)); onProgress(i / 5) }
@@ -64,9 +64,9 @@ export async function cmpUpload(file, onProgress = () => {}) {
     xhr.onload = () => {
       let j = {}; try { j = JSON.parse(xhr.responseText) } catch { /* not json */ }
       if (xhr.status >= 200 && xhr.status < 300 && j.token) resolve(j)
-      else reject(new Error(j.message || (xhr.status === 413 ? 'ফাইলটি অনেক বড়' : 'আপলোড হয়নি — আবার চেষ্টা করুন')))
+      else reject(new Error(j.message || (xhr.status === 413 ? 'The file is too large' : 'Upload failed — please try again')))
     }
-    xhr.onerror = () => reject(new Error('ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন'))
+    xhr.onerror = () => reject(new Error('Check your internet connection and try again'))
     const fd = new FormData(); fd.append('file', f, f.name); xhr.send(fd)
   })
 }
@@ -96,7 +96,7 @@ function demoSms(c, event, to = '', extra = {}, force = false) {
   if (!force && (!cs.smsEnabled || !cs.events[event])) return null
   const tpl = cs.templates[event]; if (!tpl) return null
   const text = cmpRender(tpl, c, extra)
-  const e = { id: `s${Date.now()}${Math.floor(Math.random() * 999)}`, at: Date.now(), to: normPhone(to || c.phone), event: `complaint_${event}`, invoice: c.id, text, status: 'demo', info: 'Demo — SMS পাঠানো হয়নি', chars: text.length, unicode: true, parts: Math.ceil(text.length / 67) }
+  const e = { id: `s${Date.now()}${Math.floor(Math.random() * 999)}`, at: Date.now(), to: normPhone(to || c.phone), event: `complaint_${event}`, invoice: c.id, text, status: 'demo', info: 'Demo — SMS not sent', chars: text.length, unicode: true, parts: Math.ceil(text.length / 67) }
   S.smsLog.unshift(e)
   return e
 }
@@ -108,10 +108,10 @@ export async function cmpCreate(d) {
     return liveApi('complaints', { method: 'POST', body: { ...rest, tz } })
   }
   const phone = normPhone(d.phone)
-  if (!d.name?.trim()) throw new Error('আপনার নাম লিখুন')
-  if (!validPhone(phone)) throw new Error('সঠিক ১১ ডিজিটের মোবাইল নাম্বার দিন')
-  if (!CMP_TYPES[d.type]) throw new Error('সমস্যার ধরন বেছে নিন')
-  if ((d.description || '').trim().length < 10) throw new Error('সমস্যাটি একটু বিস্তারিত লিখুন (কমপক্ষে ১০ অক্ষর)')
+  if (!d.name?.trim()) throw new Error('Enter your name')
+  if (!validPhone(phone)) throw new Error('Enter a valid 11-digit mobile number')
+  if (!CMP_TYPES[d.type]) throw new Error('Select the type of problem')
+  if ((d.description || '').trim().length < 10) throw new Error('Please describe the problem (at least 10 characters)')
   const ord = d.invoice ? S.orders.find((o) => o.invoice === d.invoice.toUpperCase() && o.phone === phone) : null
   const now = Date.now()
   let segment = CMP_TYPES[d.type].seg
@@ -123,11 +123,11 @@ export async function cmpCreate(d) {
     priority: ['damaged', 'wrong', 'missing'].includes(d.type) ? 'high' : 'normal', name: d.name.trim(), phone, altPhone: d.altPhone || '', contactTime: d.contactTime || '',
     invoice: ord?.invoice || (d.invoice || '').toUpperCase(), orderId: ord?.id || '', orderVerified: !!ord, orderTotal: ord?.total || 0, orderDate: ord?.createdAt || 0, orderStatus: ord?.status || '',
     items, description: d.description.trim(), files, assignee: null, unread: true, rating: null, country: 'BD',
-    history: [{ at: now, type: 'status', s: 'submitted', by: 'customer', public: true, text: 'অভিযোগ জমা দেওয়া হয়েছে' + (files.length ? ` · ${files.length}টি ফাইল সংযুক্ত` : '') }],
+    history: [{ at: now, type: 'status', s: 'submitted', by: 'customer', public: true, text: 'Complaint submitted' + (files.length ? ` · ${files.length} files attached` : '') }],
   }
   const aid = +cmpSettings().routing[segment] || 0
   const who = aid && (S.team || []).find((m) => m.id === aid && m.active)
-  if (who) { c.assignee = { id: who.id, name: who.name, phone: who.phone || '' }; c.history.push({ at: now + 1, type: 'assign', by: 'system', public: false, text: `স্বয়ংক্রিয়ভাবে ${who.name}-কে দেওয়া হয়েছে (${CMP_SEGMENTS[segment].bn})` }) }
+  if (who) { c.assignee = { id: who.id, name: who.name, phone: who.phone || '' }; c.history.push({ at: now + 1, type: 'assign', by: 'system', public: false, text: `Auto-assigned to ${who.name} (${CMP_SEGMENTS[segment].bn})` }) }
   S.complaints.unshift(c)
   demoSms(c, 'submitted')
   if (who?.phone) demoSms(c, 'assigned', who.phone)
@@ -137,7 +137,7 @@ export async function cmpCreate(d) {
 
 const findDemo = ({ id, phone, sig }) => {
   const c = S.complaints.find((x) => x.id === String(id || '').toUpperCase().replace(/[^A-Z0-9]/g, ''))
-  if (!c || !((phone && normPhone(phone) === c.phone) || sig === 'demo')) throw new Error('এই আইডি ও মোবাইল নাম্বার দিয়ে কোনো অভিযোগ পাওয়া যায়নি')
+  if (!c || !((phone && normPhone(phone) === c.phone) || sig === 'demo')) throw new Error('No complaint found for this ID and mobile number')
   return c
 }
 export async function cmpTrack(q) {
@@ -147,17 +147,17 @@ export async function cmpTrack(q) {
 /** all complaints made with this phone (customer types only the phone) */
 export async function cmpByPhone(phone) {
   const p = normPhone(phone)
-  if (!validPhone(p)) throw new Error('সঠিক ১১ ডিজিটের মোবাইল নাম্বার দিন')
+  if (!validPhone(p)) throw new Error('Enter a valid 11-digit mobile number')
   if (LIVE) return (await liveApi('complaints/by-phone', { method: 'POST', body: { phone: p } })).complaints
   const list = S.complaints.filter((c) => c.phone === p).sort((a, b) => b.createdAt - a.createdAt).map(cmpPublic)
-  if (!list.length) throw new Error('এই নাম্বার দিয়ে কোনো অভিযোগ পাওয়া যায়নি')
+  if (!list.length) throw new Error('No complaints found for this number')
   return list
 }
 export async function cmpReply(q, text, files = [], fileMeta = {}) {
   if (LIVE) return (await liveApi('complaints/reply', { method: 'POST', body: { ...q, text, files } })).complaint // fileMeta is demo-only
   const c = findDemo(q)
-  if (!cmpPublic(c).canReply) throw new Error('এই অভিযোগটি বন্ধ হয়ে গেছে')
-  if (!text.trim() && !files.length) throw new Error('কিছু লিখুন বা ফাইল দিন')
+  if (!cmpPublic(c).canReply) throw new Error('This complaint is closed')
+  if (!text.trim() && !files.length) throw new Error('Write something or add a file')
   const nf = files.map((t) => fileMeta[t]).filter(Boolean).map((f) => ({ name: f.token, url: f.url, type: f.type, size: f.size, at: Date.now(), by: 'customer' }))
   c.files.push(...nf)
   c.history.push({ at: Date.now(), type: 'reply', by: 'customer', public: true, text: text.trim(), files: nf.map((f) => f.name) })
@@ -186,39 +186,39 @@ export async function cmpAction(c, body) {
   const sms = []
   switch (body.action) {
     case 'status':
-      if (body.status === c.status && !msg) throw new Error('স্ট্যাটাস আগের মতোই আছে')
+      if (body.status === c.status && !msg) throw new Error('Status is unchanged')
       c.status = body.status; c.steps = { ...c.steps, [body.status]: now }
       if (body.status === 'resolved' && body.refundAmount !== undefined && body.refundAmount !== '') c.refundAmount = Math.max(0, +body.refundAmount || 0)
       c.history.push({ at: now, type: 'status', s: body.status, by, public: true, text: msg })
       if (body.sms) sms.push(() => demoSms(c, body.status, '', {}, true))
       break
     case 'message':
-      if (!msg) throw new Error('মেসেজ লিখুন')
+      if (!msg) throw new Error('Write a message')
       c.history.push({ at: now, type: 'message', by, public: true, text: msg })
       if (body.sms) sms.push(() => demoSms(c, 'message', '', { '{message}': msg }, true))
       break
     case 'note':
-      if (!msg) throw new Error('নোট লিখুন')
+      if (!msg) throw new Error('Write a note')
       c.history.push({ at: now, type: 'note', by, public: false, text: msg })
       break
     case 'assign': {
       if (CMP_SEGMENTS[body.segment]) c.segment = body.segment
       const u = body.assigneeId ? (S.team || []).find((m) => m.id === +body.assigneeId) : null
-      if (body.assigneeId && !u) throw new Error('এই টিম মেম্বার পাওয়া যায়নি')
+      if (body.assigneeId && !u) throw new Error('Team member not found')
       c.assignee = u ? { id: u.id, name: u.name, phone: u.phone || '' } : null
-      c.history.push({ at: now, type: 'assign', by, public: false, text: u ? `${CMP_SEGMENTS[c.segment].bn} → ${u.name}${msg ? ` · ${msg}` : ''}` : `সেগমেন্ট: ${CMP_SEGMENTS[c.segment].bn} · কাউকে দেওয়া হয়নি` })
+      c.history.push({ at: now, type: 'assign', by, public: false, text: u ? `${CMP_SEGMENTS[c.segment].bn} → ${u.name}${msg ? ` · ${msg}` : ''}` : `Segment: ${CMP_SEGMENTS[c.segment].bn} · unassigned` })
       if (u && body.sms && u.phone) sms.push(() => demoSms(c, 'assigned', u.phone, {}, true))
       break
     }
     case 'priority':
       c.priority = body.priority
-      c.history.push({ at: now, type: 'note', by, public: false, text: `প্রায়োরিটি: ${body.priority}` })
+      c.history.push({ at: now, type: 'note', by, public: false, text: `Priority: ${body.priority}` })
       break
     case 'files_delete': {
       let n = 0, freed = 0
       for (const f of c.files) { if (f.deleted || (body.names !== 'all' && !body.names.includes(f.name))) continue; if (f.url?.startsWith('blob:')) URL.revokeObjectURL(f.url); Object.assign(f, { deleted: true, deletedAt: now, url: '' }); n++; freed += f.size || 0 }
-      if (!n) throw new Error('মুছে ফেলার মতো কোনো ফাইল নেই')
-      c.history.push({ at: now, type: 'files', by, public: false, text: `${n}টি ফাইল সার্ভার থেকে মুছে ফেলা হয়েছে (${(freed / 1048576).toFixed(1)} MB)` })
+      if (!n) throw new Error('No files to delete')
+      c.history.push({ at: now, type: 'files', by, public: false, text: `${n} files deleted from the server (${(freed / 1048576).toFixed(1)} MB)` })
       break
     }
     case 'read': c.unread = false; save(); return { complaint: c }
@@ -226,7 +226,7 @@ export async function cmpAction(c, body) {
   }
   c.updated = now; c.unread = false
   const log = sms.map((f) => f()).filter(Boolean)
-  for (const l of log) c.history.push({ at: Date.now(), type: 'sms', by: 'system', public: false, text: `SMS → ${l.to} · ডেমো (পাঠানো হয়নি)` })
+  for (const l of log) c.history.push({ at: Date.now(), type: 'sms', by: 'system', public: false, text: `SMS → ${l.to} · demo (not sent)` })
   save(); refresh()
   return { complaint: c, sms: log }
 }
@@ -239,7 +239,7 @@ export async function cmpCleanup(days = 0) {
     if ((c.steps?.[c.status] || c.updated) > Date.now() - days * 864e5) continue
     let k = 0
     for (const f of c.files) { if (f.deleted) continue; Object.assign(f, { deleted: true, deletedAt: Date.now(), url: '' }); k++; freed += f.size || 0 }
-    if (k) { c.history.push({ at: Date.now(), type: 'files', by: meName(), public: false, text: `${k}টি ফাইল মুছে ফেলা হয়েছে (বাল্ক ক্লিনআপ)` }); files += k; cases++ }
+    if (k) { c.history.push({ at: Date.now(), type: 'files', by: meName(), public: false, text: `${k} files deleted (bulk cleanup)` }); files += k; cases++ }
   }
   save()
   return { files, cases, freedMB: +(freed / 1048576).toFixed(1) }

@@ -86,7 +86,7 @@ export default function AdminApp() {
       document.title = `🛒 নতুন অর্ডার! | Admin`
       try { const a = new (window.AudioContext || window.webkitAudioContext)(), o = a.createOscillator(); o.frequency.value = 880; o.connect(a.destination); o.start(); setTimeout(() => { o.stop(); a.close() }, 250) } catch { /* no audio */ }
     }
-    const onCmp = (e) => { toast(`📮 নতুন অভিযোগ ${e.detail.id} — ${e.detail.name}`); document.title = '📮 নতুন অভিযোগ! | Admin' }
+    const onCmp = (e) => { toast(`New complaint ${e.detail.id} — ${e.detail.name}`); document.title = 'New complaint | Admin' }
     window.addEventListener('fatiha:new-order', on)
     window.addEventListener('fatiha:new-complaint', onCmp)
     return () => { window.removeEventListener('fatiha:new-order', on); window.removeEventListener('fatiha:new-complaint', onCmp) }

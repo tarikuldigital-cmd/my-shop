@@ -16,9 +16,9 @@ export function demoComplaints(orders, now) {
       files: (x.files || []).map((f, k) => ({ name: `demo-${x.id}-${k}.jpg`, url: IMG(f), type: 'image', size: 380000 + k * 91000, at, by: 'customer', ...(x.deleted ? { deleted: true, url: '', deletedAt: at + 50 * H } : {}) })),
       assignee: x.assignee || null, unread: x.unread || false, rating: x.rating || null, country: 'BD',
       history: [
-        { at, type: 'status', s: 'submitted', by: 'customer', public: true, text: 'অভিযোগ জমা দেওয়া হয়েছে' },
+        { at, type: 'status', s: 'submitted', by: 'customer', public: true, text: 'Complaint submitted' },
         ...x.steps.slice(1).map((s, k) => ({ at: at + (k + 1) * 3 * H, type: 'status', s, by: 'Admin', public: true, text: x.notes?.[s] || '' })),
-        ...(x.assignee ? [{ at: at + 1000, type: 'assign', by: 'system', public: false, text: `স্বয়ংক্রিয়ভাবে ${x.assignee.name}-কে দেওয়া হয়েছে` }] : []),
+        ...(x.assignee ? [{ at: at + 1000, type: 'assign', by: 'system', public: false, text: `Auto-assigned to ${x.assignee.name}` }] : []),
         ...(x.rating ? [{ at: at + 60 * H, type: 'rating', by: 'customer', public: true, text: '★'.repeat(x.rating.stars) + (x.rating.text ? ` — ${x.rating.text}` : '') }] : []),
       ],
     }
