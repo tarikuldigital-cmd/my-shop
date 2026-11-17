@@ -11,6 +11,7 @@ import seedHome from '../mocks/home.json'
 import seedPages from '../mocks/pages.json'
 import { BOOK_FIELDS, defaultSettings } from './defaults'
 import { LIVE } from '../config/env'
+import { demoComplaints } from './complaintsDemo'
 export { defaultSettings }
 
 const KEY = 'fatiha_db_v1'
@@ -98,14 +99,15 @@ function demoIncomplete(products, now) {
 
 /** demo mode only: sample team so roles can be tried without a server (the live site keeps the team in the database) */
 export const demoTeam = () => [
-  { id: 1, name: 'Admin', email: 'admin@fatihaayatsalahchair.com', pass: '123456', role: 'super_admin', active: true, created: Date.now() - 30 * DAY, lastLogin: Date.now() },
-  { id: 2, name: 'Rafi (Order Manager)', email: 'rafi@fatihaayatsalahchair.com', pass: '123456', role: 'order_manager', active: true, created: Date.now() - 10 * DAY, lastLogin: 0 },
+  { id: 1, name: 'Admin', email: 'admin@fatihaayatsalahchair.com', phone: '01700000001', pass: '123456', role: 'super_admin', active: true, created: Date.now() - 30 * DAY, lastLogin: Date.now() },
+  { id: 2, name: 'Rafi (Order Manager)', email: 'rafi@fatihaayatsalahchair.com', phone: '01811000000', pass: '123456', role: 'order_manager', active: true, created: Date.now() - 10 * DAY, lastLogin: 0 },
   { id: 3, name: 'Lina (Content)', email: 'lina@fatihaayatsalahchair.com', pass: '123456', role: 'content', active: true, created: Date.now() - 5 * DAY, lastLogin: 0 },
 ]
 
 function seed() {
   const now = Date.now()
   const products = seedProducts.map((p) => ({ ...BOOK_FIELDS, ...p }))
+  const orders = LIVE ? [] : demoOrders(products, now)
   return {
     version: 1,
     products: LIVE ? [] : products,
@@ -113,7 +115,7 @@ function seed() {
     home: { ...seedHome, flash: { on: true, title: 'স্পেশাল অফার', endsAt: now + 3 * DAY }, sections: { flashSale: true, hotDeal: true, allProducts: true, categories: true, reviews: true, recentlyViewed: true } },
     pages: Object.fromEntries(Object.entries(seedPages).filter(([k]) => !k.startsWith('_'))),
     settings: defaultSettings(),
-    orders: LIVE ? [] : demoOrders(products, now),
+    orders,
     incomplete: LIVE ? [] : demoIncomplete(products, now),
     coupons: [{ code: 'FATIHA100', type: 'flat', value: 100, min: 4000, active: true, used: 0, expires: '' }],
     reviews: [],
@@ -123,6 +125,7 @@ function seed() {
     nextInvoice: 100101,
     fraud: {},
     smsLog: [],
+    complaints: LIVE ? [] : demoComplaints(orders, now),
     team: LIVE ? [] : demoTeam(),
     lastSeen: now,
   }
@@ -138,6 +141,8 @@ function load() {
       const d = defaultSettings()
       raw.settings = { ...d, ...raw.settings, tracking: { ...d.tracking, ...raw.settings?.tracking }, seo: { ...d.seo, ...raw.settings?.seo }, courier: { ...d.courier, ...raw.settings?.courier }, chat: { ...d.chat, ...raw.settings?.chat }, sms: { ...d.sms, ...raw.settings?.sms, events: { ...d.sms.events, ...raw.settings?.sms?.events }, templates: { ...d.sms.templates, ...raw.settings?.sms?.templates } } }
       raw.smsLog ||= []
+      raw.complaints ||= demoComplaints(raw.orders || [], Date.now())
+      raw.settings.complaints = { ...d.complaints, ...raw.settings.complaints, events: { ...d.complaints.events, ...raw.settings.complaints?.events }, templates: { ...d.complaints.templates, ...raw.settings.complaints?.templates }, routing: { ...d.complaints.routing, ...raw.settings.complaints?.routing } }
       // the new Fatiha Ayat Salah Chair logo replaces the old remote logo files (a logo the admin typed in is left alone)
       for (const k of ['logoDark', 'logoWhite']) if (/^settings\/fatiha-logo/.test(raw.settings[k] || '')) raw.settings[k] = d[k]
       raw.landings ||= []

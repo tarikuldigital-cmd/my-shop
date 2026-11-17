@@ -14,6 +14,7 @@ require __DIR__ . '/lib/sms.php';
 require __DIR__ . '/lib/orders.php';
 require __DIR__ . '/lib/sitemap.php';
 require __DIR__ . '/lib/presence.php';
+require __DIR__ . '/lib/complaints.php';
 require __DIR__ . '/lib/handlers.php';
 require __DIR__ . '/lib/mirror.php';
 

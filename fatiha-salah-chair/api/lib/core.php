@@ -105,9 +105,9 @@ function kv_set(string $k, $v): void { q('REPLACE INTO kv (k, v, updated) VALUES
 function kv_updated(string $k): int { $r = q('SELECT updated FROM kv WHERE k = ?', [$k])->fetch(); return $r ? (int)$r['updated'] : 0; }
 
 /* ---------------- document collections ---------------- */
-const KEYS = ['products' => 'id', 'categories' => 'slug', 'coupons' => 'code', 'reviews' => 'id', 'landings' => 'id', 'chats' => 'id', 'messages' => 'id', 'incomplete' => 'id', 'orders' => 'id', 'smsLog' => 'id'];
+const KEYS = ['products' => 'id', 'categories' => 'slug', 'coupons' => 'code', 'reviews' => 'id', 'landings' => 'id', 'chats' => 'id', 'messages' => 'id', 'incomplete' => 'id', 'orders' => 'id', 'smsLog' => 'id', 'complaints' => 'id'];
 /** collections ordered by a field (newest first) instead of by seq */
-const SORT_BY = ['orders' => 'createdAt', 'incomplete' => 'at', 'chats' => 'updated', 'messages' => 'at', 'reviews' => 'at', 'smsLog' => 'at'];
+const SORT_BY = ['orders' => 'createdAt', 'incomplete' => 'at', 'chats' => 'updated', 'messages' => 'at', 'reviews' => 'at', 'smsLog' => 'at', 'complaints' => 'createdAt'];
 const DELTA = ['products' => ['stock', 'sold'], 'coupons' => ['used'], 'landings' => ['views', 'orders']];
 
 function doc_index(string $coll, array $d): array {
@@ -115,6 +115,7 @@ function doc_index(string $coll, array $d): array {
   if ($coll === 'products' || $coll === 'landings') return [(string)($d['slug'] ?? ''), null, null];
   if ($coll === 'coupons') return [strtolower((string)($d['code'] ?? '')), null, null];
   if ($coll === 'incomplete') return [(string)($d['phone'] ?? ''), null, null];
+  if ($coll === 'complaints') return [(string)($d['phone'] ?? ''), (string)($d['assignee']['id'] ?? ''), (string)($d['invoice'] ?? '')];
   return [null, null, null];
 }
 function doc_put(string $coll, array $d, ?int $seq = null): void {

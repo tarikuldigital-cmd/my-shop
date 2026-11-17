@@ -13,8 +13,8 @@ export const adminToken = () => { try { return localStorage.getItem(ADMIN_TOKEN_
 export const adminHeaders = () => (adminToken() ? { Authorization: `Bearer ${adminToken()}` } : {})
 const BOOT_CACHE = 'fatiha_boot_v1'
 
-const COLLS = { products: 'id', categories: 'slug', coupons: 'code', reviews: 'id', landings: 'id', chats: 'id', messages: 'id', incomplete: 'id', orders: 'id', smsLog: 'id' }
-const SORTED_BY_TIME = new Set(['orders', 'incomplete', 'chats', 'messages', 'reviews', 'smsLog'])
+const COLLS = { products: 'id', categories: 'slug', coupons: 'code', reviews: 'id', landings: 'id', chats: 'id', messages: 'id', incomplete: 'id', orders: 'id', smsLog: 'id', complaints: 'id' }
+const SORTED_BY_TIME = new Set(['orders', 'incomplete', 'chats', 'messages', 'reviews', 'smsLog', 'complaints'])
 const DELTA = { products: ['stock', 'sold'], coupons: ['used'], landings: ['views', 'orders'] }
 const KV = ['settings', 'home', 'pages', 'fraud']
 const OBJECT_KEYS = ['fraud', 'pages', 'home']
@@ -107,7 +107,7 @@ export async function hydrateAdmin() {
   for (const k of KV) S[k] = d.kv[k]
   for (const k of OBJECT_KEYS) if (Array.isArray(S[k])) S[k] = {}
   const ds = defaultSettings()
-  S.settings = { ...ds, ...S.settings, tracking: { ...ds.tracking, ...S.settings.tracking }, seo: { ...ds.seo, ...S.settings.seo }, courier: { ...ds.courier, ...S.settings.courier }, chat: { ...ds.chat, ...S.settings.chat }, sms: { ...ds.sms, ...S.settings.sms, events: { ...ds.sms.events, ...S.settings.sms?.events }, templates: { ...ds.sms.templates, ...S.settings.sms?.templates } } }
+  S.settings = { ...ds, ...S.settings, tracking: { ...ds.tracking, ...S.settings.tracking }, seo: { ...ds.seo, ...S.settings.seo }, courier: { ...ds.courier, ...S.settings.courier }, chat: { ...ds.chat, ...S.settings.chat }, sms: { ...ds.sms, ...S.settings.sms, events: { ...ds.sms.events, ...S.settings.sms?.events }, templates: { ...ds.sms.templates, ...S.settings.sms?.templates } }, complaints: { ...ds.complaints, ...S.settings.complaints, events: { ...ds.complaints.events, ...S.settings.complaints?.events }, templates: { ...ds.complaints.templates, ...S.settings.complaints?.templates }, routing: { ...ds.complaints.routing, ...S.settings.complaints?.routing } } }
   S.nextInvoice = Math.max(d.kv.nextInvoice || 100101, S.nextInvoice || 0)
   S.lastSeen = Date.now()
   base = snapshot()
@@ -204,7 +204,7 @@ export async function poll() {
         if (bs && JSON.stringify(local) !== bs.str) continue            // an unsaved local edit wins this round
         if (JSON.stringify(local) === JSON.stringify(doc)) { if (!bs) base.docs[c].set(id, { str: JSON.stringify(doc), obj: JSON.parse(JSON.stringify(doc)) }); continue }
         replaceInPlace(local, doc); changed = true
-      } else { S[c].unshift(doc); changed = true; if (c === 'orders' && doc.status === 'pending') window.dispatchEvent(new CustomEvent('fatiha:new-order', { detail: doc })) }
+      } else { S[c].unshift(doc); changed = true; if (c === 'orders' && doc.status === 'pending') window.dispatchEvent(new CustomEvent('fatiha:new-order', { detail: doc })); if (c === 'complaints' && doc.status === 'submitted') window.dispatchEvent(new CustomEvent('fatiha:new-complaint', { detail: doc })) }
       base.docs[c].set(id, { str: JSON.stringify(doc), obj: JSON.parse(JSON.stringify(doc)) })
     }
     base.orderIds[c] = S[c].map((x) => keyOf(c, x))
@@ -274,3 +274,17 @@ export const liveTeamList = async () => (await call('admin/team', { admin: true 
 export const liveTeamAdd = async (m) => (await call('admin/team', { method: 'POST', admin: true, body: m })).member
 export const liveTeamUpdate = async (id, patch) => (await call(`admin/team/${id}`, { method: 'PUT', admin: true, body: patch })).member
 export const liveTeamDelete = (id) => call(`admin/team/${id}`, { method: 'DELETE', admin: true })
+
+/* ---------------- Complain Box (admin) ---------------- */
+/** every team change goes through the server (it sends the SMS and deletes media files); the saved complaint comes back */
+export async function liveComplaintAction(c, body) {
+  const r = await call('admin/complaints/action', { method: 'POST', admin: true, body: { id: c.id, ...body } })
+  if (r?.complaint) {
+    replaceInPlace(c, r.complaint)
+    if (base) base.docs.complaints.set(keyOf('complaints', c), { str: JSON.stringify(r.complaint), obj: JSON.parse(JSON.stringify(r.complaint)) })
+    refresh()
+  }
+  return r
+}
+export const liveComplaintStaff = () => call('admin/complaints/staff', { admin: true })
+export async function liveComplaintCleanup(days) { const r = await call('admin/complaints/cleanup', { method: 'POST', admin: true, body: { days } }); await poll(); return r }

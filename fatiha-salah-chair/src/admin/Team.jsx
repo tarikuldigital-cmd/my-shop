@@ -12,7 +12,7 @@ const demoApi = {
   list: async () => S.team.map(publicOf),
   add: async (m) => {
     if (S.team.some((x) => x.email === m.email.toLowerCase())) throw new Error('এই ইমেইলে আগেই একটি অ্যাকাউন্ট আছে')
-    const rec = { id: Math.max(0, ...S.team.map((x) => x.id)) + 1, name: m.name, email: m.email.toLowerCase(), pass: m.password, role: m.role, active: true, created: Date.now(), lastLogin: 0 }
+    const rec = { id: Math.max(0, ...S.team.map((x) => x.id)) + 1, name: m.name, email: m.email.toLowerCase(), phone: m.phone || '', pass: m.password, role: m.role, active: true, created: Date.now(), lastLogin: 0 }
     S.team.push(rec); save(); return publicOf(rec)
   },
   update: async (id, p) => {
@@ -20,7 +20,7 @@ const demoApi = {
     const role = p.role ?? m.role, active = p.active ?? m.active
     if (m.role === 'super_admin' && m.active && (role !== 'super_admin' || !active) && supers() <= 1) throw new Error('কমপক্ষে একজন সক্রিয় Super Admin থাকতে হবে')
     if (id === S.account?.id && !active) throw new Error('নিজের অ্যাকাউন্ট বন্ধ করা যাবে না')
-    Object.assign(m, { role, active, name: p.name?.trim() || m.name }, p.password ? { pass: p.password } : {})
+    Object.assign(m, { role, active, name: p.name?.trim() || m.name }, p.phone !== undefined ? { phone: p.phone } : {}, p.password ? { pass: p.password } : {})
     if (id === S.account?.id) S.account = publicOf(m)
     save(); return publicOf(m)
   },
@@ -71,7 +71,7 @@ const copy = (text, msg = 'Copied ✓') => { navigator.clipboard?.writeText(text
 /* ---------- add / edit dialog ---------- */
 function MemberDialog({ member, onClose, onDone, meId }) {
   const editing = !!member
-  const [f, setF] = useState({ name: member?.name || '', email: member?.email || '', password: editing ? '' : genPass(), role: member?.role || 'order_manager', active: member?.active ?? true })
+  const [f, setF] = useState({ name: member?.name || '', email: member?.email || '', phone: member?.phone || '', password: editing ? '' : genPass(), role: member?.role || 'order_manager', active: member?.active ?? true })
   const [show, setShow] = useState(!editing)
   const [busy, setBusy] = useState(false)
   const [created, setCreated] = useState(null)
@@ -82,13 +82,15 @@ function MemberDialog({ member, onClose, onDone, meId }) {
     if (!f.name.trim()) return toast('নাম লিখুন')
     if (!editing && !/^\S+@\S+\.\S+$/.test(f.email.trim())) return toast('সঠিক ইমেইল দিন')
     if ((!editing || f.password) && f.password.length < 8) return toast('পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে')
+    const phone = f.phone.replace(/[^\d]/g, '').replace(/^88/, '')
+    if (phone && !/^01[3-9]\d{8}$/.test(phone)) return toast('সঠিক ১১ ডিজিটের মোবাইল নাম্বার দিন')
     setBusy(true)
     try {
       if (editing) {
-        await api.update(member.id, { name: f.name.trim(), role: f.role, active: f.active, ...(f.password ? { password: f.password } : {}) })
+        await api.update(member.id, { name: f.name.trim(), phone, role: f.role, active: f.active, ...(f.password ? { password: f.password } : {}) })
         toast('সেভ হয়েছে ✓'); onDone(); onClose()
       } else {
-        const m = await api.add({ name: f.name.trim(), email: f.email.trim().toLowerCase(), password: f.password, role: f.role })
+        const m = await api.add({ name: f.name.trim(), email: f.email.trim().toLowerCase(), phone, password: f.password, role: f.role })
         setCreated({ ...m, password: f.password }); onDone()
       }
     } catch (x) { toast(x.message) } finally { setBusy(false) }
@@ -117,6 +119,7 @@ function MemberDialog({ member, onClose, onDone, meId }) {
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="নাম"><input className="field" value={f.name} onChange={set('name')} placeholder="যেমন: Rafi Ahmed" autoFocus /></Field>
           <Field label="ইমেইল (লগইনের জন্য)"><input className="field disabled:bg-surface" type="email" value={f.email} onChange={set('email')} disabled={editing} placeholder="name@example.com" autoComplete="off" /></Field>
+          <Field label="মোবাইল নাম্বার (Complain Box-এর SMS এই নাম্বারে যাবে)" className="sm:col-span-2"><input className="field" type="tel" value={f.phone} onChange={set('phone')} placeholder="01XXXXXXXXX" /></Field>
         </div>
         <Field label={editing ? 'নতুন পাসওয়ার্ড (বদলাতে চাইলে লিখুন, না চাইলে ফাঁকা রাখুন)' : 'পাসওয়ার্ড (কমপক্ষে ৮ অক্ষর)'}>
           <div className="flex gap-2">
@@ -205,7 +208,7 @@ export default function Team() {
                     <Avatar m={m} />
                     <div className="min-w-0 flex-1">
                       <p className="flex flex-wrap items-center gap-1.5 font-semibold leading-tight">{m.name}{me && <span className="rounded-full bg-gold/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-accent-dark">You</span>}{!m.active && <span className="rounded-full bg-gray-200 px-2 py-0.5 text-[10px] font-bold uppercase text-gray-600">Disabled</span>}</p>
-                      <p className="truncate text-sm text-muted">{m.email}</p>
+                      <p className="truncate text-sm text-muted">{m.email}{m.phone && <> · 📱 {m.phone}</>}</p>
                       <p className="mt-0.5 text-xs text-muted">{m.lastLogin ? `Last login ${ago(m.lastLogin)}` : 'এখনো লগইন করেনি'} · added {fdate(m.created)}</p>
                     </div>
                     <Switch on={m.active} onChange={(v) => toggle(m, v)} disabled={me} label={`${m.name} active`} />

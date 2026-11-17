@@ -17,6 +17,7 @@ import HomeEditor from './HomeEditor'
 import { Coupons, Customers, Messages, Reviews, Pages } from './Misc'
 import Settings from './Settings'
 import Team from './Team'
+import Complaints from './Complaints'
 import { ROLES, ROUTE_PERM, can, homePath, initials, permsOf } from './roles'
 import Sms from './Sms'
 import Landings from './Landings'
@@ -66,7 +67,7 @@ function Login({ onOk }) {
 
 const NAV = [
   ['Orders', [['', 'Dashboard'], ['orders', 'Orders', () => S.orders.filter((o) => o.status === 'pending').length], ['incomplete', 'Incomplete orders', () => S.incomplete.filter((x) => x.status === 'new').length]]],
-  ['Customers', [['customers', 'Customers'], ['chat', 'Live chat', () => S.chats.filter((c) => Date.now() - (c.updated || c.at) < 864e5).length], ['sms', 'SMS', () => S.smsLog.filter((x) => x.status !== 'sent' && Date.now() - x.at < 864e5).length], ['messages', 'Messages', () => S.messages.filter((m) => !m.read).length], ['reviews', 'Reviews', () => S.reviews.filter((r) => !r.approved).length]]],
+  ['Customers', [['customers', 'Customers'], ['complaints', 'Complain Box', () => (S.complaints || []).filter((c) => c.unread || c.status === 'submitted').length], ['chat', 'Live chat', () => S.chats.filter((c) => Date.now() - (c.updated || c.at) < 864e5).length], ['sms', 'SMS', () => S.smsLog.filter((x) => x.status !== 'sent' && Date.now() - x.at < 864e5).length], ['messages', 'Messages', () => S.messages.filter((m) => !m.read).length], ['reviews', 'Reviews', () => S.reviews.filter((r) => !r.approved).length]]],
   ['Catalogue', [['products', 'Products'], ['categories', 'Categories'], ['landing-pages', 'Landing pages'], ['homepage', 'Homepage & banners'], ['coupons', 'Coupons'], ['pages', 'Info pages']]],
   ['Store', [['settings', 'Settings, Pixel & SEO'], ['team', 'Team & roles']]],
 ]
@@ -85,8 +86,10 @@ export default function AdminApp() {
       document.title = `🛒 নতুন অর্ডার! | Admin`
       try { const a = new (window.AudioContext || window.webkitAudioContext)(), o = a.createOscillator(); o.frequency.value = 880; o.connect(a.destination); o.start(); setTimeout(() => { o.stop(); a.close() }, 250) } catch { /* no audio */ }
     }
+    const onCmp = (e) => { toast(`📮 নতুন অভিযোগ ${e.detail.id} — ${e.detail.name}`); document.title = '📮 নতুন অভিযোগ! | Admin' }
     window.addEventListener('fatiha:new-order', on)
-    return () => window.removeEventListener('fatiha:new-order', on)
+    window.addEventListener('fatiha:new-complaint', onCmp)
+    return () => { window.removeEventListener('fatiha:new-order', on); window.removeEventListener('fatiha:new-complaint', onCmp) }
   }, [])
   // No webhook on this Steadfast account → while the admin is open, pull courier status + rider notes every 15 minutes
   useEffect(() => {
@@ -163,7 +166,7 @@ export default function AdminApp() {
         <main className="p-4 sm:p-6">
           <Routes>
             {[
-              [undefined, '', <Dashboard />], ['orders', 'orders', <Orders />], ['incomplete', 'incomplete', <Incomplete />], ['customers', 'customers', <Customers />], ['messages', 'messages', <Messages />],
+              [undefined, '', <Dashboard />], ['orders', 'orders', <Orders />], ['incomplete', 'incomplete', <Incomplete />], ['customers', 'customers', <Customers />], ['complaints', 'complaints', <Complaints />], ['messages', 'messages', <Messages />],
               ['sms', 'sms', <Sms />], ['chat', 'chat', <LiveChat />], ['reviews', 'reviews', <Reviews />], ['products', 'products', <Products />], ['categories', 'categories', <Categories />],
               ['landing-pages', 'landing-pages', <Landings />], ['homepage', 'homepage', <HomeEditor />], ['coupons', 'coupons', <Coupons />], ['pages', 'pages', <Pages />], ['settings', 'settings', <Settings />], ['team', 'team', <Team />],
             ].map(([path, key, el]) => {

@@ -5,19 +5,19 @@
  *  - admin       : everything except the team page
  *  - order_manager, support, content : limited sections (see ADMIN_ROLES)
  * Permission names match the admin menu: dashboard, orders, incomplete, customers, chat, sms, messages, reviews,
- * products, categories, landings, homepage, coupons, pages, settings, team.
+ * products, categories, landings, homepage, coupons, pages, settings, team, complaints.
  */
 declare(strict_types=1);
 
 const ADMIN_ROLES = [
   'super_admin'   => ['*'],
-  'admin'         => ['dashboard', 'orders', 'incomplete', 'customers', 'chat', 'sms', 'messages', 'reviews', 'products', 'categories', 'landings', 'homepage', 'coupons', 'pages', 'settings'],
-  'order_manager' => ['dashboard', 'orders', 'incomplete', 'customers', 'chat', 'sms', 'messages'],
-  'support'       => ['orders', 'incomplete', 'customers', 'chat', 'messages', 'reviews'],
+  'admin'         => ['dashboard', 'orders', 'incomplete', 'customers', 'complaints', 'chat', 'sms', 'messages', 'reviews', 'products', 'categories', 'landings', 'homepage', 'coupons', 'pages', 'settings'],
+  'order_manager' => ['dashboard', 'orders', 'incomplete', 'customers', 'complaints', 'chat', 'sms', 'messages'],
+  'support'       => ['orders', 'incomplete', 'customers', 'complaints', 'chat', 'messages', 'reviews'],
   'content'       => ['products', 'categories', 'landings', 'homepage', 'coupons', 'pages', 'reviews'],
 ];
 /** which permission is needed to write each synced collection / key-value block */
-const COLL_PERM = ['products' => 'products', 'categories' => 'categories', 'coupons' => 'coupons', 'reviews' => 'reviews', 'landings' => 'landings', 'chats' => 'chat', 'messages' => 'messages', 'incomplete' => 'incomplete', 'orders' => 'orders', 'smsLog' => 'sms'];
+const COLL_PERM = ['products' => 'products', 'categories' => 'categories', 'coupons' => 'coupons', 'reviews' => 'reviews', 'landings' => 'landings', 'chats' => 'chat', 'messages' => 'messages', 'incomplete' => 'incomplete', 'orders' => 'orders', 'smsLog' => 'sms', 'complaints' => 'complaints'];
 const KV_PERM = ['settings' => 'settings', 'home' => 'homepage', 'pages' => 'pages', 'fraud' => 'orders'];
 
 /** Adds role / active / last_login to an existing `admins` table (once) and makes sure a Super Admin exists. */
@@ -33,6 +33,8 @@ function admin_migrate(): void {
       'ALTER TABLE admins ADD COLUMN last_login BIGINT NOT NULL DEFAULT 0',
     ] as $sql) { try { db()->exec($sql); } catch (PDOException $e2) { /* column already there */ } }
   }
+  try { q('SELECT phone FROM admins LIMIT 1'); }
+  catch (PDOException $e) { try { db()->exec("ALTER TABLE admins ADD COLUMN phone VARCHAR(20) NOT NULL DEFAULT ''"); } catch (PDOException $e2) { /* already there */ } }
   if (!q("SELECT 1 FROM admins WHERE role = 'super_admin' LIMIT 1")->fetch()) {
     q("UPDATE admins SET role = 'super_admin', active = 1 WHERE id = (SELECT m FROM (SELECT MIN(id) AS m FROM admins) t)");
   }
@@ -41,7 +43,7 @@ function admin_migrate(): void {
 function admin_perms(array $u): array { return ADMIN_ROLES[$u['role'] ?? 'admin'] ?? []; }
 function admin_can(array $u, string $perm): bool { $p = admin_perms($u); return in_array('*', $p, true) || in_array($perm, $p, true); }
 function admin_public(array $u): array {
-  return ['id' => (int)$u['id'], 'name' => $u['name'], 'email' => $u['email'], 'role' => $u['role'] ?? 'admin', 'active' => (int)($u['active'] ?? 1) === 1,
+  return ['id' => (int)$u['id'], 'name' => $u['name'], 'email' => $u['email'], 'phone' => (string)($u['phone'] ?? ''), 'role' => $u['role'] ?? 'admin', 'active' => (int)($u['active'] ?? 1) === 1,
     'created' => (int)$u['created'], 'lastLogin' => (int)($u['last_login'] ?? 0), 'perms' => admin_perms($u)];
 }
 /** Secrets (courier keys, CAPI token, chat key…) only go to roles that may open Settings. */
@@ -71,7 +73,9 @@ function h_team_add(): void {
   if (strlen($pw) < 8) fail(422, 'পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে');
   if (!isset(ADMIN_ROLES[$role])) fail(422, 'রোল সঠিক নয়');
   if (q('SELECT 1 FROM admins WHERE email = ?', [$email])->fetch()) fail(422, 'এই ইমেইলে আগেই একটি অ্যাকাউন্ট আছে');
-  q('INSERT INTO admins (email, name, pass, created, role, active) VALUES (?,?,?,?,?,1)', [$email, $name, password_hash($pw, PASSWORD_DEFAULT), now_ms(), $role]);
+  $phone = norm_phone((string)($b['phone'] ?? ''));
+  if ($phone !== '' && !valid_phone($phone)) fail(422, 'সঠিক মোবাইল নাম্বার দিন (SMS-এর জন্য)');
+  q('INSERT INTO admins (email, name, pass, created, role, active, phone) VALUES (?,?,?,?,?,1,?)', [$email, $name, password_hash($pw, PASSWORD_DEFAULT), now_ms(), $role, $phone]);
   out(['member' => admin_public(q('SELECT * FROM admins WHERE email = ?', [$email])->fetch())]);
 }
 
@@ -88,7 +92,9 @@ function h_team_update(string $id): void {
   if ($uid === (int)$me['id'] && $active === 0) fail(422, 'নিজের অ্যাকাউন্ট বন্ধ করা যাবে না');
   $name = array_key_exists('name', $b) ? s($b['name'], 120) : $u['name'];
   if ($name === '') fail(422, 'নাম লিখুন');
-  $sql = 'UPDATE admins SET name = ?, role = ?, active = ?'; $args = [$name, $role, $active];
+  $phone = array_key_exists('phone', $b) ? norm_phone((string)$b['phone']) : (string)($u['phone'] ?? '');
+  if ($phone !== '' && !valid_phone($phone)) fail(422, 'সঠিক মোবাইল নাম্বার দিন (SMS-এর জন্য)');
+  $sql = 'UPDATE admins SET name = ?, role = ?, active = ?, phone = ?'; $args = [$name, $role, $active, $phone];
   if (isset($b['password']) && $b['password'] !== '') {
     if (strlen((string)$b['password']) < 8) fail(422, 'পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে');
     $sql .= ', pass = ?'; $args[] = password_hash((string)$b['password'], PASSWORD_DEFAULT);
