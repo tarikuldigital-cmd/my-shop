@@ -413,7 +413,8 @@ function h_steadfast(): void {
     if (in_array($o['status'], ['cancelled', 'delivered', 'returned'], true)) fail(422, 'This order is ' . $o['status'] . ' and cannot be sent to the courier');
     if ($note !== '') $o['courierNote'] = $note;
     $r = steadfast_create($o);
-    $o['courier'] = 'steadfast'; $o['tracking'] = $r['tracking']; $o['consignmentId'] = $r['consignmentId']; $o['courierStatus'] = $r['status']; $o['codAmount'] = $r['cod'];
+    $o['courier'] = 'steadfast'; $o['tracking'] = $r['tracking']; $o['consignmentId'] = $r['consignmentId']; $o['sfInvoice'] = $r['sfInvoice']; $o['courierStatus'] = $r['status'];
+    if (!empty($r['consignmentId'])) kv_set('sfcid:' . $r['consignmentId'], $o['id']); $o['codAmount'] = $r['cod'];
     courier_log_add($o, $r['status'], 'Steadfast-এ পার্সেল বুক হয়েছে · COD ৳' . $r['cod']);
     doc_put('orders', $o);
     return $o;
@@ -497,10 +498,12 @@ function h_steadfast_hook(): void {
   $b = body();
   $type = (string)($b['notification_type'] ?? '');
   $inv = (string)($b['invoice'] ?? '');
-  if (!in_array($type, ['delivery_status', 'tracking_update'], true) || !preg_match('/^[A-Z]{1,4}\d+$/', $inv)) out(['status' => 'success', 'message' => 'ignored']);
+  $cid = (string)($b['consignment_id'] ?? '');
+  $oid = $cid !== '' ? (string)(kv_get('sfcid:' . $cid, '') ?: '') : '';
+  if (!in_array($type, ['delivery_status', 'tracking_update'], true) || ($oid === '' && !preg_match('/^[A-Z]{1,4}\d+$/', $inv))) out(['status' => 'success', 'message' => 'ignored']);
   $event = null;
-  $o = tx(function () use ($inv, $type, $b, &$event) {
-    $o = doc_by('orders', 'k', $inv, true); if (!$o || ($o['courier'] ?? '') !== 'steadfast') return null;
+  $o = tx(function () use ($inv, $oid, $type, $b, &$event) {
+    $o = $oid !== '' ? doc_get('orders', $oid, true) : doc_by('orders', 'k', $inv, true); if (!$o || ($o['courier'] ?? '') !== 'steadfast') return null;
     $msg = s($b['tracking_message'] ?? '', 500); $at = ts_ms($b['updated_at'] ?? null);
     if ($type === 'delivery_status') {
       $st = strtolower((string)($b['status'] ?? ''));

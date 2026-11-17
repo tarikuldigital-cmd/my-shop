@@ -181,23 +181,44 @@ function cod_amount(array $o): int { return ($o['payment']['status'] ?? '') === 
 function sf_clean(string $s, int $max): string { return mb_substr(trim(str_replace(['{', '}', ';', '<', '>', '$'], ' ', $s)), 0, $max); }
 function item_summary(array $o): string { return implode(', ', array_map(fn($i) => $i['name'] . ' x' . $i['quantity'], $o['items'] ?? [])); }
 
+/** Steadfast invoice = only the ordered colour(s), e.g. "Green" or "Black-White" (no spaces). */
+function sf_color_invoice(array $o): string {
+  $parts = [];
+  foreach ($o['items'] ?? [] as $i) {
+    $c = '';
+    $p = !empty($i['productId']) ? doc_get('products', (string)$i['productId']) : null;
+    if ($p && !empty($p['color'])) $c = (string)$p['color'];
+    elseif (!empty($i['color'])) $c = (string)$i['color'];
+    elseif (preg_match('/[—–-]\s*([^—–-]+)$/u', (string)($i['name'] ?? ''), $m)) $c = $m[1];
+    $c = trim(preg_replace('/[^A-Za-z0-9]+/', '-', $c), '-');
+    if ($c !== '' && !in_array($c, $parts, true)) $parts[] = $c;
+  }
+  return substr(implode('-', $parts), 0, 60);
+}
 function steadfast_create(array $o): array {
   $note = trim((string)($o['courierNote'] ?? $o['note'] ?? ''));
   if (!empty($o['abroadPhone'])) $note = trim($note . ' | বিদেশে অর্ডারদাতা: ' . $o['abroadPhone']);
+  $color = sf_color_invoice($o);
   $payload = [
-    'invoice' => $o['invoice'], 'recipient_name' => sf_clean((string)$o['name'], 100), 'recipient_phone' => norm_phone((string)$o['phone']),
+    'invoice' => $color !== '' ? $color : $o['invoice'], 'recipient_name' => sf_clean((string)$o['name'], 100), 'recipient_phone' => norm_phone((string)$o['phone']),
     'recipient_address' => sf_clean((string)$o['address'], 250), 'cod_amount' => cod_amount($o),
     'note' => sf_clean($note, 250), 'item_description' => sf_clean(item_summary($o), 250),
     'total_lot' => array_sum(array_map(fn($i) => (int)$i['quantity'], $o['items'] ?? [])),
   ];
   [$code, $b, $err] = http_call(sf_base() . '/create_order', [CURLOPT_POST => true, CURLOPT_HTTPHEADER => steadfast_keys(), CURLOPT_POSTFIELDS => jenc($payload)]);
   $j = json_decode($b, true) ?: [];
+  // Steadfast needs a unique invoice: if this colour was already used, send "Green-100123"
+  if (!$err && (int)($j['status'] ?? 0) !== 200 && $payload['invoice'] !== $o['invoice'] && stripos($b, 'invoice') !== false) {
+    $payload['invoice'] = $payload['invoice'] . '-' . preg_replace('/\D+/', '', (string)$o['invoice']);
+    [$code, $b, $err] = http_call(sf_base() . '/create_order', [CURLOPT_POST => true, CURLOPT_HTTPHEADER => steadfast_keys(), CURLOPT_POSTFIELDS => jenc($payload)]);
+    $j = json_decode($b, true) ?: [];
+  }
   if ($err) fail(502, 'Steadfast-এর সাথে যোগাযোগ করা যায়নি: ' . $err);
   if ($code >= 300 || (int)($j['status'] ?? 0) !== 200 || empty($j['consignment']['tracking_code'])) {
     $msg = $j['message'] ?? (is_array($j['errors'] ?? null) ? implode(', ', array_map(fn($e) => is_array($e) ? implode(' ', $e) : (string)$e, $j['errors'])) : substr($b, 0, 160));
     fail(502, 'Steadfast: ' . $msg);
   }
-  return ['tracking' => (string)$j['consignment']['tracking_code'], 'consignmentId' => $j['consignment']['consignment_id'] ?? null, 'cod' => $payload['cod_amount'], 'status' => (string)($j['consignment']['status'] ?? 'in_review')];
+  return ['tracking' => (string)$j['consignment']['tracking_code'], 'consignmentId' => $j['consignment']['consignment_id'] ?? null, 'cod' => $payload['cod_amount'], 'status' => (string)($j['consignment']['status'] ?? 'in_review'), 'sfInvoice' => (string)$payload['invoice']];
 }
 
 /** Steadfast status → our order status (null = no change) */
@@ -243,7 +264,7 @@ function apply_courier_status(array &$o, string $st, string $message, string $by
 
 /** Pull the latest status + full tracking history (rider notes) from Steadfast. */
 function steadfast_refresh(array &$o): ?string {
-  $inv = rawurlencode((string)$o['invoice']);
+  $inv = rawurlencode((string)($o['sfInvoice'] ?? $o['invoice']));
   $st = steadfast_get(!empty($o['consignmentId']) ? '/status_by_cid/' . rawurlencode((string)$o['consignmentId']) : "/status_by_invoice/$inv");
   $status = (string)($st['delivery_status'] ?? '');
   try {
