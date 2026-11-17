@@ -51,6 +51,7 @@ function routes(): array {
     ['POST', 'complaints/upload', 'h_cmp_upload'],
     ['POST', 'complaints', 'h_cmp_create'],
     ['POST', 'complaints/track', 'h_cmp_track'],
+    ['POST', 'complaints/by-phone', 'h_cmp_by_phone'],
     ['POST', 'complaints/reply', 'h_cmp_reply'],
     ['POST', 'complaints/rate', 'h_cmp_rate'],
     ['GET', 'admin/complaints/staff', 'h_cmp_staff'],

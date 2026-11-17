@@ -144,6 +144,15 @@ export async function cmpTrack(q) {
   if (LIVE) return (await liveApi('complaints/track', { method: 'POST', body: q })).complaint
   return cmpPublic(findDemo(q))
 }
+/** all complaints made with this phone (customer types only the phone) */
+export async function cmpByPhone(phone) {
+  const p = normPhone(phone)
+  if (!validPhone(p)) throw new Error('সঠিক ১১ ডিজিটের মোবাইল নাম্বার দিন')
+  if (LIVE) return (await liveApi('complaints/by-phone', { method: 'POST', body: { phone: p } })).complaints
+  const list = S.complaints.filter((c) => c.phone === p).sort((a, b) => b.createdAt - a.createdAt).map(cmpPublic)
+  if (!list.length) throw new Error('এই নাম্বার দিয়ে কোনো অভিযোগ পাওয়া যায়নি')
+  return list
+}
 export async function cmpReply(q, text, files = [], fileMeta = {}) {
   if (LIVE) return (await liveApi('complaints/reply', { method: 'POST', body: { ...q, text, files } })).complaint // fileMeta is demo-only
   const c = findDemo(q)

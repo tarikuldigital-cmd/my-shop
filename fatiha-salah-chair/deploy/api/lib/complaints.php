@@ -233,6 +233,18 @@ function h_cmp_track(): void {
   out(['complaint' => cmp_public($c)]);
 }
 
+/** every complaint made with this phone number (newest first) — the customer only types the phone */
+function h_cmp_by_phone(): void {
+  limit_or_fail('cmpph:' . client_ip(), 30, 3600);
+  $phone = norm_phone((string)(body()['phone'] ?? ''));
+  if (!valid_phone($phone)) fail(422, 'সঠিক ১১ ডিজিটের মোবাইল নাম্বার দিন');
+  $rows = q("SELECT data FROM docs WHERE coll = 'complaints' AND k = ? ORDER BY updated DESC LIMIT 20", [$phone])->fetchAll();
+  $list = array_map(fn($r) => cmp_public(jdec($r['data'])), $rows);
+  usort($list, fn($a, $b) => $b['createdAt'] <=> $a['createdAt']);
+  if (!$list) fail(404, 'এই নাম্বার দিয়ে কোনো অভিযোগ পাওয়া যায়নি');
+  out(['complaints' => $list]);
+}
+
 function h_cmp_reply(): void {
   limit_or_fail('cmprep:' . client_ip(), 20, 3600);
   $b = body();

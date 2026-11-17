@@ -3,35 +3,35 @@
 export const CMP_STEPS = ['submitted', 'received', 'reviewing', 'processing', 'resolved']
 
 export const CMP_STATUS = {
-  submitted: { bn: 'জমা হয়েছে', short: 'নতুন', en: 'New', tone: 'bg-sky-100 text-sky-800', dot: 'bg-sky-500', icon: '📨', desc: 'আপনার অভিযোগ আমাদের কাছে পৌঁছেছে' },
-  received: { bn: 'অভিযোগটি গ্রহণ করা হয়েছে', short: 'গৃহীত', en: 'Received', tone: 'bg-indigo-100 text-indigo-800', dot: 'bg-indigo-500', icon: '✅', desc: 'আমাদের টিম অভিযোগটি গ্রহণ করেছে' },
-  reviewing: { bn: 'পর্যালোচনা চলছে', short: 'পর্যালোচনা', en: 'Reviewing', tone: 'bg-amber-100 text-amber-800', dot: 'bg-amber-500', icon: '🔍', desc: 'ছবি/ভিডিও ও অর্ডার মিলিয়ে দেখা হচ্ছে' },
-  processing: { bn: 'সমাধান প্রক্রিয়াধীন', short: 'প্রক্রিয়াধীন', en: 'Processing', tone: 'bg-violet-100 text-violet-800', dot: 'bg-violet-500', icon: '⚙️', desc: 'রিপ্লেসমেন্ট / রিফান্ড / রিটার্নের কাজ চলছে' },
-  resolved: { bn: 'সমাধান হয়েছে', short: 'সমাধান', en: 'Resolved', tone: 'bg-green-100 text-green-800', dot: 'bg-green-600', icon: '🎉', desc: 'অভিযোগের সমাধান সম্পন্ন হয়েছে' },
-  rejected: { bn: 'অভিযোগটি গ্রহণযোগ্য হয়নি', short: 'বাতিল', en: 'Rejected', tone: 'bg-red-100 text-red-800', dot: 'bg-red-500', icon: '✖️', desc: 'বিস্তারিত কারণ নিচে দেওয়া হয়েছে' },
+  submitted: { bn: 'জমা হয়েছে', short: 'নতুন', en: 'New', tone: 'bg-sky-100 text-sky-800', dot: 'bg-sky-500', desc: 'আপনার অভিযোগ আমাদের কাছে পৌঁছেছে' },
+  received: { bn: 'অভিযোগটি গ্রহণ করা হয়েছে', short: 'গৃহীত', en: 'Received', tone: 'bg-indigo-100 text-indigo-800', dot: 'bg-indigo-500', desc: 'আমাদের টিম অভিযোগটি গ্রহণ করেছে' },
+  reviewing: { bn: 'পর্যালোচনা চলছে', short: 'পর্যালোচনা', en: 'Reviewing', tone: 'bg-amber-100 text-amber-800', dot: 'bg-amber-500', desc: 'ছবি/ভিডিও ও অর্ডার মিলিয়ে দেখা হচ্ছে' },
+  processing: { bn: 'সমাধান প্রক্রিয়াধীন', short: 'প্রক্রিয়াধীন', en: 'Processing', tone: 'bg-violet-100 text-violet-800', dot: 'bg-violet-500', desc: 'রিপ্লেসমেন্ট / রিফান্ড / রিটার্নের কাজ চলছে' },
+  resolved: { bn: 'সমাধান হয়েছে', short: 'সমাধান', en: 'Resolved', tone: 'bg-green-100 text-green-800', dot: 'bg-green-600', desc: 'অভিযোগের সমাধান সম্পন্ন হয়েছে' },
+  rejected: { bn: 'অভিযোগটি গ্রহণযোগ্য হয়নি', short: 'বাতিল', en: 'Rejected', tone: 'bg-red-100 text-red-800', dot: 'bg-red-500', desc: 'বিস্তারিত কারণ নিচে দেওয়া হয়েছে' },
 }
 export const CMP_STATUS_KEYS = Object.keys(CMP_STATUS)
 export const CMP_OPEN = ['submitted', 'received', 'reviewing', 'processing']
 
 export const CMP_TYPES = {
-  damaged: { bn: 'প্রোডাক্ট ভাঙা / ক্ষতিগ্রস্ত', icon: '💔', hint: 'ডেলিভারিতে ভাঙা, ফাটা বা দাগ', seg: 'replace' },
-  wrong: { bn: 'ভুল প্রোডাক্ট / কালার', icon: '🔀', hint: 'অর্ডারের সাথে মিলছে না', seg: 'replace' },
-  missing: { bn: 'পার্টস বা আইটেম কম', icon: '🧩', hint: 'স্ক্রু, কুশন, রেহাল বা অন্য অংশ নেই', seg: 'replace' },
-  quality: { bn: 'মান / ত্রুটির সমস্যা', icon: '⚙️', hint: 'ঠিকমতো কাজ করছে না, নড়বড়ে', seg: 'replace' },
-  return: { bn: 'রিটার্ন করতে চাই', icon: '↩️', hint: 'প্রোডাক্ট ফেরত দিতে চান', seg: 'return' },
-  refund: { bn: 'রিফান্ড চাই', icon: '💸', hint: 'টাকা ফেরত পেতে চান', seg: 'refund' },
-  delivery: { bn: 'ডেলিভারি সমস্যা', icon: '🚚', hint: 'দেরি, খারাপ ব্যবহার, পার্সেল পাইনি', seg: 'delivery' },
-  other: { bn: 'অন্যান্য', icon: '💬', hint: 'অন্য যেকোনো বিষয়', seg: 'general' },
+  damaged: { bn: 'প্রোডাক্ট ভাঙা / ক্ষতিগ্রস্ত', hint: 'ডেলিভারিতে ভাঙা, ফাটা বা দাগ', seg: 'replace' },
+  wrong: { bn: 'ভুল প্রোডাক্ট / কালার', hint: 'অর্ডারের সাথে মিলছে না', seg: 'replace' },
+  missing: { bn: 'পার্টস বা আইটেম কম', hint: 'স্ক্রু, কুশন, রেহাল বা অন্য অংশ নেই', seg: 'replace' },
+  quality: { bn: 'মান / ত্রুটির সমস্যা', hint: 'ঠিকমতো কাজ করছে না, নড়বড়ে', seg: 'replace' },
+  return: { bn: 'রিটার্ন করতে চাই', hint: 'প্রোডাক্ট ফেরত দিতে চান', seg: 'return' },
+  refund: { bn: 'রিফান্ড চাই', hint: 'টাকা ফেরত পেতে চান', seg: 'refund' },
+  delivery: { bn: 'ডেলিভারি সমস্যা', hint: 'দেরি, খারাপ ব্যবহার, পার্সেল পাইনি', seg: 'delivery' },
+  other: { bn: 'অন্যান্য', hint: 'অন্য যেকোনো বিষয়', seg: 'general' },
 }
 
 export const CMP_WANTS = { replace: 'রিপ্লেসমেন্ট', refund: 'টাকা ফেরত', repair: 'মেরামত / পার্টস', return: 'রিটার্ন', other: 'অন্য কিছু' }
 
 export const CMP_SEGMENTS = {
-  refund: { bn: 'রিফান্ড', icon: '💸', tone: 'bg-rose-100 text-rose-800' },
-  return: { bn: 'রিটার্ন', icon: '↩️', tone: 'bg-orange-100 text-orange-800' },
-  replace: { bn: 'রিপ্লেসমেন্ট / ক্ষতিপূরণ', icon: '🔁', tone: 'bg-teal-100 text-teal-800' },
-  delivery: { bn: 'ডেলিভারি', icon: '🚚', tone: 'bg-blue-100 text-blue-800' },
-  general: { bn: 'সাধারণ', icon: '💬', tone: 'bg-gray-100 text-gray-700' },
+  refund: { bn: 'রিফান্ড', tone: 'bg-rose-100 text-rose-800' },
+  return: { bn: 'রিটার্ন', tone: 'bg-orange-100 text-orange-800' },
+  replace: { bn: 'রিপ্লেসমেন্ট / ক্ষতিপূরণ', tone: 'bg-teal-100 text-teal-800' },
+  delivery: { bn: 'ডেলিভারি', tone: 'bg-blue-100 text-blue-800' },
+  general: { bn: 'সাধারণ', tone: 'bg-gray-100 text-gray-700' },
 }
 
 export const CMP_PRIORITY = {
