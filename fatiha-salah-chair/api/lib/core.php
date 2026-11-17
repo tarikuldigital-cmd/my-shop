@@ -213,7 +213,8 @@ function site_url(): string { return rtrim((string)cfg('site_url', ''), '/'); }
 
 /** Settings with secrets removed — safe for the public storefront. */
 function public_settings(array $st): array {
-  unset($st['courier']);
+  unset($st['courier'], $st['smsGateway']);
+  if (isset($st['complaints'])) { unset($st['complaints']['templates'], $st['complaints']['routing']); }
   if (isset($st['tracking'])) unset($st['tracking']['metaCapiToken']);
   if (isset($st['chat'])) { $st['chat']['apiKey'] = ''; $st['chat']['relayUrl'] = ''; }
   $st['sms'] = ['enabled' => false, 'relayUrl' => '', 'siteUrl' => '', 'events' => new stdClass(), 'templates' => new stdClass()];

@@ -49,7 +49,7 @@ function admin_public(array $u): array {
 /** Secrets (courier keys, CAPI token, chat key…) only go to roles that may open Settings. */
 function settings_for_admin(array $u, $st) {
   if (admin_can($u, 'settings') || !is_array($st)) return $st;
-  unset($st['courier']);
+  unset($st['courier'], $st['smsGateway']);
   if (isset($st['tracking']) && is_array($st['tracking'])) unset($st['tracking']['metaCapiToken']);
   if (isset($st['chat']) && is_array($st['chat'])) { $st['chat']['apiKey'] = ''; $st['chat']['relayUrl'] = ''; }
   if (isset($st['sms']) && is_array($st['sms'])) $st['sms']['relayUrl'] = '';
