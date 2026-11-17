@@ -1,0 +1,50 @@
+# Fatiha Ayat Salah Chair → Hostinger (fatihaayatsalahchair.com)
+# Every push that changes fatiha-salah-chair/deploy/ uploads ONLY the changed files to public_html over FTP.
+# One-time setup (GitHub → repo Settings → Secrets and variables → Actions → New repository secret):
+#   FATIHA_FTP_SERVER    e.g. ftp.fatihaayatsalahchair.com   (hPanel → Files → FTP Accounts → "FTP IP / hostname")
+#   FATIHA_FTP_USERNAME  e.g. u552987600.fatihaayatsalahchair.com
+#   FATIHA_FTP_PASSWORD  the FTP password
+#   FATIHA_FTP_DIR       (optional) folder of the site as the FTP user sees it, default "public_html/"
+# The database settings (api/config.php), customer uploads and the installer are never touched.
+name: Deploy Fatiha site to Hostinger
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['fatiha-salah-chair/deploy/**', '.github/workflows/fatiha-deploy.yml']
+concurrency: { group: fatiha-deploy, cancel-in-progress: false }
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check FTP secrets
+        id: chk
+        env: { S: '${{ secrets.FATIHA_FTP_SERVER }}' }
+        run: if [ -z "$S" ]; then echo "FTP secrets are not set yet — skipping deploy"; echo "ok=no" >> $GITHUB_OUTPUT; else echo "ok=yes" >> $GITHUB_OUTPUT; fi
+      - uses: actions/checkout@v4
+        if: steps.chk.outputs.ok == 'yes'
+      - name: Upload changed files
+        if: steps.chk.outputs.ok == 'yes'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FATIHA_FTP_SERVER }}
+          username: ${{ secrets.FATIHA_FTP_USERNAME }}
+          password: ${{ secrets.FATIHA_FTP_PASSWORD }}
+          protocol: ftp
+          local-dir: ./fatiha-salah-chair/deploy/
+          server-dir: ${{ secrets.FATIHA_FTP_DIR || 'public_html/' }}
+          state-name: .ftp-deploy-sync-state.json
+          exclude: |
+            **/.git*
+            **/.git*/**
+            api/setup.php
+            api/config.php
+            api/seed/**
+            uploads/**
+            README-BN.md
+      - name: Check the live site
+        if: steps.chk.outputs.ok == 'yes'
+        run: |
+          sleep 5
+          curl -fsS https://fatihaayatsalahchair.com/api/v1/health && echo
+          curl -fsS https://fatihaayatsalahchair.com/ | grep -o 'index-[A-Za-z0-9_-]*\.js' | head -1
