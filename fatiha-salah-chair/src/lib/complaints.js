@@ -15,7 +15,7 @@ export const cmpSettings = () => {
 
 /** media URL → something the browser can open (demo samples live in /img) */
 export const mediaSrc = (u) => (!u ? '' : /^(https?:|data:|blob:|\/)/.test(u) ? u : `${import.meta.env.BASE_URL || '/'}${u}`)
-export const fmtSize = (b) => (b >= 1048576 ? `${(b / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(b / 1024))} KB`)
+export const fmtSize = (b) => (!b ? "0 KB" : b >= 1048576 ? `${(b / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(b / 1024))} KB`)
 export const mediaBytes = (c) => (c.files || []).filter((f) => !f.deleted).reduce((s, f) => s + (f.size || 0), 0)
 
 /* ---------------- image compression (saves upload time and hosting space) ---------------- */
