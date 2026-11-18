@@ -48,31 +48,63 @@ const FAQ = [
   ['চেয়ারটি কি ভাঁজ করা যায়?', 'হ্যাঁ, চেয়ারটি ভাঁজ করে রাখা ও বহন করা যায়।'],
 ]
 
+/* Islamic 8-point star tile used as the hero background */
+const STAR_TILE = `url("data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"><g fill="none" stroke="#d9b45a" stroke-width="1"><path d="M40 8l9 23 23 9-23 9-9 23-9-23-23-9 23-9z"/><path d="M17.4 17.4h45.2v45.2H17.4z" transform="rotate(45 40 40)"/><circle cx="40" cy="40" r="6"/><path d="M0 0l8 8M80 0l-8 8M0 80l8-8M80 80l-8-8"/></g></svg>')}")`
+
+function Lantern({ className = '', delay = '0s' }) {
+  return (
+    <svg viewBox="0 0 60 150" className={`fa-lantern ${className}`} style={{ animationDelay: delay }} aria-hidden="true">
+      <line x1="30" y1="0" x2="30" y2="46" stroke="#c9962f" strokeWidth="1.5" />
+      <path d="M22 46h16l-3 8H25z" fill="#c9962f" />
+      <path d="M18 54h24l6 22-6 34H18l-6-34z" fill="url(#lg)" stroke="#e8c76e" strokeWidth="1.5" />
+      <path d="M30 56v52M18 76h24M21 98h18" stroke="#e8c76e" strokeWidth="1" opacity=".6" />
+      <ellipse className="fa-flame" cx="30" cy="84" rx="5" ry="9" fill="#ffd77a" />
+      <path d="M18 110h24l-4 8H22z" fill="#c9962f" />
+      <circle cx="30" cy="124" r="3" fill="#c9962f" />
+      <defs><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#f6d77f" stopOpacity=".55" /><stop offset="1" stopColor="#b8862a" stopOpacity=".25" /></linearGradient></defs>
+    </svg>
+  )
+}
+
+const STARS = [[8, 18, 0], [16, 70, 1.2], [26, 34, 2.1], [44, 12, .6], [58, 82, 1.7], [70, 22, 2.6], [84, 60, .9], [92, 30, 1.9], [36, 88, 2.9], [50, 48, 3.4]]
+
 function Hero({ settings, first }) {
   return (
     <section className="fa-hero relative overflow-hidden text-white">
-      <div className="fa-pattern absolute inset-0 opacity-60" aria-hidden="true" />
-      <div className="container-x relative grid items-center gap-8 py-10 md:grid-cols-[1.1fr_0.9fr] md:py-14">
-        <div className="bk-fade">
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-gold">Sit for Salah • Feel the Peace</p>
-          <h1 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">নামাজ হবে আরামে,<br /><span className="fa-gold-text">ইবাদতে আসবে মনোযোগ ও প্রশান্তি</span></h1>
-          <p className="mt-4 max-w-xl text-base leading-7 text-white/85">মাটিতে বসে বা দীর্ঘক্ষণ দাঁড়িয়ে নামাজ পড়তে যাদের কষ্ট হয় — বাবা-মা, দাদা-দাদি বা আপনি নিজে — তাদের জন্য ভাঁজযোগ্য, নরম কুশন ও রেহালসহ <b>Fatiha Ayat Salah Chair</b>।</p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <a href="#colors" className="btn bg-gold px-6 py-3 text-base text-brand-dark hover:brightness-105">কালার বেছে নিন</a>
-            {first && <Link to={`/product/${first.slug}`} className="btn border border-white/40 px-6 py-3 text-base text-white hover:bg-white/10">এখনই অর্ডার করুন</Link>}
+      <div className="fa-geo absolute inset-0" style={{ backgroundImage: STAR_TILE }} aria-hidden="true" />
+      <div className="absolute inset-0 bg-[radial-gradient(60%_60%_at_75%_45%,rgba(217,180,90,.18),transparent_70%)]" aria-hidden="true" />
+      {STARS.map(([x, y, d], i) => <span key={i} className="fa-star absolute" style={{ left: `${x}%`, top: `${y}%`, animationDelay: `${d}s` }} aria-hidden="true" />)}
+      <Lantern className="absolute left-[50%] top-0 hidden h-28 w-11 lg:block" />
+      <Lantern className="absolute right-[3%] top-0 hidden h-32 w-12 md:block" delay="1.4s" />
+
+      <div className="container-x relative grid items-center gap-10 py-12 md:grid-cols-[1.1fr_0.9fr] md:py-16">
+        <div>
+          <p className="fa-up font-['Amiri',serif] text-left text-3xl leading-relaxed text-gold sm:text-4xl" dir="rtl" lang="ar" style={{ animationDelay: '.05s' }}>حَافِظُوا عَلَى الصَّلَوَاتِ</p>
+          <p className="fa-up mt-1 text-sm text-white/70" style={{ animationDelay: '.2s' }}>“তোমরা নামাজের প্রতি যত্নবান হও” — সূরা আল-বাকারা ২:২৩৮</p>
+          <div className="fa-up mt-5 flex items-center gap-3" style={{ animationDelay: '.3s' }}><span className="h-px w-10 bg-gold/70" /><p className="text-xs font-semibold uppercase tracking-[0.3em] text-gold">Sit for Salah • Feel the Peace</p></div>
+          <h1 className="fa-up mt-3 text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl" style={{ animationDelay: '.45s' }}>নামাজ হবে আরামে,<br /><span className="fa-gold-text fa-shimmer">ইবাদতে আসবে মনোযোগ ও প্রশান্তি</span></h1>
+          <p className="fa-up mt-4 max-w-xl text-base leading-7 text-white/85" style={{ animationDelay: '.6s' }}>বয়স, ব্যথা বা অসুস্থতা যেন কখনো আল্লাহর সামনে দাঁড়ানোর পথে বাধা না হয়। বাবা-মা, দাদা-দাদি বা আপনি নিজে — ভাঁজযোগ্য, নরম কুশন ও রেহালসহ <b className="text-white">Fatiha Ayat Salah Chair</b>-এ প্রতিটি ওয়াক্ত হোক প্রশান্তিময়।</p>
+          <div className="fa-up mt-7 flex flex-wrap gap-3" style={{ animationDelay: '.75s' }}>
+            <a href="#colors" className="btn fa-cta bg-gold px-6 py-3 text-base font-semibold text-brand-dark hover:brightness-105">কালার বেছে নিন</a>
+            {first && <Link to={`/product/${first.slug}`} className="btn border border-gold/60 px-6 py-3 text-base text-white hover:bg-white/10">এখনই অর্ডার করুন</Link>}
             <a href={`https://wa.me/${settings.phoneIntl.replace('+', '')}`} target="_blank" rel="noreferrer" className="btn bg-[#25d366] px-5 py-3 text-base text-white"><WhatsAppIcon className="h-5 w-5" />WhatsApp</a>
           </div>
-          <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-white/80">
-            <li>✓ ক্যাশ অন ডেলিভারি</li><li>✓ সারাদেশে হোম ডেলিভারি</li><li>✓ চেক করে নেওয়ার সুযোগ</li>
+          <ul className="fa-up mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-white/80" style={{ animationDelay: '.9s' }}>
+            {['ক্যাশ অন ডেলিভারি', 'সারাদেশে হোম ডেলিভারি', 'চেক করে নেওয়ার সুযোগ'].map((t) => <li key={t} className="flex items-center gap-1.5"><Icon name="check" className="h-4 w-4 text-gold" strokeWidth={2.5} />{t}</li>)}
           </ul>
         </div>
-        <div className="relative mx-auto w-full max-w-sm">
-          <div className="fa-arch overflow-hidden border-4 border-gold/70 shadow-2xl">
+
+        <div className="fa-up relative mx-auto w-full max-w-sm" style={{ animationDelay: '.35s' }}>
+          <div className="fa-ring absolute -inset-6 rounded-[999px_999px_28px_28px] border border-dashed border-gold/40" aria-hidden="true" />
+          <div className="absolute -inset-3 rounded-[999px_999px_22px_22px] bg-gold/10 blur-2xl" aria-hidden="true" />
+          <svg viewBox="0 0 100 100" className="fa-moon absolute -right-5 -top-6 z-10 h-16 w-16 drop-shadow-[0_0_12px_rgba(243,220,147,.6)]" aria-hidden="true"><path d="M62 10a40 40 0 1 0 28 62A32 32 0 1 1 62 10z" fill="#f3dc93" /><path d="M78 26l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="#f3dc93" /></svg>
+          <div className="fa-arch fa-float relative overflow-hidden border-4 border-gold/70 shadow-2xl">
             <Img src="local:img/green-poster.webp" alt="Fatiha Ayat Salah Chair" className="aspect-[3/4] w-full object-cover" />
+            <span className="fa-sheen absolute inset-0" aria-hidden="true" />
           </div>
-          {first && <div className="absolute -bottom-4 -left-2 rounded-xl bg-white px-4 py-2 text-brand shadow-xl sm:-left-6"><p className="text-xs text-muted">শুরু মাত্র</p><p className="text-xl font-bold">{formatPrice(first.price)}{first.oldPrice > first.price && <span className="ml-2 text-sm font-normal text-muted line-through">{formatPrice(first.oldPrice)}</span>}</p></div>}
         </div>
       </div>
+      <svg viewBox="0 0 1440 40" preserveAspectRatio="none" className="relative block h-6 w-full text-surface md:h-10" aria-hidden="true"><path d="M0 40V20Q360 0 720 20T1440 20V40z" fill="currentColor" /></svg>
     </section>
   )
 }
