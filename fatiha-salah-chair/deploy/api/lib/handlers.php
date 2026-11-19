@@ -470,7 +470,7 @@ function h_steadfast(): void {
     $r = steadfast_create($o);
     $o['courier'] = 'steadfast'; $o['tracking'] = $r['tracking']; $o['consignmentId'] = $r['consignmentId']; $o['sfInvoice'] = $r['sfInvoice']; $o['courierStatus'] = $r['status'];
     if (!empty($r['consignmentId'])) kv_set('sfcid:' . $r['consignmentId'], $o['id']); $o['codAmount'] = $r['cod'];
-    courier_log_add($o, $r['status'], 'Steadfast-এ পার্সেল বুক হয়েছে · COD ৳' . $r['cod']);
+    courier_log_add($o, $r['status'], (!empty($o['rebookN']) ? 'আবার ডেলিভারির জন্য নতুন পার্সেল বুক হয়েছে' : 'Steadfast-এ পার্সেল বুক হয়েছে') . ' · COD ৳' . $r['cod'] . ($note !== '' ? ' · নোট: ' . $note : ''));
     doc_put('orders', $o);
     return $o;
   });

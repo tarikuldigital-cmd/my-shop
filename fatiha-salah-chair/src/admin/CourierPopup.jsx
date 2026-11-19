@@ -117,6 +117,7 @@ function Card({ c, onClose, onOpen, hold }) {
   const { e } = c
   const [ask, setAsk] = useState('')   // '' | 'resend' | 'return'
   const [busy, setBusy] = useState(false)
+  const [rnote, setRnote] = useState('আবার ডেলিভারি — রিসিভ করার আগে কাস্টমারকে কল দিয়ে নিন।')
   const k = kind(e)
   const t = TONE[k.tone]
   const order = c.test ? null : findOrder(e.orderId)
@@ -146,7 +147,7 @@ function Card({ c, onClose, onOpen, hold }) {
     if (!order) return toast('অর্ডার খুঁজে পাওয়া যায়নি')
     setBusy(true)
     try {
-      if (LIVE) await courierLive(order, order.courier || 'steadfast', meName(), '', true)
+      if (LIVE) await courierLive(order, order.courier || 'steadfast', meName(), rnote.trim(), true)
       else sendToCourier(order, order.courier || 'steadfast', meName())
       if (order.status === 'cancelled') setStatus(order, 'confirmed', meName(), 'Re-sent to courier')
       if (['transit', 'ready', 'confirmed'].includes(order.status) && order.status !== 'ready') { order.status = 'ready'; order.history.push({ s: 'ready', by: meName(), at: Date.now(), note: 'Re-sent to courier' }) }
@@ -179,7 +180,8 @@ function Card({ c, onClose, onOpen, hold }) {
         </div>
         {ask && (
           <div className="rounded-lg border border-amber-300 bg-amber-50 p-2.5 text-xs text-amber-900">
-            <p className="font-semibold">{ask === 'resend' ? 'নতুন করে কুরিয়ারে পার্সেল বুক হবে (নতুন কনসাইনমেন্ট)। নিশ্চিত?' : 'অর্ডারটি "Returned" হিসেবে মার্ক হবে। নিশ্চিত?'}</p>
+            <p className="font-semibold">{ask === 'resend' ? 'নতুন করে কুরিয়ারে পার্সেল বুক হবে। নিচের নোটটি রাইডারের কাছে পার্সেলের সাথে যাবে। নিশ্চিত?' : 'অর্ডারটি "Returned" হিসেবে মার্ক হবে। নিশ্চিত?'}</p>
+            {ask === 'resend' && <textarea value={rnote} onChange={(e) => setRnote(e.target.value)} rows={2} maxLength={250} placeholder="রাইডারের জন্য নোট (পার্সেলের সাথে Steadfast-এ যাবে)" className="mt-2 w-full rounded-md border border-amber-300 bg-white p-2 text-xs text-ink" />}
             <div className="mt-2 flex gap-2">
               <button disabled={busy} onClick={ask === 'resend' ? doResend : doReturn} className="rounded-md bg-gray-900 px-3 py-1.5 font-bold text-white">{busy ? 'অপেক্ষা করুন…' : 'হ্যাঁ, করুন'}</button>
               <button disabled={busy} onClick={() => chooseAsk('')} className="rounded-md bg-white px-3 py-1.5 font-semibold text-gray-700">না</button>
