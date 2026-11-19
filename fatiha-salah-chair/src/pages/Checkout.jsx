@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Img from '../components/common/Img'
 import Icon from '../components/common/Icon'
+import VoiceFill from '../components/common/VoiceFill'
 import { Alert, EmptyState } from '../components/common/ui'
 import QtyStepper from '../components/product/QtyStepper'
 import { useCart } from '../context/CartContext'
@@ -139,7 +140,8 @@ export default function Checkout() {
       <form onSubmit={submit} className="checkout-form grid gap-6 lg:grid-cols-[1.2fr_1fr]" noValidate>
         <section className="card p-5">
           <h2 className="mb-1 font-bold">ডেলিভারি তথ্য</h2>
-          <p className="mb-4 text-xs text-muted">অর্ডার কনফার্ম করতে আপনার নাম, মোবাইল নাম্বার ও ঠিকানা লিখুন।</p>
+          <p className="mb-3 text-xs text-muted">অর্ডার কনফার্ম করতে আপনার নাম, মোবাইল নাম্বার ও ঠিকানা লিখুন।</p>
+          <VoiceFill className="mb-4" onFill={(k, v) => setForm((f) => ({ ...f, [k]: v }))} />
           {prefilled && <p className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-md bg-green-50 px-3 py-2 text-xs text-green-800">✓ আপনার আগের অর্ডারের তথ্য বসানো হয়েছে — দেখে নিয়ে অর্ডার করুন।<button type="button" className="font-semibold underline" onClick={() => { forgetSaved(); setPrefilled(false); setForm((f) => ({ ...f, name: user?.name || '', phone: user?.phone || '', address: user?.address || '', abroad: false, abroadPhone: '' })) }}>মুছে নতুন করে লিখুন</button></p>}
           <div className="space-y-4">
             <div>

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Img from '../components/common/Img'
+import VoiceFill from '../components/common/VoiceFill'
 import { S, save, useDb, validPhone, shippingFor, inStock } from '../store/db'
 import { placeOrder, saveCheckoutDraft, discardCheckoutDraft } from '../services/orderService'
 import { track, customerData } from '../lib/tracking'
@@ -262,6 +263,7 @@ export default function LandingPage() {
           {!available ? <p className="rounded-xl bg-red-50 p-6 text-center font-semibold text-red-600">দুঃখিত, পণ্যটি এখন স্টকে নেই। বিস্তারিত জানতে কল করুন: {settings.phone}</p> : (
             <form onSubmit={submit} noValidate className="grid gap-6 rounded-2xl bg-white p-5 shadow-xl md:grid-cols-[1.2fr_1fr] md:p-8">
               <div className="space-y-4">
+                <VoiceFill onFill={(k, v) => setForm((f) => ({ ...f, [k]: v }))} />
                 <label className="block"><span className="mb-1 block text-sm font-semibold">আপনার নাম *</span><input className="field" value={form.name} onChange={set('name')} autoComplete="name" placeholder="পুরো নাম" />{err('name')}</label>
                 <label className="block"><span className="mb-1 block text-sm font-semibold">মোবাইল নাম্বার *</span><input className="field" inputMode="tel" value={form.phone} onChange={set('phone')} autoComplete="tel" placeholder="01XXXXXXXXX" />{err('phone')}</label>
                 <label className="block"><span className="mb-1 block text-sm font-semibold">সম্পূর্ণ ঠিকানা *</span><textarea rows={3} className="field" value={form.address} onChange={set('address')} autoComplete="street-address" placeholder="বাসা/রোড, এলাকা, থানা, জেলা" />{err('address')}</label>
