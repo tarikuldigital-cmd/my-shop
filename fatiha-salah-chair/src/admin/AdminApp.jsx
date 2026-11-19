@@ -4,6 +4,7 @@ import { liveCourierRefreshAll } from '../lib/live'
 import CourierBell from './CourierBell'
 import CourierPopup from './CourierPopup'
 import AdminSounds from './AdminSounds'
+import PendingReminder from './PendingReminder'
 import { LiveBadge } from './LiveVisitors'
 import { Link, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { S, save, useDb } from '../store/db'
@@ -182,6 +183,7 @@ export default function AdminApp() {
       </div>
       <CourierPopup />
       <AdminSounds />
+      <PendingReminder />
       <Toasts />
     </div>
   )

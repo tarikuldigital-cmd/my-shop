@@ -2,7 +2,7 @@ import { S } from '../store/db'
 
 /** Sound for courier pop-ups: beep, spoken message with the logged-in admin's name, or the admin's own audio file. Saved per device. */
 const KEY = 'fatiha_courier_sound'
-const DEF = { on: true, mode: 'pro', custom: '', customName: '' }
+const DEF = { on: true, pending: true, mode: 'pro', custom: '', customName: '' }
 export const getSound = () => { try { return { ...DEF, ...JSON.parse(localStorage.getItem(KEY) || '{}') } } catch { return { ...DEF } } }
 export const setSound = (patch) => { const v = { ...getSound(), ...patch }; try { localStorage.setItem(KEY, JSON.stringify(v)) } catch { /* quota / private mode */ } return v }
 
@@ -61,4 +61,22 @@ function playAlert2(kind, s) {
     }
   }
   beep()
+}
+
+/** pending-orders reminder: "হেলো, শুনছেন? এখনো <N>টি অর্ডার পেন্ডিং আছে। অনুগ্রহ করে দ্রুত কাস্টমারকে কল দিয়ে অর্ডার কনফার্ম করুন।" — start + number clip + end clip joined */
+export function playPending(n) {
+  const s = getSound()
+  if (!s.on || !s.pending) return
+  const base = `${import.meta.env.BASE_URL}sounds/pending/`
+  const parts = [`${base}start.mp3`, ...(n >= 1 && n <= 10 ? [`${base}${n}.mp3`] : []), `${base}end.mp3`]
+  const fallback = () => { try { if ('speechSynthesis' in window && bnVoice()) { const u = new SpeechSynthesisUtterance(`এখনো ${n}টি অর্ডার পেন্ডিং আছে। অনুগ্রহ করে দ্রুত কাস্টমারকে কল দিয়ে অর্ডার কনফার্ম করুন।`); u.voice = bnVoice(); u.lang = bnVoice().lang; window.speechSynthesis.speak(u) } else beep() } catch { beep() } }
+  if (s.mode !== 'pro') return fallback()
+  let i = 0
+  const next = () => {
+    if (i >= parts.length) return
+    const a = new Audio(parts[i++])
+    a.onended = () => setTimeout(next, 40)
+    a.play().catch(() => { if (i === 1) fallback() })
+  }
+  next()
 }

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { courierFeed, courierSeen, markCourierSeen, COURIER_ST } from './courierLog'
 import { showTestCourierPopup } from './CourierPopup'
+import { showTestPendingReminder } from './PendingReminder'
 import { getSound, setSound, hasBanglaVoice, sayText } from './courierSound'
 
 const ago = (t) => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? 'এইমাত্র' : m < 60 ? `${m} মিনিট আগে` : m < 1440 ? `${Math.round(m / 60)} ঘণ্টা আগে` : new Date(t).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) }
@@ -62,6 +63,7 @@ export default function CourierBell({ className = '' }) {
               <label className="flex items-center justify-between gap-2 font-semibold"><span>🔊 অ্যালার্ট শব্দ</span><input type="checkbox" checked={snd.on} onChange={(e) => upd({ on: e.target.checked })} /></label>
               {snd.on && (
                 <>
+                  <label className="flex items-center justify-between gap-2"><span>⏰ পেন্ডিং অর্ডার রিমাইন্ডার (১০ মিনিট পর পর)</span><input type="checkbox" checked={snd.pending} onChange={(e) => upd({ pending: e.target.checked })} /></label>
                   <select className="field !py-1 text-xs" value={snd.mode} onChange={(e) => upd({ mode: e.target.value })}>
                     <option value="pro">প্রফেশনাল ভয়েস (রেকর্ড করা)</option>
                     <option value="voice">ব্রাউজারের কণ্ঠ — নাম ধরে বলবে</option>
@@ -74,6 +76,7 @@ export default function CourierBell({ className = '' }) {
               )}
             </div>
             <button className="w-full border-t border-line px-4 py-2 text-xs font-semibold text-brand hover:bg-surface" onClick={() => { toggle(); showTestCourierPopup() }}>🔔 টেস্ট নোটিফিকেশন দেখুন</button>
+            <button className="w-full border-t border-line px-4 py-2 text-xs font-semibold text-brand hover:bg-surface" onClick={() => { toggle(); showTestPendingReminder() }}>⏰ টেস্ট: পেন্ডিং রিমাইন্ডার</button>
           </div>
         </>
       )}
