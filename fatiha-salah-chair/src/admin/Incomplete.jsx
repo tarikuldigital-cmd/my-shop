@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { S, INC_ST, save, useDb, meName, waNum } from '../store/db'
+import { S, INC_ST, save, useDb, meName, waNum, pendingOrdersFor } from '../store/db'
 import { Chips, Empty, Kpi, Modal, Pill, ago, fdate, tk, toast } from './ui'
 import { NewOrderForm } from './Orders'
 
@@ -39,11 +39,12 @@ export default function Incomplete() {
             {list.length ? list.map((x) => {
               const earlier = S.orders.filter((o) => o.phone === x.phone).length
               const last = x.log[x.log.length - 1]
+              const dup = ['new', 'contacted'].includes(x.status) ? pendingOrdersFor(x.phone) : []
               return (
                 <tr key={x.id}>
                   <td className="whitespace-nowrap p-3">{ago(x.updated)}<div className="text-xs text-muted">{fdate(x.at)}</div></td>
                   <td className="p-3">{x.name || <span className="text-muted">No name</span>}{x.demo && <> <Pill tone="gray">sample</Pill></>}{earlier > 0 && <div className="text-xs text-muted">{earlier} earlier order(s)</div>}</td>
-                  <td className="whitespace-nowrap p-3">{x.phone}{x.abroadPhone && <div className="text-xs font-semibold text-accent">🌍 {x.abroadPhone} <a className="font-normal text-green-600" href={`https://wa.me/${x.abroadPhone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer">WA</a></div>}</td>
+                  <td className="whitespace-nowrap p-3">{x.phone}{dup.length > 0 && <div className="mt-1"><span className="rounded bg-red-600 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white" title={`এই নাম্বারে Pending অর্ডারও আছে: ${dup.map((o) => o.invoice).join(', ')}`}>Duplicate</span> <span className="text-xs text-muted">{dup.map((o) => o.invoice).join(', ')}</span></div>}{x.abroadPhone && <div className="text-xs font-semibold text-accent">🌍 {x.abroadPhone} <a className="font-normal text-green-600" href={`https://wa.me/${x.abroadPhone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer">WA</a></div>}</td>
                   <td className="max-w-48 p-3 text-xs">{x.address || <span className="text-muted">Not given</span>}</td>
                   <td className="max-w-60 p-3 text-xs">{x.items.map((i) => <div key={i.slug} className="truncate">{i.name} ×{i.quantity}</div>)}</td>
                   <td className="p-3 font-semibold">{tk(x.subtotal)}</td>

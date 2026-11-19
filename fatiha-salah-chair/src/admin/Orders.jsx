@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   S, STATUS, ST_KEYS, COURIERS, PAY, PAY_ST, CANCEL_REASONS, RETURN_REASONS, SOURCES, DAY,
-  save, useDb, setStatus, product, productById, sendToCourier, createOrder, riskOf, trackUrl, waNum, validPhone, meName, shippingFor, normPhone,
+  save, useDb, setStatus, product, productById, sendToCourier, createOrder, riskOf, trackUrl, waNum, validPhone, meName, shippingFor, normPhone, openIncompleteFor,
 } from '../store/db'
 import { Empty, Field, Modal, Pill, tk, fdate, startOfDay, toast } from './ui'
 import Icon, { WhatsAppIcon } from '../components/common/Icon'
@@ -529,7 +529,7 @@ export default function Orders() {
                   <td className="p-3" onClick={(e) => e.stopPropagation()}><input type="checkbox" checked={sel.has(o.id)} onChange={(e) => { const s = new Set(sel); e.target.checked ? s.add(o.id) : s.delete(o.id); setSel(s) }} aria-label={`Select ${o.invoice}`} /></td>
                   <td className="p-3"><b>{o.invoice}</b> {risk.length > 0 && <Pill tone="red">Risk</Pill>}{o.demo && <Pill tone="gray">sample</Pill>}<div className="text-xs text-muted">{fdate(o.createdAt)}</div></td>
                   <td className="p-3">{o.name}{o.country && <span className={`ml-1 inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-semibold ${o.country === 'BD' ? 'border-line text-muted' : 'border-accent/40 bg-accent/10 text-accent'}`} title={`অর্ডার এসেছে: ${countryName(o.country)} (IP অনুযায়ী)`}>{flag(o.country)} {countryName(o.country)}</span>}{o.abroadPhone && <span className="ml-1 rounded bg-accent/15 px-1.5 py-0.5 text-[10px] font-semibold text-accent" title={`Overseas: ${o.abroadPhone}`}>🌍 Abroad</span>}<div className="max-w-52 truncate text-xs text-muted">{o.address} · {o.items.reduce((n, i) => n + i.quantity, 0)} products</div></td>
-                  <td className="whitespace-nowrap p-3">{o.phone} <a href={`https://wa.me/${waNum(o.phone)}`} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="inline-block align-middle text-green-600" aria-label="WhatsApp"><WhatsAppIcon className="h-4 w-4" /></a></td>
+                  <td className="whitespace-nowrap p-3">{o.phone} <a href={`https://wa.me/${waNum(o.phone)}`} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="inline-block align-middle text-green-600" aria-label="WhatsApp"><WhatsAppIcon className="h-4 w-4" /></a>{o.status === 'pending' && openIncompleteFor(o.phone).length > 0 && <div className="mt-1"><span className="rounded bg-red-600 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white" title="এই নাম্বার Incomplete orders-এও আছে">Duplicate</span> <span className="text-xs text-muted">Incomplete-এও আছে</span></div>}</td>
                   <td className="p-3" onClick={(e) => e.stopPropagation()}><FraudBadge phone={o.phone} /></td>
                   <td className="p-3"><Pill s={o.status} /></td>
                   <td className="p-3 font-semibold">{tk(o.total)}</td>

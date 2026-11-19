@@ -282,6 +282,11 @@ export function createOrder({ name, phone, address, shippingArea, items, couponC
   return o
 }
 
+/* Same number both in Incomplete (still open) and in Pending orders → "Duplicate" on both lists. */
+const pKey = (p) => String(p || '').replace(/\D/g, '').slice(-10)
+export const pendingOrdersFor = (phone) => { const k = pKey(phone); return k ? S.orders.filter((o) => o.status === 'pending' && pKey(o.phone) === k) : [] }
+export const openIncompleteFor = (phone) => { const k = pKey(phone); return k ? S.incomplete.filter((x) => ['new', 'contacted'].includes(x.status) && pKey(x.phone) === k) : [] }
+
 export function setStatus(o, s, by, note = '') {
   if (o.status === s) return
   const prev = o.status
