@@ -3,7 +3,7 @@
  *  - Storefront: GET /bootstrap fills the in-memory store (products, categories, home, pages, public settings).
  *  - Admin: GET /admin/state loads everything; every save() is diffed against the last server copy and sent to
  *    POST /admin/sync as field-level patches (stock/coupon counters as +/- deltas), so two admins or a customer
- *    ordering at the same moment never overwrite each other. A 15-second poll merges changes made elsewhere.
+ *    ordering at the same moment never overwrite each other. A 5-second poll merges changes made elsewhere.
  */
 import { S, DAY, refresh, liveHooks, resetState, defaultSettings, sendToCourier, COURIERS } from '../store/db'
 import { LIVE, API_BASE_URL } from '../config/env'
@@ -195,7 +195,7 @@ export async function flush() {
 
 function startPoll() {
   clearInterval(pollTimer)
-  pollTimer = setInterval(() => { if (!document.hidden && base && !inflight) poll() }, 15000)
+  pollTimer = setInterval(() => { if (!document.hidden && base && !inflight) poll() }, 5000)
 }
 const replaceInPlace = (target, src) => { for (const k of Object.keys(target)) delete target[k]; Object.assign(target, src) }
 export async function poll() {
