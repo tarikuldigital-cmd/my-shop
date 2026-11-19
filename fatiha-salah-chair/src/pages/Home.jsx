@@ -68,6 +68,39 @@ function Lantern({ className = '', delay = '0s' }) {
 
 const STARS = [[8, 18, 0], [16, 70, 1.2], [26, 34, 2.1], [44, 12, .6], [58, 82, 1.7], [70, 22, 2.6], [84, 60, .9], [92, 30, 1.9], [36, 88, 2.9], [50, 48, 3.4]]
 
+/** Hero image: cycles through the colours that are in stock right now. */
+function HeroColors() {
+  const list = S.products.filter((p) => p.active !== false && p.group === 'salah-chair' && inStock(p) && p.images?.[0])
+  const [i, setI] = useState(0)
+  useEffect(() => {
+    if (list.length < 2) return
+    const t = setInterval(() => setI((n) => (n + 1) % list.length), 3500)
+    return () => clearInterval(t)
+  }, [list.length])
+  const cur = list[i % (list.length || 1)]
+  return (
+    <>
+      <div className="fa-arch fa-float relative overflow-hidden border-4 border-gold/70 bg-cream shadow-2xl">
+        {list.length ? list.map((p, k) => (
+          <Link key={p.slug} to={`/product/${p.slug}`} tabIndex={k === i ? 0 : -1} aria-hidden={k !== i}
+            className={`absolute inset-0 transition-all duration-1000 ease-out ${k === i ? 'scale-100 opacity-100' : 'pointer-events-none scale-105 opacity-0'}`}>
+            <Img src={p.images[0]} alt={p.name} className="h-full w-full object-cover" />
+          </Link>
+        )) : <Img src="local:img/green-poster.webp" alt="Fatiha Ayat Salah Chair" className="absolute inset-0 h-full w-full object-cover" />}
+        <div className="aspect-[3/4] w-full" />
+        <span className="fa-sheen absolute inset-0" aria-hidden="true" />
+      </div>
+      {cur && (
+        <div className="absolute -bottom-5 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full border border-gold/60 bg-brand-dark/90 px-4 py-2 text-sm font-semibold text-white shadow-xl backdrop-blur">
+          <span key={cur.slug} className="fa-pop h-4 w-4 rounded-full border-2 border-white" style={{ background: cur.colorHex || '#ccc' }} />
+          <span key={`${cur.slug}-t`} className="fa-pop">{cur.color || cur.name}</span>
+          {list.length > 1 && <span className="ml-1 flex gap-1">{list.map((p, k) => <button key={p.slug} onClick={() => setI(k)} aria-label={p.color || p.name} className={`h-1.5 rounded-full transition-all ${k === i ? 'w-4 bg-gold' : 'w-1.5 bg-white/40'}`} />)}</span>}
+        </div>
+      )}
+    </>
+  )
+}
+
 function Hero({ settings, first }) {
   return (
     <section className="fa-hero relative overflow-hidden text-white">
@@ -98,10 +131,7 @@ function Hero({ settings, first }) {
           <div className="fa-ring absolute -inset-6 rounded-[999px_999px_28px_28px] border border-dashed border-gold/40" aria-hidden="true" />
           <div className="absolute -inset-3 rounded-[999px_999px_22px_22px] bg-gold/10 blur-2xl" aria-hidden="true" />
           <svg viewBox="0 0 100 100" className="fa-moon absolute -right-5 -top-6 z-10 h-16 w-16 drop-shadow-[0_0_12px_rgba(243,220,147,.6)]" aria-hidden="true"><path d="M62 10a40 40 0 1 0 28 62A32 32 0 1 1 62 10z" fill="#f3dc93" /><path d="M78 26l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="#f3dc93" /></svg>
-          <div className="fa-arch fa-float relative overflow-hidden border-4 border-gold/70 shadow-2xl">
-            <Img src="local:img/green-poster.webp" alt="Fatiha Ayat Salah Chair" className="aspect-[3/4] w-full object-cover" />
-            <span className="fa-sheen absolute inset-0" aria-hidden="true" />
-          </div>
+          <HeroColors />
         </div>
       </div>
       <svg viewBox="0 0 1440 40" preserveAspectRatio="none" className="relative block h-6 w-full text-surface md:h-10" aria-hidden="true"><path d="M0 40V20Q360 0 720 20T1440 20V40z" fill="currentColor" /></svg>
