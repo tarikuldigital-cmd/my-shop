@@ -141,7 +141,13 @@ export default function Checkout() {
         <section className="card p-5">
           <h2 className="mb-1 font-bold">ডেলিভারি তথ্য</h2>
           <p className="mb-3 text-xs text-muted">অর্ডার কনফার্ম করতে আপনার নাম, মোবাইল নাম্বার ও ঠিকানা লিখুন।</p>
-          <VoiceFill className="mb-4" onFill={(k, v) => setForm((f) => ({ ...f, [k]: v }))} />
+          <VoiceFill className="mb-4" onFill={(k, v) => setForm((f) => ({ ...f, [k]: v }))}
+            onConfirm={() => document.querySelector('form.checkout-form')?.requestSubmit()}
+            getSummary={() => ({
+              name: form.name, phone: form.phone, address: form.address, area: form.shippingArea,
+              items: items.map((i) => ({ name: i.name, qty: i.quantity, price: i.price })), subtotal, delivery: shippingCharge, discount: cc.discount || 0, total, currency: 'BDT', payment: 'cash on delivery',
+              missing: [!form.name.trim() && 'name', !validPhone(form.phone) && 'phone', form.address.trim().length < 10 && 'address'].filter(Boolean),
+            })} />
           {prefilled && <p className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-md bg-green-50 px-3 py-2 text-xs text-green-800">✓ আপনার আগের অর্ডারের তথ্য বসানো হয়েছে — দেখে নিয়ে অর্ডার করুন।<button type="button" className="font-semibold underline" onClick={() => { forgetSaved(); setPrefilled(false); setForm((f) => ({ ...f, name: user?.name || '', phone: user?.phone || '', address: user?.address || '', abroad: false, abroadPhone: '' })) }}>মুছে নতুন করে লিখুন</button></p>}
           <div className="space-y-4">
             <div>

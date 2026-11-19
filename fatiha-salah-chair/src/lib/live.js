@@ -39,6 +39,7 @@ function applyPublic(d) {
   S.settings = { ...defaultSettings(), ...d.settings, tracking: { ...defaultSettings().tracking, ...d.settings?.tracking }, seo: { ...defaultSettings().seo, ...d.settings?.seo }, chat: { ...defaultSettings().chat, ...d.settings?.chat } }
   S.landings = d.landings || []
   S.reviews = d.reviews || []
+  S.voiceAiOn = !!d.voiceAi?.enabled
 }
 
 export async function hydratePublic() {

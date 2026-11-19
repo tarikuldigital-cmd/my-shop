@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { S, save, useDb } from '../store/db'
 import { Chips, Empty, Field, Panel, Pill, fdate, toast } from './ui'
 import { PRESETS, ask, buildContext, serverEndpoint } from '../lib/chat'
 import { LIVE } from '../config/env'
-import { adminHeaders } from '../lib/live'
+import { adminHeaders, liveApi } from '../lib/live'
 import { getSmsSecret, setSmsSecret } from '../lib/sms'
 
 const MODES = [
@@ -68,6 +68,7 @@ export default function LiveChat() {
       </div>
 
       {tab === 'setup' && <>
+        {LIVE && <VoiceAiPanel />}
         <Panel title="১. মোড বাছুন">
           <div className="grid gap-2 sm:grid-cols-2">
             {MODES.map(([k, t, d]) => (
@@ -148,5 +149,43 @@ export default function LiveChat() {
         </div>
       )}
     </div>
+  )
+}
+
+/* ---------- voice order AI (Gemini Live) ---------- */
+const VOICES = [['Kore', 'Kore — নারী, শান্ত'], ['Aoede', 'Aoede — নারী, উষ্ণ'], ['Leda', 'Leda — নারী, তরুণ'], ['Zephyr', 'Zephyr — নারী, উজ্জ্বল'], ['Puck', 'Puck — পুরুষ, প্রাণবন্ত'], ['Charon', 'Charon — পুরুষ, গম্ভীর'], ['Orus', 'Orus — পুরুষ, দৃঢ়'], ['Fenrir', 'Fenrir — পুরুষ, উদ্যমী']]
+
+function VoiceAiPanel() {
+  const [v, setV] = useState(null)
+  const [key, setKey] = useState('')
+  const [busy, setBusy] = useState(false)
+  const load = async () => { try { setV(await liveApi('admin/voice-ai', { admin: true })) } catch (e) { toast(e.message) } }
+  useEffect(() => { load() }, [])
+  const save = async (extra = {}) => {
+    setBusy(true)
+    try {
+      const j = await liveApi('admin/voice-ai', { method: 'POST', admin: true, body: { ...v, apiKey: key.trim(), ...extra } })
+      setV(j); setKey(''); toast(j.enabled ? (j.keySet ? 'ভয়েস AI চালু ✓' : 'key দিন, তারপর চালু হবে') : 'সেভ হয়েছে (বন্ধ)')
+    } catch (e) { toast(e.message) } finally { setBusy(false) }
+  }
+  if (!v) return <Panel title="ভয়েস অর্ডার AI (Gemini Live)"><p className="text-sm text-muted">লোড হচ্ছে…</p></Panel>
+  return (
+    <Panel title="ভয়েস অর্ডার AI (Gemini Live)" sub="চেকআউট ও ল্যান্ডিং পেজে কাস্টমার AI-এর সাথে মুখে কথা বলে নাম, ফোন, ঠিকানা দেবে — AI নিজেই ফর্ম পূরণ করে অর্ডার কনফার্ম করবে">
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="flex items-center gap-2 sm:col-span-2"><input type="checkbox" checked={!!v.enabled} onChange={(e) => setV({ ...v, enabled: e.target.checked })} /><b>চালু রাখুন</b> <span className="text-xs text-muted">(বন্ধ থাকলে সাধারণ ভয়েস বাটন দেখাবে)</span></label>
+        <Field label={`Gemini API key ${v.keySet ? `(সেভ আছে ${v.keyHint} — বদলাতে নতুনটি দিন)` : ''}`} hint="aistudio.google.com/apikey থেকে" className="sm:col-span-2">
+          <input type="password" autoComplete="off" className="field" value={key} onChange={(e) => setKey(e.target.value)} placeholder={v.keySet ? '••••••••' : 'AIza…'} />
+        </Field>
+        <Field label="Model" hint="Google মডেল বদলালে এখানে নতুন নাম দিন"><input className="field" value={v.model} onChange={(e) => setV({ ...v, model: e.target.value })} /></Field>
+        <Field label="AI-এর কণ্ঠ"><select className="field" value={v.voice} onChange={(e) => setV({ ...v, voice: e.target.value })}>{VOICES.map(([k, t]) => <option key={k} value={k}>{t}</option>)}</select></Field>
+        <Field label="দিনে সর্বোচ্চ কথোপকথন" hint="খরচ/ফ্রি লিমিট নিয়ন্ত্রণে"><input type="number" className="field" value={v.perDay} onChange={(e) => setV({ ...v, perDay: +e.target.value })} /></Field>
+        <Field label="AI-এর জন্য বাড়তি নির্দেশ (ঐচ্ছিক)" className="sm:col-span-2"><textarea rows={2} className="field" value={v.instructions} onChange={(e) => setV({ ...v, instructions: e.target.value })} placeholder="যেমন: বয়স্কদের সাথে ধীরে কথা বলবে; ঢাকার বাইরে ২-৩ দিনে ডেলিভারি বলবে" /></Field>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button className="btn-brand" disabled={busy} onClick={() => save()}>{busy ? 'সেভ হচ্ছে…' : 'Save'}</button>
+        {v.keySet && <button className="btn-outline text-red-600" disabled={busy} onClick={() => save({ clearKey: true, enabled: false })}>Key মুছুন</button>}
+      </div>
+      <p className="mt-2 text-xs text-muted">key শুধু সার্ভারে থাকে। প্রতিটা কথোপকথনের জন্য সার্ভার Google থেকে ১০ মিনিটের এককালীন token নেয়; একটানা সর্বোচ্চ ৫ মিনিট কথা চলে। সংযোগ না হলে বা লিমিট শেষ হলে কাস্টমার নিজে থেকে সাধারণ ভয়েস বাটন পাবেন।</p>
+    </Panel>
   )
 }

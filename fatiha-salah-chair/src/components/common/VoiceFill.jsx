@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
+import { S } from '../../store/db'
+import { startVoiceAgent } from '../../lib/voiceAgent'
 
 /*
  * Voice fill for checkout forms: the customer taps once, then says name → mobile → address,
@@ -40,7 +42,7 @@ export function speechToPhone(text) {
 
 const clean = (s) => String(s).replace(/\s+/g, ' ').trim()
 
-export default function VoiceFill({ onFill, className = '' }) {
+function GuidedVoice({ onFill, className = '', note = '' }) {
   const [step, setStep] = useState(-1) // -1 = closed
   const [live, setLive] = useState('')
   const [listening, setListening] = useState(false)
@@ -94,6 +96,7 @@ export default function VoiceFill({ onFill, className = '' }) {
         <div className="min-w-0 flex-1">
           <p className="font-bold">শুধু বলুন, ফর্ম নিজেই পূরণ হবে</p>
           <p className="text-xs text-muted">টাইপ করতে হবে না — আপনার <b className="text-ink">নাম, মোবাইল নাম্বার ও ঠিকানা</b> মুখে বলুন।</p>
+          {note && <p className="mt-1 text-xs text-amber-700">{note}</p>}
         </div>
         <button type="button" onClick={() => listen(0)} className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-white shadow sm:w-auto">
           <MicIcon className="h-4 w-4" />বলা শুরু করুন
@@ -141,5 +144,108 @@ function MicIcon({ className }) {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
       <rect x="9" y="2" width="6" height="12" rx="3" /><path d="M5 10v1a7 7 0 0 0 14 0v-1M12 18v4M8 22h8" />
     </svg>
+  )
+}
+
+/* ---------------- live AI conversation (Gemini Live) ---------------- */
+const AI_OK = typeof window !== 'undefined' && !!(navigator.mediaDevices?.getUserMedia && window.AudioWorkletNode && window.WebSocket)
+
+const STATE_TEXT = { connecting: 'সংযোগ হচ্ছে…', listening: 'শুনছি — বলুন', speaking: 'AI বলছে…' }
+
+function rules(summary) {
+  const st = S.settings
+  const ship = (st.shipping || []).map((x) => `${x.label} (${x.id}): ৳${x.charge}`).join(', ')
+  return `You are the friendly voice order assistant of ${st.siteName || 'our shop'} (an online shop in Bangladesh). Speak Bangla (Bangladeshi, polite "আপনি"), short sentences, warm and calm — many customers are elderly. If the customer speaks English, reply in English.
+Your job: take the delivery details for THIS order and place it.
+Steps:
+1. Greet in one short line and ask the customer's name.
+2. Ask the mobile number. Read it back digit by digit and ask if it is correct. It must be 11 digits starting with 01.
+3. Ask the full address (house/road, area, thana/upazila, district). Decide inside_dhaka or outside_dhaka from it.
+4. After each answer call fill_checkout with what you are sure of.
+5. Call read_order, then read back: name, number, address, products and the total in taka. Ask "অর্ডারটি কনফার্ম করবো?"
+6. Only if the customer clearly says yes, call confirm_order. Then thank them and say our team will call to confirm.
+Rules: never invent products, prices, discounts or delivery dates — use only read_order and the data below. Payment is cash on delivery. Do not ask for card, bank or OTP. If asked something you don't know, give the hotline ${st.phone || ''}. Keep each turn under 2 sentences.
+Delivery charges: ${ship}.
+Current cart: ${JSON.stringify(summary.items)}`
+}
+
+export default function VoiceFill(props) {
+  const [mode, setMode] = useState(S.voiceAiOn && AI_OK ? 'ai' : 'guided')
+  const [note, setNote] = useState('')
+  if (mode === 'guided') return <GuidedVoice {...props} note={note} />
+  return <AiVoice {...props} onFail={(msg) => { setNote(msg); setMode('guided') }} />
+}
+
+function AiVoice({ onFill, getSummary, onConfirm, className = '', onFail }) {
+  const [state, setState] = useState('idle')
+  const [caps, setCaps] = useState([])
+  const sess = useRef(null)
+  const latest = useRef({})
+  latest.current = { onFill, getSummary, onConfirm }
+  useEffect(() => () => sess.current?.stop(), [])
+
+  const onTool = async (name, a) => {
+    const L = latest.current
+    if (name === 'fill_checkout') {
+      const done = []
+      if (a.name) { L.onFill('name', String(a.name).trim()); done.push('name') }
+      if (a.phone) { const p = speechToPhone(a.phone); if (p.length === 11 && p.startsWith('01')) { L.onFill('phone', p); done.push('phone') } else return { ok: false, error: `phone "${a.phone}" is not 11 digits starting 01 — ask again` } }
+      if (a.address) { L.onFill('address', String(a.address).trim()); done.push('address') }
+      if (a.area && (S.settings.shipping || []).some((x) => x.id === a.area)) { L.onFill('shippingArea', a.area); done.push('area') }
+      return { ok: true, filled: done }
+    }
+    if (name === 'read_order') { await new Promise((r) => setTimeout(r, 150)); return L.getSummary() }
+    if (name === 'confirm_order') {
+      await new Promise((r) => setTimeout(r, 150))
+      const sm = L.getSummary()
+      if (sm.missing.length) return { ok: false, error: `missing: ${sm.missing.join(', ')}` }
+      setTimeout(() => { sess.current?.stop(); L.onConfirm() }, 2500) // let the AI say thank you first
+      return { ok: true, placed: true }
+    }
+    return { ok: false, error: 'unknown tool' }
+  }
+
+  const start = async () => {
+    setCaps([]); setState('connecting')
+    try {
+      sess.current = await startVoiceAgent({
+        context: rules(latest.current.getSummary()),
+        onTool,
+        onCaption: (who, text) => setCaps((c) => { const last = c[c.length - 1]; if (last && last.who === who) return [...c.slice(0, -1), { who, text: last.text + text }]; return [...c.slice(-5), { who, text }] }),
+        onState: (st, info) => {
+          if (st === 'error') { sess.current = null; setState('idle'); onFail(info === 'limit' ? 'এই মুহূর্তে AI ব্যস্ত — নিচের সাধারণ ভয়েস দিয়ে বলুন' : 'AI-এর সাথে সংযোগ হয়নি — নিচের সাধারণ ভয়েস দিয়ে বলুন'); return }
+          if (st === 'ended') { sess.current = null; setState('done'); return }
+          setState(st)
+        },
+      })
+    } catch (e) {
+      sess.current = null; setState('idle')
+      onFail(/denied|not allowed|permission/i.test(e.message) ? 'মাইক্রোফোনের অনুমতি দিন, তারপর আবার চাপুন' : e.message === 'limit' ? 'এই মুহূর্তে AI ব্যস্ত — নিচের সাধারণ ভয়েস দিয়ে বলুন' : 'AI-এর সাথে সংযোগ হয়নি — সাধারণ ভয়েস দিয়ে বলুন')
+    }
+  }
+  const stop = () => { sess.current?.stop(); sess.current = null; setState('done') }
+  const live = ['connecting', 'listening', 'speaking'].includes(state)
+
+  return (
+    <div className={`rounded-xl border p-3 ${live ? 'border-accent/50 bg-accent/5' : 'border-line bg-gradient-to-r from-accent/5 to-transparent'} ${className}`}>
+      <div className="flex flex-wrap items-center gap-3 sm:flex-nowrap">
+        <button type="button" onClick={live ? stop : start} aria-label={live ? 'Stop' : 'Start talking'} className={`relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-white ring-4 ${live ? (state === 'speaking' ? 'bg-accent ring-accent/25' : 'bg-red-600 ring-red-200') : 'bg-ink ring-accent/15'}`}>
+          {state === 'listening' && <span className="absolute inset-0 animate-ping rounded-full bg-red-500/30" />}
+          <MicIcon className="relative h-5 w-5" />
+        </button>
+        <div className="min-w-0 flex-1">
+          <p className="font-bold">{live ? STATE_TEXT[state] : state === 'done' ? '✓ কথা শেষ — তথ্য দেখে নিন' : 'শুধু কথা বলুন, অর্ডার হয়ে যাবে'}</p>
+          <p className="text-xs text-muted">{live ? 'আমাদের AI সহকারী আপনার নাম, মোবাইল নাম্বার ও ঠিকানা জেনে নেবে' : <>টাইপ করতে হবে না — AI আপনার সাথে কথা বলে <b className="text-ink">নাম, ফোন, ঠিকানা</b> নিয়ে ফর্ম পূরণ করবে।</>}</p>
+        </div>
+        <button type="button" onClick={live ? stop : start} className={`inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-white shadow sm:w-auto ${live ? 'bg-red-600' : 'bg-ink'}`}>
+          <MicIcon className="h-4 w-4" />{live ? 'শেষ করুন' : state === 'done' ? 'আবার কথা বলুন' : 'কথা বলা শুরু করুন'}
+        </button>
+      </div>
+      {caps.length > 0 && (
+        <div className="mt-3 max-h-36 space-y-1 overflow-y-auto rounded-lg bg-white/70 p-2 text-sm">
+          {caps.map((c, i) => <p key={i} className={c.who === 'ai' ? 'text-ink' : 'text-right text-accent'}><span className="text-[10px] uppercase text-muted">{c.who === 'ai' ? 'AI' : 'আপনি'}</span> {c.text}</p>)}
+        </div>
+      )}
+    </div>
   )
 }

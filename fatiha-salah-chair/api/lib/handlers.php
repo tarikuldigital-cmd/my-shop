@@ -21,6 +21,9 @@ function routes(): array {
     ['POST', 'chat/log', 'h_chat_log'],
     ['POST', 'chat', 'h_chat'],
     ['GET', 'chat/config', 'h_chat_config'],
+    ['POST', 'voice/token', 'h_voice_token'],
+    ['GET', 'admin/voice-ai', 'h_voice_cfg'],
+    ['POST', 'admin/voice-ai', 'h_voice_cfg'],
     ['POST', 'chat/config', 'h_chat_config'],
     ['POST', 'customer/register', 'h_register'],
     ['POST', 'customer/login', 'h_login'],
@@ -72,7 +75,7 @@ function h_bootstrap(): void {
   $landings = array_values(array_filter(doc_all('landings'), fn($l) => ($l['active'] ?? true) !== false));
   $data = [
     'products' => $products, 'categories' => doc_all('categories'), 'home' => kv_get('home', new stdClass()), 'pages' => objectify(kv_get('pages', [])),
-    'settings' => public_settings(kv_get('settings', [])), 'landings' => $landings, 'reviews' => $reviews, 'serverTime' => now_ms(),
+    'settings' => public_settings(kv_get('settings', [])), 'landings' => $landings, 'reviews' => $reviews, 'voiceAi' => ['enabled' => voice_public()['enabled']], 'serverTime' => now_ms(),
   ];
   $json = jenc($data);
   $etag = '"' . md5($json) . '"';
@@ -232,6 +235,40 @@ function h_chat(): void {
   // status 200 on purpose: the host replaces 5xx bodies with its own error page, hiding the real reason
   if ($code >= 300 || $text === '') out(['ok' => false, 'error' => ($j['error']['message'] ?? ($err ?: 'AI provider error')) . " (provider HTTP $code)"]);
   out(['ok' => true, 'reply' => $text]);
+}
+
+/* =============== voice order AI (Gemini Live) =============== */
+function voice_cfg(): array {
+  return array_merge(['enabled' => false, 'apiKey' => '', 'model' => 'gemini-3.8-live', 'voice' => 'Kore', 'instructions' => '', 'perDay' => 300], kv_get('voiceAi', []) ?: []);
+}
+function voice_public(): array { $c = voice_cfg(); return ['enabled' => !empty($c['enabled']) && $c['apiKey'] !== '', 'model' => $c['model'], 'voice' => $c['voice'], 'instructions' => mb_substr((string)$c['instructions'], 0, 1500)]; }
+function h_voice_cfg(): void {
+  require_admin('settings');
+  $c = voice_cfg();
+  if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
+    $b = body();
+    $c = ['enabled' => !empty($b['enabled']), 'apiKey' => trim((string)($b['apiKey'] ?? '')) ?: $c['apiKey'],
+      'model' => preg_replace('#^models/#', '', trim((string)($b['model'] ?? ''))) ?: $c['model'], 'voice' => s($b['voice'] ?? $c['voice'], 40) ?: 'Kore',
+      'instructions' => s($b['instructions'] ?? '', 1500), 'perDay' => max(10, min(5000, (int)($b['perDay'] ?? $c['perDay'])))];
+    if (!empty($b['clearKey'])) $c['apiKey'] = '';
+    kv_set('voiceAi', $c);
+  }
+  out(['ok' => true, 'enabled' => $c['enabled'], 'model' => $c['model'], 'voice' => $c['voice'], 'instructions' => $c['instructions'], 'perDay' => $c['perDay'],
+    'keySet' => $c['apiKey'] !== '', 'keyHint' => $c['apiKey'] ? '…' . substr($c['apiKey'], -4) : '']);
+}
+/** One-use, short-lived Gemini Live token for this visitor — the real API key never leaves the server. */
+function h_voice_token(): void {
+  $c = voice_cfg(); $ip = client_ip();
+  if (empty($c['enabled']) || $c['apiKey'] === '') out(['ok' => false, 'error' => 'Voice AI is off']);
+  if (rate_hit("vt10:$ip", 4, 600) || rate_hit("vt1d:$ip", 12, 86400) || rate_hit('vtday', (int)$c['perDay'], 86400)) out(['ok' => false, 'error' => 'limit']);
+  $now = time();
+  $body = ['uses' => 1, 'expireTime' => gmdate('Y-m-d\TH:i:s\Z', $now + 600), 'newSessionExpireTime' => gmdate('Y-m-d\TH:i:s\Z', $now + 120),
+    'liveConnectConstraints' => ['model' => 'models/' . $c['model']]];
+  [$code, $resp, $err] = http_call('https://generativelanguage.googleapis.com/v1beta/auth_tokens', [CURLOPT_POST => true, CURLOPT_TIMEOUT => 15,
+    CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'x-goog-api-key: ' . $c['apiKey']], CURLOPT_POSTFIELDS => jenc($body)]);
+  $j = json_decode((string)$resp, true) ?: [];
+  if ($code >= 300 || empty($j['name'])) out(['ok' => false, 'error' => ($j['error']['message'] ?? ($err ?: 'token error')) . " (HTTP $code)"]);
+  out(['ok' => true, 'token' => $j['name'], 'model' => $c['model'], 'voice' => $c['voice'], 'instructions' => mb_substr((string)$c['instructions'], 0, 1500)]);
 }
 
 /* =============== customer accounts =============== */
