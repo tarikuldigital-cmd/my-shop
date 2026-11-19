@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { fraudCheck } from './fraud'
 import { liveCourierRefreshAll } from '../lib/live'
 import CourierBell from './CourierBell'
+import CourierPopup from './CourierPopup'
 import { LiveBadge } from './LiveVisitors'
 import { Link, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { S, save, useDb } from '../store/db'
@@ -178,6 +179,7 @@ export default function AdminApp() {
           </Routes>
         </main>
       </div>
+      <CourierPopup />
       <Toasts />
     </div>
   )

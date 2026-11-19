@@ -232,12 +232,15 @@ function steadfast_status_map(string $st): ?string {
 }
 
 /** add one courier event (rider note / status) unless the same text is already there */
-function courier_log_add(array &$o, string $status, string $message, int $at = 0): bool {
+function courier_log_add(array &$o, string $status, string $message, int $at = 0, array $extra = []): bool {
   $message = trim($message); $status = trim($status);
   if ($message === '' && $status === '') return false;
   $o['courierLog'] ??= [];
   foreach ($o['courierLog'] as $e) if (($e['message'] ?? '') === $message && ($e['status'] ?? '') === $status) return false;
-  $o['courierLog'][] = ['at' => $at ?: now_ms(), 'status' => $status, 'message' => $message !== '' ? $message : (SF_STATUS_TEXT[$status] ?? $status)];
+  $ev = ['at' => $at ?: now_ms(), 'status' => $status, 'message' => $message !== '' ? $message : (SF_STATUS_TEXT[$status] ?? $status)];
+  if (($extra['riderName'] ?? '') !== '') $ev['riderName'] = $extra['riderName'];
+  if (($extra['riderPhone'] ?? '') !== '') $ev['riderPhone'] = $extra['riderPhone'];
+  $o['courierLog'][] = $ev;
   usort($o['courierLog'], fn($a, $b) => ($a['at'] ?? 0) <=> ($b['at'] ?? 0));
   return true;
 }
@@ -250,10 +253,10 @@ function ts_ms(?string $s): int {
 }
 
 /** Apply a courier status: log it, move the order (ready → transit → delivered / returned / hold); returns the SMS event or null. */
-function apply_courier_status(array &$o, string $st, string $message, string $by, int $at = 0): ?string {
+function apply_courier_status(array &$o, string $st, string $message, string $by, int $at = 0, array $extra = []): ?string {
   $st = strtolower(trim($st));
   if ($st !== '') $o['courierStatus'] = $st;
-  courier_log_add($o, $st, $message, $at);
+  courier_log_add($o, $st, $message, $at, $extra);
   if (in_array($o['status'], ['delivered', 'cancelled', 'returned'], true)) return null;
   $to = steadfast_status_map($st);
   if (!$to && in_array($o['status'], ['ready', 'hold'], true) && ($st === 'pending' || ($st === '' && $message !== '' && !preg_match('/created|booked|placed|review/i', $message)))) $to = 'transit';

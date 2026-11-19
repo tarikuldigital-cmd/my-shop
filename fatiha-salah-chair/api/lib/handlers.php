@@ -553,13 +553,16 @@ function h_steadfast_hook(): void {
   $o = tx(function () use ($inv, $oid, $type, $b, &$event) {
     $o = $oid !== '' ? doc_get('orders', $oid, true) : doc_by('orders', 'k', $inv, true); if (!$o || ($o['courier'] ?? '') !== 'steadfast') return null;
     $msg = s($b['tracking_message'] ?? '', 500); $at = ts_ms($b['updated_at'] ?? null);
+    // rider details, if Steadfast sends them (key names vary) — shown in the admin pop-up alert
+    $pick = function (array $keys) use ($b): string { foreach ($keys as $k) if (!empty($b[$k]) && is_scalar($b[$k])) return s((string)$b[$k], 80); foreach (['rider', 'delivery_man', 'deliveryman'] as $g) if (is_array($b[$g] ?? null)) foreach ($keys as $k) if (!empty($b[$g][$k]) && is_scalar($b[$g][$k])) return s((string)$b[$g][$k], 80); return ''; };
+    $extra = ['riderName' => $pick(['rider_name', 'delivery_man_name', 'deliveryman_name', 'name']), 'riderPhone' => $pick(['rider_phone', 'rider_mobile', 'delivery_man_phone', 'deliveryman_phone', 'phone', 'mobile'])];
     if ($type === 'delivery_status') {
       $st = strtolower((string)($b['status'] ?? ''));
       if (isset($b['cod_amount'])) $o['codCollected'] = (float)$b['cod_amount'];
       if (isset($b['delivery_charge'])) $o['courierCharge'] = (float)$b['delivery_charge'];
-      $event = apply_courier_status($o, $st, $msg !== '' ? $msg : (SF_STATUS_TEXT[$st] ?? $st), 'Steadfast', $at);
+      $event = apply_courier_status($o, $st, $msg !== '' ? $msg : (SF_STATUS_TEXT[$st] ?? $st), 'Steadfast', $at, $extra);
     } else {
-      $event = apply_courier_status($o, '', $msg, 'Steadfast', $at);
+      $event = apply_courier_status($o, '', $msg, 'Steadfast', $at, $extra);
     }
     doc_put('orders', $o);
     return $o;

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { courierFeed, courierSeen, markCourierSeen, COURIER_ST } from './courierLog'
-import { toast } from './ui'
+import { showTestCourierPopup } from './CourierPopup'
 
 const ago = (t) => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? 'এইমাত্র' : m < 60 ? `${m} মিনিট আগে` : m < 1440 ? `${Math.round(m / 60)} ঘণ্টা আগে` : new Date(t).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) }
 
@@ -24,7 +24,6 @@ export default function CourierBell({ className = '' }) {
     shown.current = newest
     fresh.slice(0, 3).forEach((e) => {
       const text = `${e.rider ? '🛵 রাইডার নোট' : '🚚 কুরিয়ার'} · ${e.invoice}: ${e.message}`
-      toast(text)
       try { if ('Notification' in window && Notification.permission === 'granted') new Notification(`Fatiha · ${e.invoice}`, { body: e.message, icon: '/admin-icon-192.png' }) } catch { /* not allowed */ }
     })
   })
@@ -55,6 +54,7 @@ export default function CourierBell({ className = '' }) {
                 </li>
               )) : <li className="px-4 py-6 text-center text-sm text-muted">এখনো কোনো কুরিয়ার আপডেট নেই। Steadfast-এ পার্সেল পাঠালে রাইডারের নোট ও স্ট্যাটাস এখানে আসবে।</li>}
             </ul>
+            <button className="w-full border-t border-line px-4 py-2 text-xs font-semibold text-brand hover:bg-surface" onClick={() => { toggle(); showTestCourierPopup() }}>🔔 টেস্ট নোটিফিকেশন দেখুন</button>
           </div>
         </>
       )}
