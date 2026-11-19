@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { courierFeed, courierSeen, markCourierSeen, COURIER_ST } from './courierLog'
 import { showTestCourierPopup } from './CourierPopup'
+import { getSound, setSound, hasBanglaVoice, sayText } from './courierSound'
 
 const ago = (t) => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? 'এইমাত্র' : m < 60 ? `${m} মিনিট আগে` : m < 1440 ? `${Math.round(m / 60)} ঘণ্টা আগে` : new Date(t).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) }
 
@@ -13,6 +14,9 @@ export default function CourierBell({ className = '' }) {
   const nav = useNavigate()
   const [open, setOpen] = useState(false)
   const [seen, setSeen] = useState(courierSeen)
+  const [snd, setSnd] = useState(getSound)
+  const upd = (p) => setSnd(setSound(p))
+  const pickFile = (f) => { if (!f) return; if (f.size > 600 * 1024) return alert('ফাইল ৬০০ KB-এর কম হতে হবে (ছোট mp3/wav)'); const r = new FileReader(); r.onload = () => upd({ custom: String(r.result), customName: f.name, mode: 'custom' }); r.readAsDataURL(f) }
   const feed = courierFeed()
   const unread = feed.filter((e) => e.at > seen).length
   const shown = useRef(null)
@@ -54,6 +58,20 @@ export default function CourierBell({ className = '' }) {
                 </li>
               )) : <li className="px-4 py-6 text-center text-sm text-muted">এখনো কোনো কুরিয়ার আপডেট নেই। Steadfast-এ পার্সেল পাঠালে রাইডারের নোট ও স্ট্যাটাস এখানে আসবে।</li>}
             </ul>
+            <div className="space-y-1.5 border-t border-line bg-surface px-4 py-2.5 text-xs">
+              <label className="flex items-center justify-between gap-2 font-semibold"><span>🔊 অ্যালার্ট শব্দ</span><input type="checkbox" checked={snd.on} onChange={(e) => upd({ on: e.target.checked })} /></label>
+              {snd.on && (
+                <>
+                  <select className="field !py-1 text-xs" value={snd.mode} onChange={(e) => upd({ mode: e.target.value })}>
+                    <option value="voice">কণ্ঠ — নাম ধরে বলবে</option>
+                    <option value="beep">শুধু বিপ</option>
+                    <option value="custom">নিজের অডিও ফাইল</option>
+                  </select>
+                  {snd.mode === 'voice' && <p className="text-muted">“{sayText('note')}”{hasBanglaVoice() ? '' : ' — এই ডিভাইসে বাংলা ভয়েস নেই, তাই বিপ বাজবে।'}</p>}
+                  {snd.mode === 'custom' && <label className="block text-muted">{snd.customName || 'কোনো ফাইল নেই'} <input type="file" accept="audio/*" className="mt-1 block w-full text-xs" onChange={(e) => pickFile(e.target.files?.[0])} /></label>}
+                </>
+              )}
+            </div>
             <button className="w-full border-t border-line px-4 py-2 text-xs font-semibold text-brand hover:bg-surface" onClick={() => { toggle(); showTestCourierPopup() }}>🔔 টেস্ট নোটিফিকেশন দেখুন</button>
           </div>
         </>

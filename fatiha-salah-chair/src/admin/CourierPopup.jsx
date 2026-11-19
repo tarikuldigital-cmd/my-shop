@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { S, useDb } from '../store/db'
 import { courierFeed, COURIER_ST } from './courierLog'
+import { playAlert } from './courierSound'
 
 /**
  * Floating courier alerts: every Steadfast update (rider note, hold, cancel + reason, return, partial…) EXCEPT plain "delivered"
@@ -62,6 +63,7 @@ export default function CourierPopup() {
   const add = (list) => setCards((cur) => {
     const have = new Set(cur.map((c) => c.key))
     const fresh = list.filter((c) => !have.has(c.key) && !ignored.current.has(c.key)).map((c) => ({ ...c, shownAt: Date.now() }))
+    if (fresh.length) setTimeout(() => playAlert(fresh.some((c) => kind(c.e).tone === 'red') ? 'cancel' : 'note'), 0)
     return fresh.length ? [...fresh, ...cur].slice(0, MAX_CARDS) : cur
   })
 
