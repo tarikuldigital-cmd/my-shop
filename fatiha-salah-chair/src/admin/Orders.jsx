@@ -40,42 +40,58 @@ async function courierCodes(o) {
   const qr = await QR.toString(id, { type: 'svg', margin: 0, errorCorrectionLevel: 'M' })
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
   JsBarcode(svg, id, { format: 'CODE128', width: 2, height: 52, displayValue: false, margin: 0 })
+  svg.setAttribute('viewBox', `0 0 ${parseFloat(svg.getAttribute('width'))} ${parseFloat(svg.getAttribute('height'))}`)
+  svg.setAttribute('preserveAspectRatio', 'none')
   return { id, qr, bar: svg.outerHTML }
 }
 
 function labelHtml(o, c, st) {
   const cod = o.payment?.status === 'paid' ? 0 : o.total
-  const items = o.items.map((i) => `${esc(i.name)} ×${i.quantity}`).join(', ')
   return `
     <div class="lbl">
       <div class="lh"><b>${esc(COURIERS[o.courier]?.t || 'Courier')}</b><span>${new Date().toLocaleDateString('en-GB')}</span></div>
       <div class="lc">
         <div class="lq">${c.qr}</div>
-        <div class="li">
-          <div class="muted">Consignment ID</div><div class="big">${esc(c.id)}</div>
-          ${o.tracking && o.tracking !== c.id ? `<div class="muted">Tracking: <b>${esc(o.tracking)}</b></div>` : ''}
-          <div class="bar">${c.bar}</div>
-        </div>
+        <div class="li"><div class="m">Consignment ID</div><div class="big">${esc(c.id)}</div>${o.tracking && o.tracking !== c.id ? `<div class="m">${esc(o.tracking)}</div>` : ''}<div class="codbox"><span class="m">COD</span> <b>৳${cod}</b></div></div>
       </div>
-      <div class="lt">
-        <div><div class="muted">To</div><b>${esc(o.name)}</b> · <b>${esc(o.phone)}</b><br/>${esc(o.address)}</div>
-        <div class="codbox"><div class="muted">COD</div><div class="cod">৳${cod}</div></div>
-      </div>
-      <div class="lf"><span><b>From:</b> ${esc(st.siteName)} · ${esc(st.phone)}</span><span><b>Inv:</b> ${esc(o.sfInvoice || o.invoice)}</span></div>
-      <div class="lf"><span>${items}</span></div>
+      <div class="bar">${c.bar}</div>
+      <div class="to"><b>${esc(o.name)}</b> · <b>${esc(o.phone)}</b><div class="addr">${esc(o.address)}</div></div>
+      <div class="lf"><span>From: ${esc(st.siteName)} · ${esc(st.phone)}</span><b>${esc(o.sfInvoice || o.invoice)}</b></div>
     </div>`
 }
 
-export async function printInvoices(orders) {
+/** 3 × 3 inch courier labels — one sticker per page. */
+async function printLabels(orders) {
+  const list = orders.filter((o) => o.consignmentId || o.tracking)
+  if (!list.length) return toast('No courier booking yet — send to Steadfast first')
+  const w = window.open('', '_blank')
+  if (!w) return toast('Allow pop-ups to print labels')
+  w.document.write('<p style="font-family:Arial;padding:24px">Preparing…</p>')
+  const codes = await Promise.all(list.map((o) => courierCodes(o).catch(() => null)))
+  const html = list.map((o, k) => (codes[k] ? labelHtml(o, codes[k], S.settings) : '')).join('')
+  const css = `@page{size:3in 3in;margin:0}*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;color:#000}
+.lbl{width:3in;height:3in;padding:.08in .1in;page-break-after:always;overflow:hidden;display:flex;flex-direction:column;gap:.03in;font-size:8pt;line-height:1.2}
+.lh{display:flex;justify-content:space-between;border-bottom:1px solid #000;padding-bottom:1px;font-size:9pt}
+.lc{display:flex;gap:.08in;align-items:center}.lq svg{width:.95in;height:.95in;display:block}.li{flex:1;min-width:0}
+.m{font-size:6.5pt;color:#222;word-break:break-all}.big{font-size:13pt;font-weight:700;letter-spacing:.5px;word-break:break-all}
+.codbox{display:inline-block;margin-top:3px;border:1.5px solid #000;border-radius:3px;padding:1px 5px;font-size:11pt}
+.bar svg{width:100%;height:.38in;display:block}
+.to{border-top:1px dashed #000;padding-top:2px;flex:1;overflow:hidden;font-size:9.5pt}.addr{font-size:8.5pt;max-height:.62in;overflow:hidden}
+.lf{display:flex;justify-content:space-between;gap:4px;border-top:1px solid #000;padding-top:1px;font-size:6.5pt}
+@media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}`
+  w.document.open()
+  w.document.write(`<html><head><title>Labels</title><style>${css}</style></head><body>${html}<script>window.onload=()=>window.print()</script></body></html>`)
+  w.document.close()
+}
+
+async function printInvoices(orders) {
   const w = window.open('', '_blank')
   if (!w) return toast('Allow pop-ups to print invoices')
   w.document.write('<p style="font-family:Arial;padding:24px">Preparing…</p>')
   const st = S.settings
-  const codes = await Promise.all(orders.map((o) => courierCodes(o).catch(() => null)))
   const rows = (o) => o.items.map((i) => `<tr><td>${esc(i.name)}</td><td style="text-align:center">${i.quantity}</td><td style="text-align:right">৳${i.price}</td><td style="text-align:right">৳${i.price * i.quantity}</td></tr>`).join('')
-  const html = orders.map((o, k) => `
+  const html = orders.map((o) => `
     <section style="page-break-after:always;padding:24px;font-family:Arial,sans-serif;font-size:13px">
-      ${codes[k] ? labelHtml(o, codes[k], st) + '<div class="cut">✂ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</div>' : ''}
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
         <div><h2 style="margin:0">${esc(st.siteName)}</h2><div>${esc(st.address)}</div><div>Hotline: ${esc(st.phone)}</div></div>
         <div style="text-align:right"><h3 style="margin:0">INVOICE</h3><div><b>${o.invoice}</b></div><div>${new Date(o.createdAt).toLocaleDateString('en-GB')}</div>${o.tracking ? `<div>${COURIERS[o.courier]?.t || ''}: ${esc(o.tracking)}</div>` : ''}</div>
@@ -335,6 +351,7 @@ function OrderDrawer({ order: o, onClose }) {
           <div className="flex flex-wrap gap-2">
             {NEXT[o.status].map(([s, label, cls]) => <button key={s} className={cls} onClick={() => act(s)}>{label}</button>)}
             <button className="btn-outline" onClick={() => printInvoices([o])}>Print invoice</button>
+            {(o.consignmentId || o.tracking) && <button className="btn-outline" onClick={() => printLabels([o])}>Print label (3×3)</button>}
           </div>
           {extra && (
             <div className="mt-3 space-y-2 rounded-md border border-line bg-surface p-3">
@@ -494,6 +511,7 @@ export default function Orders() {
     if (!sel.size) return toast('Select orders first')
     const chosen = S.orders.filter((o) => sel.has(o.id))
     if (bulk === 'print') return printInvoices(chosen)
+    if (bulk === 'labels') return printLabels(chosen)
     if (bulk.startsWith('st:')) { const s = bulk.slice(3); chosen.forEach((o) => setStatus(o, s, meName(), s === 'cancelled' ? 'Bulk cancelled' : '')); toast(`${chosen.length} orders → ${STATUS[s].t}`) }
     if (bulk.startsWith('c:')) {
       const c = bulk.slice(2); let n = 0, err = ''
@@ -542,7 +560,7 @@ export default function Orders() {
           <option value="">Bulk action…</option>
           <optgroup label="Change status">{ST_KEYS.map((k) => <option key={k} value={`st:${k}`}>{STATUS[k].t}</option>)}</optgroup>
           <optgroup label="Send to courier">{Object.entries(COURIERS).map(([k, c]) => <option key={k} value={`c:${k}`}>{c.t}</option>)}</optgroup>
-          <optgroup label="Other"><option value="print">Print invoices</option><option value="csv">Export CSV</option></optgroup>
+          <optgroup label="Other"><option value="print">Print invoices</option><option value="labels">Print courier labels (3×3)</option><option value="csv">Export CSV</option></optgroup>
         </select>
         <button className="btn-brand" onClick={applyBulk}>Apply{sel.size ? ` (${sel.size})` : ''}</button>
         <span className="flex-1" />
