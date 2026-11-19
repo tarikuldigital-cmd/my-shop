@@ -181,7 +181,9 @@ This order (cart): ${JSON.stringify(summary.items)}`
 }
 
 export default function VoiceFill(props) {
-  const [mode, setMode] = useState(S.voiceAiOn && AI_OK ? 'ai' : 'guided')
+  // AI conversation paused for now (owner's choice) — set to true to bring the talking AI back
+  const AI_TALK = false
+  const [mode, setMode] = useState(AI_TALK && S.voiceAiOn && AI_OK ? 'ai' : 'guided')
   const [note, setNote] = useState('')
   if (mode === 'guided') return <GuidedVoice {...props} note={note} />
   return <AiVoice {...props} onFail={(msg) => { setNote(msg); setMode('guided') }} />
