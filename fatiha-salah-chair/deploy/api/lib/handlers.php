@@ -191,7 +191,13 @@ function h_chat_log(): void {
 
 /* =============== AI chat relay =============== */
 function chat_server_cfg(): array {
-  return array_merge(['baseUrl' => 'https://api.groq.com/openai/v1', 'model' => 'llama-3.3-70b-versatile', 'apiKey' => '', 'instructions' => ''], kv_get('chatServer', []) ?: []);
+  return array_merge(['baseUrl' => 'https://api.groq.com/openai/v1', 'model' => 'openai/gpt-oss-120b', 'apiKey' => '', 'instructions' => ''], kv_get('chatServer', []) ?: []);
+}
+/** gpt-oss models "think" first — keep that short and leave room for the answer. */
+function chat_payload(string $model, array $messages): array {
+  $p = ['model' => $model, 'messages' => $messages, 'max_tokens' => 500, 'temperature' => 0.3];
+  if (stripos($model, 'gpt-oss') !== false) { $p['max_tokens'] = 1500; $p['reasoning_effort'] = 'low'; $p['include_reasoning'] = false; }
+  return $p;
 }
 function h_chat_config(): void {
   require_admin();
@@ -221,7 +227,7 @@ function h_chat(): void {
   $system = $rules . ($cfg['instructions'] ? "\n\nOwner instructions:\n" . mb_substr($cfg['instructions'], 0, 1500) : '') . "\n\nSHOP DATA:\n" . mb_substr((string)($b['context'] ?? ''), 0, 7000);
   [$code, $body, $err] = http_call(rtrim($cfg['baseUrl'], '/') . '/chat/completions', [CURLOPT_POST => true, CURLOPT_TIMEOUT => 25,
     CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'Authorization: Bearer ' . $cfg['apiKey']],
-    CURLOPT_POSTFIELDS => jenc(['model' => $cfg['model'], 'messages' => array_merge([['role' => 'system', 'content' => $system]], $msgs), 'max_tokens' => 500, 'temperature' => 0.3])]);
+    CURLOPT_POSTFIELDS => jenc(chat_payload($cfg['model'], array_merge([['role' => 'system', 'content' => $system]], $msgs)))]);
   $j = json_decode($body, true) ?: []; $text = trim((string)($j['choices'][0]['message']['content'] ?? ''));
   // status 200 on purpose: the host replaces 5xx bodies with its own error page, hiding the real reason
   if ($code >= 300 || $text === '') out(['ok' => false, 'error' => ($j['error']['message'] ?? ($err ?: 'AI provider error')) . " (provider HTTP $code)"]);

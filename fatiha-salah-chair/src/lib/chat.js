@@ -111,7 +111,7 @@ export function serverEndpoint(cfg, name) {
 async function callProvider(cfg, system, msgs) {
   const r = await fetch(`${cfg.baseUrl.replace(/\/+$/, '')}/chat/completions`, {
     method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${cfg.apiKey}` },
-    body: JSON.stringify({ model: cfg.model, messages: [{ role: 'system', content: system }, ...msgs], max_tokens: 500, temperature: 0.3 }),
+    body: JSON.stringify({ model: cfg.model, messages: [{ role: 'system', content: system }, ...msgs], temperature: 0.3, ...(/gpt-oss/i.test(cfg.model) ? { max_tokens: 1500, reasoning_effort: 'low', include_reasoning: false } : { max_tokens: 500 }) }),
   })
   const j = await r.json().catch(() => ({}))
   const text = j?.choices?.[0]?.message?.content?.trim()
