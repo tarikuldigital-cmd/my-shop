@@ -63,7 +63,7 @@ export default function CourierBell({ className = '' }) {
               <label className="flex items-center justify-between gap-2 font-semibold"><span>🔊 অ্যালার্ট শব্দ</span><input type="checkbox" checked={snd.on} onChange={(e) => upd({ on: e.target.checked })} /></label>
               {snd.on && (
                 <>
-                  <label className="flex items-center justify-between gap-2"><span>⏰ পেন্ডিং অর্ডার রিমাইন্ডার (১০ মিনিট পর পর)</span><input type="checkbox" checked={snd.pending} onChange={(e) => upd({ pending: e.target.checked })} /></label>
+                  <label className="flex items-center justify-between gap-2"><span>⏰ পেন্ডিং অর্ডার রিমাইন্ডার (৩০ মিনিট পর পর)</span><input type="checkbox" checked={snd.pending} onChange={(e) => upd({ pending: e.target.checked })} /></label>
                   <select className="field !py-1 text-xs" value={snd.mode} onChange={(e) => upd({ mode: e.target.value })}>
                     <option value="pro">প্রফেশনাল ভয়েস (রেকর্ড করা)</option>
                     <option value="voice">ব্রাউজারের কণ্ঠ — নাম ধরে বলবে</option>

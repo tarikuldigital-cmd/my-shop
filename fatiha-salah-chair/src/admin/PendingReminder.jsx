@@ -3,13 +3,13 @@ import { useNavigate } from 'react-router-dom'
 import { S, useDb } from '../store/db'
 import { playPending } from './courierSound'
 
-const EVERY_MS = 10 * 60 * 1000
+const EVERY_MS = 30 * 60 * 1000
 const SHOW_MS = 25000
 const TEST_EVENT = 'fatiha-pending-test'
 export const showTestPendingReminder = () => window.dispatchEvent(new CustomEvent(TEST_EVENT))
 const pendingCount = () => S.orders.filter((o) => o.status === 'pending' && !o.demo).length
 
-/** Every 10 minutes (while the admin is open): voice + card "N orders pending — call and confirm quickly". Silent when nothing is pending. */
+/** Every 30 minutes (while the admin is open): voice + card "N orders pending — call and confirm quickly". Silent when nothing is pending. */
 export default function PendingReminder() {
   useDb()
   const nav = useNavigate()
