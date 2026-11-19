@@ -60,7 +60,7 @@ function labelHtml(o, c, st) {
     </div>`
 }
 
-/** 3 × 3 inch courier labels — one sticker per page. */
+/** 75 × 100 mm courier labels — one sticker per page. */
 async function printLabels(orders) {
   const list = orders.filter((o) => o.consignmentId || o.tracking)
   if (!list.length) return toast('No courier booking yet — send to Steadfast first')
@@ -69,15 +69,16 @@ async function printLabels(orders) {
   w.document.write('<p style="font-family:Arial;padding:24px">Preparing…</p>')
   const codes = await Promise.all(list.map((o) => courierCodes(o).catch(() => null)))
   const html = list.map((o, k) => (codes[k] ? labelHtml(o, codes[k], S.settings) : '')).join('')
-  const css = `@page{size:3in 3in;margin:0}*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;color:#000}
-.lbl{width:3in;height:3in;padding:.08in .1in;page-break-after:always;overflow:hidden;display:flex;flex-direction:column;gap:.03in;font-size:8pt;line-height:1.2}
-.lh{display:flex;justify-content:space-between;border-bottom:1px solid #000;padding-bottom:1px;font-size:9pt}
-.lc{display:flex;gap:.08in;align-items:center}.lq svg{width:.95in;height:.95in;display:block}.li{flex:1;min-width:0}
-.m{font-size:6.5pt;color:#222;word-break:break-all}.big{font-size:13pt;font-weight:700;letter-spacing:.5px;word-break:break-all}
-.codbox{display:inline-block;margin-top:3px;border:1.5px solid #000;border-radius:3px;padding:1px 5px;font-size:11pt}
-.bar svg{width:100%;height:.38in;display:block}
-.to{border-top:1px dashed #000;padding-top:2px;flex:1;overflow:hidden;font-size:9.5pt}.addr{font-size:8.5pt;max-height:.62in;overflow:hidden}
-.lf{display:flex;justify-content:space-between;gap:4px;border-top:1px solid #000;padding-top:1px;font-size:6.5pt}
+  const css = `@page{size:75mm 100mm;margin:0}*{box-sizing:border-box}html,body{margin:0;padding:0}body{font-family:Arial,sans-serif;color:#000}
+.lbl{width:75mm;height:100mm;padding:3mm 3.5mm;page-break-after:always;break-after:page;overflow:hidden;display:flex;flex-direction:column;gap:1.5mm;font-size:9pt;line-height:1.2}
+.lbl:last-child{page-break-after:auto;break-after:auto}
+.lh{display:flex;justify-content:space-between;border-bottom:1px solid #000;padding-bottom:1mm;font-size:11pt}
+.lc{display:flex;gap:3mm;align-items:center}.lq svg{width:27mm;height:27mm;display:block}.li{flex:1;min-width:0}
+.m{font-size:7.5pt;color:#222;word-break:break-all}.big{font-size:15pt;font-weight:700;letter-spacing:.5px;word-break:break-all}
+.codbox{display:inline-block;margin-top:1.5mm;border:1.5px solid #000;border-radius:3px;padding:.5mm 2mm;font-size:13pt}
+.bar svg{width:100%;height:13mm;display:block}
+.to{border-top:1px dashed #000;padding-top:1.5mm;flex:1;overflow:hidden;font-size:11pt}.addr{font-size:10pt;margin-top:1mm;max-height:22mm;overflow:hidden}
+.lf{display:flex;justify-content:space-between;gap:2mm;border-top:1px solid #000;padding-top:1mm;font-size:8pt}
 @media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}`
   w.document.open()
   w.document.write(`<html><head><title>Labels</title><style>${css}</style></head><body>${html}<script>window.onload=()=>window.print()</script></body></html>`)
@@ -351,7 +352,7 @@ function OrderDrawer({ order: o, onClose }) {
           <div className="flex flex-wrap gap-2">
             {NEXT[o.status].map(([s, label, cls]) => <button key={s} className={cls} onClick={() => act(s)}>{label}</button>)}
             <button className="btn-outline" onClick={() => printInvoices([o])}>Print invoice</button>
-            {(o.consignmentId || o.tracking) && <button className="btn-outline" onClick={() => printLabels([o])}>Print label (3×3)</button>}
+            {(o.consignmentId || o.tracking) && <button className="btn-outline" onClick={() => printLabels([o])}>Print label</button>}
           </div>
           {extra && (
             <div className="mt-3 space-y-2 rounded-md border border-line bg-surface p-3">
@@ -560,7 +561,7 @@ export default function Orders() {
           <option value="">Bulk action…</option>
           <optgroup label="Change status">{ST_KEYS.map((k) => <option key={k} value={`st:${k}`}>{STATUS[k].t}</option>)}</optgroup>
           <optgroup label="Send to courier">{Object.entries(COURIERS).map(([k, c]) => <option key={k} value={`c:${k}`}>{c.t}</option>)}</optgroup>
-          <optgroup label="Other"><option value="print">Print invoices</option><option value="labels">Print courier labels (3×3)</option><option value="csv">Export CSV</option></optgroup>
+          <optgroup label="Other"><option value="print">Print invoices</option><option value="labels">Print courier labels (75×100 mm)</option><option value="csv">Export CSV</option></optgroup>
         </select>
         <button className="btn-brand" onClick={applyBulk}>Apply{sel.size ? ` (${sel.size})` : ''}</button>
         <span className="flex-1" />
