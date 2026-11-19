@@ -260,12 +260,16 @@ function h_voice_cfg(): void {
 function h_voice_token(): void {
   $c = voice_cfg(); $ip = client_ip();
   if (empty($c['enabled']) || $c['apiKey'] === '') out(['ok' => false, 'error' => 'Voice AI is off']);
-  if (rate_hit("vt10:$ip", 4, 600) || rate_hit("vt1d:$ip", 12, 86400) || rate_hit('vtday', (int)$c['perDay'], 86400)) out(['ok' => false, 'error' => 'limit']);
+  if (rate_hit("vt10:$ip", 6, 600) || rate_hit("vt1d:$ip", 20, 86400) || rate_hit('vtday', (int)$c['perDay'], 86400)) out(['ok' => false, 'error' => 'limit']);
   $now = time();
-  $body = ['uses' => 1, 'expireTime' => gmdate('Y-m-d\TH:i:s\Z', $now + 600), 'newSessionExpireTime' => gmdate('Y-m-d\TH:i:s\Z', $now + 120),
-    'liveConnectConstraints' => ['model' => 'models/' . $c['model']]];
-  [$code, $resp, $err] = http_call('https://generativelanguage.googleapis.com/v1beta/auth_tokens', [CURLOPT_POST => true, CURLOPT_TIMEOUT => 15,
-    CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'x-goog-api-key: ' . $c['apiKey']], CURLOPT_POSTFIELDS => jenc($body)]);
+  $mk = function (bool $lock) use ($c, $now) {
+    $b = ['uses' => 1, 'expireTime' => gmdate('Y-m-d\\TH:i:s\\Z', $now + 600), 'newSessionExpireTime' => gmdate('Y-m-d\\TH:i:s\\Z', $now + 120)];
+    if ($lock) $b['bidiGenerateContentSetup'] = ['model' => 'models/' . $c['model']]; // token only works for this model
+    return http_call('https://generativelanguage.googleapis.com/v1beta/auth_tokens', [CURLOPT_POST => true, CURLOPT_TIMEOUT => 15,
+      CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'x-goog-api-key: ' . $c['apiKey']], CURLOPT_POSTFIELDS => jenc($b)]);
+  };
+  [$code, $resp, $err] = $mk(true);
+  if ($code === 400) [$code, $resp, $err] = $mk(false);
   $j = json_decode((string)$resp, true) ?: [];
   if ($code >= 300 || empty($j['name'])) out(['ok' => false, 'error' => ($j['error']['message'] ?? ($err ?: 'token error')) . " (HTTP $code)"]);
   out(['ok' => true, 'token' => $j['name'], 'model' => $c['model'], 'voice' => $c['voice'], 'instructions' => mb_substr((string)$c['instructions'], 0, 1500)]);
