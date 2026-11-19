@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { fraudCheck } from './fraud'
 import { liveCourierRefreshAll } from '../lib/live'
 import CourierBell from './CourierBell'
@@ -6,7 +6,7 @@ import CourierPopup from './CourierPopup'
 import AdminSounds from './AdminSounds'
 import PendingReminder from './PendingReminder'
 import { LiveBadge } from './LiveVisitors'
-import { Link, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { Link, NavLink, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { S, save, useDb } from '../store/db'
 import { Toasts, toast } from './ui'
 import Img from '../components/common/Img'
@@ -76,6 +76,7 @@ const NAV = [
 ]
 
 export default function AdminApp() {
+  const didRestore = useRef(false)
   const [ok, setOk] = useState(() => !LIVE && demoResume())
   const [checking, setChecking] = useState(LIVE)
   useEffect(() => { if (LIVE) resumeAdmin().then(setOk).finally(() => setChecking(false)) }, [])
@@ -121,7 +122,19 @@ export default function AdminApp() {
     return () => { window.removeEventListener('beforeinstallprompt', onPrompt); document.querySelectorAll('[data-admin-pwa]').forEach((n) => n.remove()) }
   }, [])
   const loc = useLocation()
+  const nav = useNavigate()
   useDb()
+  // reload keeps you on the same admin page/tab: remember it, and bring it back if a reload lands on the bare /admin
+  useEffect(() => {
+    if (!ok) return
+    try {
+      const key = 'fatiha_admin_last', last = sessionStorage.getItem(key), here = loc.pathname.replace(/\/$/, '')
+      const first = !didRestore.current; didRestore.current = true
+      const isReload = (performance.getEntriesByType('navigation')[0] || {}).type === 'reload'
+      if (first && isReload && last && here === '/admin' && last !== '/admin') { nav(last, { replace: true }); return }
+      sessionStorage.setItem(key, loc.pathname + loc.search)
+    } catch { /* private mode */ }
+  }, [ok, loc.pathname, loc.search])
   useEffect(() => { setMenu(false); window.scrollTo(0, 0); document.title = 'Admin | Fatiha Ayat Salah Chair' }, [loc.pathname])
   if (checking) return <div className="flex min-h-screen items-center justify-center text-muted">Loading…</div>
   if (!ok) return <Login onOk={() => setOk(true)} />

@@ -195,8 +195,10 @@ export async function flush() {
 
 function startPoll() {
   clearInterval(pollTimer)
-  pollTimer = setInterval(() => { if (!document.hidden && base && !inflight) poll() }, 5000)
+  pollTimer = setInterval(() => { if (base && !inflight) poll() }, 5000)   // also in a background tab (the browser slows it down, but new orders still arrive)
+  if (!visHooked) { visHooked = true; document.addEventListener('visibilitychange', () => { if (!document.hidden && base && !inflight) poll() }) }   // back on the tab → refresh at once
 }
+let visHooked = false
 const replaceInPlace = (target, src) => { for (const k of Object.keys(target)) delete target[k]; Object.assign(target, src) }
 export async function poll() {
   if (!base) return
