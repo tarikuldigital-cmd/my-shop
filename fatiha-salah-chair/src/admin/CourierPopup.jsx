@@ -117,7 +117,7 @@ function Card({ c, onClose, onOpen, hold }) {
   const { e } = c
   const [ask, setAsk] = useState('')   // '' | 'resend' | 'return'
   const [busy, setBusy] = useState(false)
-  const [rnote, setRnote] = useState('আবার ডেলিভারি — রিসিভ করার আগে কাস্টমারকে কল দিয়ে নিন।')
+  const [who, setWho] = useState('customer')   // whom the rider should call on the re-send
   const k = kind(e)
   const t = TONE[k.tone]
   const order = c.test ? null : findOrder(e.orderId)
@@ -142,12 +142,13 @@ function Card({ c, onClose, onOpen, hold }) {
     return `${base} ডেলিভারি করতে গিয়ে রাইডার আপনাকে পাননি/সমস্যা হয়েছে। আবার ডেলিভারি দিতে কখন ও কোথায় থাকবেন জানাবেন কি?`
   }
   const phone = order?.phone || ''
+  const rnote = who === 'rider' && rider.phone ? `আবার ডেলিভারি — রাইডারকে কল দিন: ${rider.phone}` : `আবার ডেলিভারি — কাস্টমারকে কল দিন: ${phone}`
   const doResend = async () => {
     if (c.test) { toast('এটা টেস্ট কার্ড — আসল কার্ডে পার্সেল আবার পাঠানো হবে'); return chooseAsk('') }
     if (!order) return toast('অর্ডার খুঁজে পাওয়া যায়নি')
     setBusy(true)
     try {
-      if (LIVE) await courierLive(order, order.courier || 'steadfast', meName(), rnote.trim(), true)
+      if (LIVE) await courierLive(order, order.courier || 'steadfast', meName(), rnote, true)
       else sendToCourier(order, order.courier || 'steadfast', meName())
       if (order.status === 'cancelled') setStatus(order, 'confirmed', meName(), 'Re-sent to courier')
       if (['transit', 'ready', 'confirmed'].includes(order.status) && order.status !== 'ready') { order.status = 'ready'; order.history.push({ s: 'ready', by: meName(), at: Date.now(), note: 'Re-sent to courier' }) }
@@ -180,8 +181,13 @@ function Card({ c, onClose, onOpen, hold }) {
         </div>
         {ask && (
           <div className="rounded-lg border border-amber-300 bg-amber-50 p-2.5 text-xs text-amber-900">
-            <p className="font-semibold">{ask === 'resend' ? 'নতুন করে কুরিয়ারে পার্সেল বুক হবে। নিচের নোটটি রাইডারের কাছে পার্সেলের সাথে যাবে। নিশ্চিত?' : 'অর্ডারটি "Returned" হিসেবে মার্ক হবে। নিশ্চিত?'}</p>
-            {ask === 'resend' && <textarea value={rnote} onChange={(e) => setRnote(e.target.value)} rows={2} maxLength={250} placeholder="রাইডারের জন্য নোট (পার্সেলের সাথে Steadfast-এ যাবে)" className="mt-2 w-full rounded-md border border-amber-300 bg-white p-2 text-xs text-ink" />}
+            <p className="font-semibold">{ask === 'resend' ? 'নতুন করে কুরিয়ারে পার্সেল বুক হবে। কাকে কল দিতে হবে বেছে নিন — নম্বরসহ নোটটি পার্সেলের সাথে Steadfast-এ যাবে। নিশ্চিত?' : 'অর্ডারটি "Returned" হিসেবে মার্ক হবে। নিশ্চিত?'}</p>
+            {ask === 'resend' && (
+              <div className="mt-2 grid grid-cols-1 gap-1.5">
+                <button type="button" onClick={() => setWho('customer')} className={`rounded-md border px-2 py-1.5 text-left font-semibold ${who === 'customer' ? 'border-gray-900 bg-white' : 'border-amber-200 bg-amber-100/50'}`}>{who === 'customer' ? '●' : '○'} কাস্টমারকে কল দিন · {phone || 'নম্বর নেই'}</button>
+                {rider.phone && <button type="button" onClick={() => setWho('rider')} className={`rounded-md border px-2 py-1.5 text-left font-semibold ${who === 'rider' ? 'border-gray-900 bg-white' : 'border-amber-200 bg-amber-100/50'}`}>{who === 'rider' ? '●' : '○'} রাইডারকে কল দিন · {rider.phone}</button>}
+              </div>
+            )}
             <div className="mt-2 flex gap-2">
               <button disabled={busy} onClick={ask === 'resend' ? doResend : doReturn} className="rounded-md bg-gray-900 px-3 py-1.5 font-bold text-white">{busy ? 'অপেক্ষা করুন…' : 'হ্যাঁ, করুন'}</button>
               <button disabled={busy} onClick={() => chooseAsk('')} className="rounded-md bg-white px-3 py-1.5 font-semibold text-gray-700">না</button>
