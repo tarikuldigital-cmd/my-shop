@@ -30,26 +30,66 @@ function FraudBadge({ phone }) {
   return <button onClick={run} title={`Total ${c.sum.total} · Delivered ${c.sum.ok} · Cancelled ${c.sum.cancel}`}><Pill tone={ratioTone(c.sum.ratio)}>{Math.round(c.sum.ratio)}% · {c.sum.ok}/{c.sum.total}</Pill></button>
 }
 
-/* ---------- printable invoices ---------- */
-function printInvoices(orders) {
-  const st = S.settings
-  const rows = (o) => o.items.map((i) => `<tr><td>${i.name}</td><td style="text-align:center">${i.quantity}</td><td style="text-align:right">৳${i.price}</td><td style="text-align:right">৳${i.price * i.quantity}</td></tr>`).join('')
-  const html = orders.map((o) => `
-    <section style="page-break-after:always;padding:24px;font-family:Arial,sans-serif;font-size:13px">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start">
-        <div><h2 style="margin:0">${st.siteName}</h2><div>${st.address}</div><div>Hotline: ${st.phone}</div></div>
-        <div style="text-align:right"><h3 style="margin:0">INVOICE</h3><div><b>${o.invoice}</b></div><div>${new Date(o.createdAt).toLocaleDateString('en-GB')}</div>${o.tracking ? `<div>${COURIERS[o.courier]?.t || ''}: ${o.tracking}</div>` : ''}</div>
+/* ---------- printable invoices (with Steadfast courier label) ---------- */
+const esc = (v) => String(v ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
+
+async function courierCodes(o) {
+  const id = String(o.consignmentId || o.tracking || '')
+  if (!id) return null
+  const [{ default: QR }, { default: JsBarcode }] = await Promise.all([import('qrcode'), import('jsbarcode')])
+  const qr = await QR.toString(id, { type: 'svg', margin: 0, errorCorrectionLevel: 'M' })
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+  JsBarcode(svg, id, { format: 'CODE128', width: 2, height: 52, displayValue: false, margin: 0 })
+  return { id, qr, bar: svg.outerHTML }
+}
+
+function labelHtml(o, c, st) {
+  const cod = o.payment?.status === 'paid' ? 0 : o.total
+  const items = o.items.map((i) => `${esc(i.name)} ×${i.quantity}`).join(', ')
+  return `
+    <div class="lbl">
+      <div class="lh"><b>${esc(COURIERS[o.courier]?.t || 'Courier')}</b><span>${new Date().toLocaleDateString('en-GB')}</span></div>
+      <div class="lc">
+        <div class="lq">${c.qr}</div>
+        <div class="li">
+          <div class="muted">Consignment ID</div><div class="big">${esc(c.id)}</div>
+          ${o.tracking && o.tracking !== c.id ? `<div class="muted">Tracking: <b>${esc(o.tracking)}</b></div>` : ''}
+          <div class="bar">${c.bar}</div>
+        </div>
       </div>
-      <hr/><div><b>Bill to:</b> ${o.name} · ${o.phone}${o.abroadPhone ? ` · Overseas: ${o.abroadPhone}` : ''}<br/>${o.address}</div>
+      <div class="lt">
+        <div><div class="muted">To</div><b>${esc(o.name)}</b> · <b>${esc(o.phone)}</b><br/>${esc(o.address)}</div>
+        <div class="codbox"><div class="muted">COD</div><div class="cod">৳${cod}</div></div>
+      </div>
+      <div class="lf"><span><b>From:</b> ${esc(st.siteName)} · ${esc(st.phone)}</span><span><b>Inv:</b> ${esc(o.sfInvoice || o.invoice)}</span></div>
+      <div class="lf"><span>${items}</span></div>
+    </div>`
+}
+
+export async function printInvoices(orders) {
+  const w = window.open('', '_blank')
+  if (!w) return toast('Allow pop-ups to print invoices')
+  w.document.write('<p style="font-family:Arial;padding:24px">Preparing…</p>')
+  const st = S.settings
+  const codes = await Promise.all(orders.map((o) => courierCodes(o).catch(() => null)))
+  const rows = (o) => o.items.map((i) => `<tr><td>${esc(i.name)}</td><td style="text-align:center">${i.quantity}</td><td style="text-align:right">৳${i.price}</td><td style="text-align:right">৳${i.price * i.quantity}</td></tr>`).join('')
+  const html = orders.map((o, k) => `
+    <section style="page-break-after:always;padding:24px;font-family:Arial,sans-serif;font-size:13px">
+      ${codes[k] ? labelHtml(o, codes[k], st) + '<div class="cut">✂ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</div>' : ''}
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div><h2 style="margin:0">${esc(st.siteName)}</h2><div>${esc(st.address)}</div><div>Hotline: ${esc(st.phone)}</div></div>
+        <div style="text-align:right"><h3 style="margin:0">INVOICE</h3><div><b>${o.invoice}</b></div><div>${new Date(o.createdAt).toLocaleDateString('en-GB')}</div>${o.tracking ? `<div>${COURIERS[o.courier]?.t || ''}: ${esc(o.tracking)}</div>` : ''}</div>
+      </div>
+      <hr/><div><b>Bill to:</b> ${esc(o.name)} · ${esc(o.phone)}${o.abroadPhone ? ` · Overseas: ${esc(o.abroadPhone)}` : ''}<br/>${esc(o.address)}</div>
       <table style="width:100%;border-collapse:collapse;margin-top:12px" border="1" cellpadding="6">
         <thead><tr style="background:#f3f4f6"><th style="text-align:left">Product</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>${rows(o)}</tbody>
       </table>
       <table style="margin-left:auto;margin-top:8px"><tr><td>Subtotal</td><td style="text-align:right">৳${o.subtotal}</td></tr><tr><td>Delivery</td><td style="text-align:right">৳${o.shippingCharge}</td></tr>${o.discount ? `<tr><td>Discount</td><td style="text-align:right">-৳${o.discount}</td></tr>` : ''}${o.adminDiscount ? `<tr><td>Special discount</td><td style="text-align:right">-৳${o.adminDiscount}</td></tr>` : ''}<tr><td><b>${o.payment?.status === 'paid' ? 'Paid' : 'Collect (COD)'}</b></td><td style="text-align:right"><b>৳${o.payment?.status === 'paid' ? 0 : o.total}</b></td></tr></table>
       <p style="margin-top:24px;color:#555">ধন্যবাদ! পণ্য পেয়ে ডেলিভারি ম্যানের সামনে চেক করে নিন।</p>
     </section>`).join('')
-  const w = window.open('', '_blank')
-  if (!w) return toast('Allow pop-ups to print invoices')
-  w.document.write(`<html><head><title>Invoices</title></head><body style="margin:0">${html}<script>window.onload=()=>window.print()</script></body></html>`)
+  const css = `.lbl{border:2px solid #000;border-radius:6px;max-width:520px;padding:10px 12px}.lh{display:flex;justify-content:space-between;border-bottom:1px solid #000;padding-bottom:4px;font-size:15px}.lc{display:flex;gap:12px;align-items:center;padding:8px 0;border-bottom:1px dashed #000}.lq svg{width:110px;height:110px;display:block}.li{flex:1;min-width:0}.big{font-size:22px;font-weight:700;letter-spacing:1px}.bar svg{width:100%;height:52px;display:block;margin-top:4px}.muted{color:#444;font-size:11px}.lt{display:flex;gap:10px;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #000}.codbox{text-align:right;border:2px solid #000;border-radius:4px;padding:2px 8px;align-self:flex-start}.cod{font-size:20px;font-weight:700}.lf{display:flex;justify-content:space-between;gap:8px;padding-top:5px;font-size:11px}.cut{color:#888;margin:14px 0;font-size:11px;white-space:nowrap;overflow:hidden}@media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}`
+  w.document.open()
+  w.document.write(`<html><head><title>Invoices</title><style>${css}</style></head><body style="margin:0">${html}<script>window.onload=()=>window.print()</script></body></html>`)
   w.document.close()
 }
 
