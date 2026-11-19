@@ -16,6 +16,10 @@ const TEST_EVENT = 'fatiha-courier-test'
 const DELIVERED_ST = new Set(['delivered', 'delivered_approval_pending'])
 const isDelivered = (e) => DELIVERED_ST.has(e.status) || (!e.status && /ডেলিভারি সম্পন্ন|ডেলিভারি হয়েছে|\bdelivered\b/i.test(e.message || '') && !/cancel|ক্যান্সেল|বাতিল|not delivered|partial|আংশিক|ফেরত/i.test(e.message || ''))
 
+/** pop up only: cancel notifications + notes written by the rider (no booking / in-transit / hold / pending status updates, no delivered) */
+const CANCEL_ST = new Set(['cancelled', 'cancelled_approval_pending'])
+const wanted = (e) => !isDelivered(e) && (CANCEL_ST.has(e.status) || !e.status)
+
 /** rider name / phone: use the fields if the courier sent them, otherwise try to read them out of the note text */
 export function riderOf(e) {
   const msg = e.message || ''
@@ -70,7 +74,7 @@ export default function CourierPopup() {
     if (!fresh.length) return
     baseline.current = Math.max(baseline.current, newest)
     setPopped(baseline.current)
-    add(fresh.filter((e) => !isDelivered(e)).reverse().map((e) => ({ key: `${e.orderId}:${e.at}:${e.message}`, e })))
+    add(fresh.filter(wanted).reverse().map((e) => ({ key: `${e.orderId}:${e.at}:${e.message}`, e })))
   })
 
   // test button
