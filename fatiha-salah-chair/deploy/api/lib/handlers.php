@@ -211,7 +211,7 @@ function h_chat(): void {
     $ip = client_ip();
     if (rate_hit("c10:$ip", 12, 600) || rate_hit("c1h:$ip", 40, 3600) || rate_hit('cday', 1500, 86400)) out(['ok' => false, 'error' => 'Too many messages, please try again later'], 429);
   }
-  if ($cfg['apiKey'] === '') out(['ok' => false, 'error' => 'AI is not configured on the server'], 503);
+  if ($cfg['apiKey'] === '') out(['ok' => false, 'error' => 'AI is not configured on the server']);
   $msgs = [];
   foreach (array_slice(is_array($b['messages'] ?? null) ? $b['messages'] : [], -10) as $m) {
     if (is_array($m) && in_array($m['role'] ?? '', ['user', 'assistant'], true) && is_string($m['content'] ?? null)) $msgs[] = ['role' => $m['role'], 'content' => mb_substr($m['content'], 0, 600)];
@@ -223,7 +223,8 @@ function h_chat(): void {
     CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'Authorization: Bearer ' . $cfg['apiKey']],
     CURLOPT_POSTFIELDS => jenc(['model' => $cfg['model'], 'messages' => array_merge([['role' => 'system', 'content' => $system]], $msgs), 'max_tokens' => 500, 'temperature' => 0.3])]);
   $j = json_decode($body, true) ?: []; $text = trim((string)($j['choices'][0]['message']['content'] ?? ''));
-  if ($code >= 300 || $text === '') out(['ok' => false, 'error' => $j['error']['message'] ?? ($err ?: "AI provider error (HTTP $code)")], 502);
+  // status 200 on purpose: the host replaces 5xx bodies with its own error page, hiding the real reason
+  if ($code >= 300 || $text === '') out(['ok' => false, 'error' => ($j['error']['message'] ?? ($err ?: 'AI provider error')) . " (provider HTTP $code)"]);
   out(['ok' => true, 'reply' => $text]);
 }
 
