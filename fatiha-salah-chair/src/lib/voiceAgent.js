@@ -93,7 +93,7 @@ export async function startVoiceAgent({ context, onTool, onState, onCaption }) {
       ready = true
       node.port.onmessage = (e) => { if (ready && ws.readyState === 1) ws.send(JSON.stringify({ realtimeInput: { audio: { data: b64(e.data), mimeType: 'audio/pcm;rate=16000' } } })) }
       // let the AI greet first
-      ws.send(JSON.stringify({ clientContent: { turns: [{ role: 'user', parts: [{ text: '(customer pressed the talk button — greet and start)' }] }], turnComplete: true } }))
+      ws.send(JSON.stringify({ clientContent: { turns: [{ role: 'user', parts: [{ text: 'আসসালামু আলাইকুম। আমি অর্ডার করতে চাই। (বাংলায় সালাম দিয়ে শুরু করুন এবং আমার নাম জিজ্ঞেস করুন)' }] }], turnComplete: true } }))
       onState('listening')
       maxT = setTimeout(() => stop('ended'), 5 * 60 * 1000) // hard cap: 5 minutes per talk
     }
