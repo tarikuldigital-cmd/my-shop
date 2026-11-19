@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { S, useDb } from '../store/db'
+import { LIVE } from '../config/env'
+import { courierLive } from '../lib/live'
+import { S, useDb, save, meName, setStatus, sendToCourier, waNum, RETURN_REASONS } from '../store/db'
+import { toast } from './ui'
 import { courierFeed, COURIER_ST } from './courierLog'
 import { playAlert } from './courierSound'
 
@@ -60,6 +63,7 @@ export default function CourierPopup() {
   const [cards, setCards] = useState([])
   const baseline = useRef(null)
   const ignored = useRef(new Set())
+  const holding = useRef(new Set())   // cards waiting for a confirm / busy — never auto-close those
 
   const add = (list) => setCards((cur) => {
     const have = new Set(cur.map((c) => c.key))
@@ -93,7 +97,7 @@ export default function CourierPopup() {
   // auto-close after 25 s
   useEffect(() => {
     if (!cards.length) return
-    const t = setInterval(() => setCards((cur) => cur.filter((c) => Date.now() - c.shownAt < SHOW_MS)), 500)
+    const t = setInterval(() => setCards((cur) => cur.filter((c) => holding.current.has(c.key) || Date.now() - c.shownAt < SHOW_MS)), 500)
     return () => clearInterval(t)
   }, [cards.length])
 
@@ -104,13 +108,15 @@ export default function CourierPopup() {
   return (
     <div className="pointer-events-none fixed inset-x-0 top-3 z-[120] flex flex-col items-center gap-3 px-3" aria-live="assertive">
       {cards.length > 1 && <button onClick={closeAll} className="pointer-events-auto rounded-full bg-gray-900/90 px-4 py-1.5 text-xs font-semibold text-white shadow-lg">সবগুলো ইগনোর করুন ({cards.length})</button>}
-      {cards.map((c) => <Card key={c.key} c={c} onClose={() => close(c)} onOpen={() => { close(c); if (!c.test) nav(`/admin/orders?open=${c.e.invoice}`) }} />)}
+      {cards.map((c) => <Card key={c.key} c={c} hold={(on) => { on ? holding.current.add(c.key) : holding.current.delete(c.key) }} onClose={() => close(c)} onOpen={() => { close(c); if (!c.test) nav(`/admin/orders?open=${c.e.invoice}`) }} />)}
     </div>
   )
 }
 
-function Card({ c, onClose, onOpen }) {
+function Card({ c, onClose, onOpen, hold }) {
   const { e } = c
+  const [ask, setAsk] = useState('')   // '' | 'resend' | 'return'
+  const [busy, setBusy] = useState(false)
   const k = kind(e)
   const t = TONE[k.tone]
   const order = c.test ? null : findOrder(e.orderId)
@@ -124,6 +130,35 @@ function Card({ c, onClose, onOpen }) {
     ['রাইডারের নাম', rider.name || 'নোটে নেই'],
     ['রাইডারের ফোন', rider.phone ? <a className="pointer-events-auto font-semibold text-brand underline" href={`tel:${rider.phone}`}>{rider.phone}</a> : 'নোটে নেই'],
   ]
+
+  const chooseAsk = (v) => { setAsk(v); hold(!!v) }
+  const msgFor = () => {
+    const nm = e.name || order?.name || ''
+    const site = S.settings.siteName
+    const base = `আসসালামু আলাইকুম ${nm}, ${site} থেকে বলছি। আপনার অর্ডার ${e.invoice}`
+    if (k.label === 'পার্সেল ফেরত') return `${base} ডেলিভারি করা যায়নি এবং পার্সেল ফেরত আসছে। আবার পাঠাতে চাইলে কবে ও কোথায় রিসিভ করবেন জানাবেন কি?`
+    if (k.label === 'কাস্টমার/পার্সেল হোল্ড') return `${base} কুরিয়ার হোল্ডে আছে। কখন ডেলিভারি নিলে সুবিধা হবে জানাবেন কি?`
+    return `${base} ডেলিভারি করতে গিয়ে রাইডার আপনাকে পাননি/সমস্যা হয়েছে। আবার ডেলিভারি দিতে কখন ও কোথায় থাকবেন জানাবেন কি?`
+  }
+  const phone = order?.phone || ''
+  const doResend = async () => {
+    if (c.test) { toast('এটা টেস্ট কার্ড — আসল কার্ডে পার্সেল আবার পাঠানো হবে'); return chooseAsk('') }
+    if (!order) return toast('অর্ডার খুঁজে পাওয়া যায়নি')
+    setBusy(true)
+    try {
+      if (LIVE) await courierLive(order, order.courier || 'steadfast', meName(), '', true)
+      else sendToCourier(order, order.courier || 'steadfast', meName())
+      if (order.status === 'cancelled') setStatus(order, 'confirmed', meName(), 'Re-sent to courier')
+      if (['transit', 'ready', 'confirmed'].includes(order.status) && order.status !== 'ready') { order.status = 'ready'; order.history.push({ s: 'ready', by: meName(), at: Date.now(), note: 'Re-sent to courier' }) }
+      save(); toast(`${order.invoice}: আবার কুরিয়ারে পাঠানো হয়েছে`); chooseAsk(''); onClose()
+    } catch (err) { toast(err.message || 'পাঠানো যায়নি') } finally { setBusy(false) }
+  }
+  const doReturn = () => {
+    if (c.test) { toast('এটা টেস্ট কার্ড — আসল কার্ডে অর্ডার "Returned" হবে'); return chooseAsk('') }
+    if (!order) return toast('অর্ডার খুঁজে পাওয়া যায়নি')
+    setStatus(order, 'returned', meName(), RETURN_REASONS[3]); save(); toast(`${order.invoice}: ফেরত নেওয়া হয়েছে (Returned)`); chooseAsk(''); onClose()
+  }
+  const quick = 'inline-flex items-center justify-center gap-1 rounded-lg px-2 py-2 text-xs font-bold shadow-sm'
   return (
     <div className={`pointer-events-auto w-full max-w-md overflow-hidden rounded-2xl border-2 ${t.ring} bg-white shadow-2xl`} role="alert">
       <div className={`flex items-center justify-between gap-2 px-4 py-2 ${t.head}`}>
@@ -136,6 +171,21 @@ function Card({ c, onClose, onOpen }) {
         <dl className="grid grid-cols-[7.5rem_1fr] gap-x-2 gap-y-1 text-[13px]">
           {rows.map(([a, b]) => <div key={a} className="contents"><dt className="text-muted">{a}</dt><dd className="break-words font-medium text-ink">{b}</dd></div>)}
         </dl>
+        <div className="grid grid-cols-2 gap-2 border-t border-line pt-3">
+          {phone ? <a href={`tel:${phone}`} className={`${quick} bg-sky-600 text-white`}>📞 কাস্টমারকে কল</a> : <span className={`${quick} bg-gray-100 text-gray-400`}>📞 ফোন নেই</span>}
+          {phone ? <a href={`https://wa.me/${waNum(phone)}?text=${encodeURIComponent(msgFor())}`} target="_blank" rel="noreferrer" className={`${quick} bg-[#25D366] text-white`}>💬 WhatsApp-এ মেসেজ</a> : <span className={`${quick} bg-gray-100 text-gray-400`}>💬 WhatsApp নেই</span>}
+          <button disabled={busy} onClick={() => chooseAsk('resend')} className={`${quick} bg-brand text-white`}>🔁 আবার ডেলিভারি পাঠান</button>
+          <button disabled={busy} onClick={() => chooseAsk('return')} className={`${quick} border border-red-300 bg-red-50 text-red-700`}>↩ ফেরত নিন</button>
+        </div>
+        {ask && (
+          <div className="rounded-lg border border-amber-300 bg-amber-50 p-2.5 text-xs text-amber-900">
+            <p className="font-semibold">{ask === 'resend' ? 'নতুন করে কুরিয়ারে পার্সেল বুক হবে (নতুন কনসাইনমেন্ট)। নিশ্চিত?' : 'অর্ডারটি "Returned" হিসেবে মার্ক হবে। নিশ্চিত?'}</p>
+            <div className="mt-2 flex gap-2">
+              <button disabled={busy} onClick={ask === 'resend' ? doResend : doReturn} className="rounded-md bg-gray-900 px-3 py-1.5 font-bold text-white">{busy ? 'অপেক্ষা করুন…' : 'হ্যাঁ, করুন'}</button>
+              <button disabled={busy} onClick={() => chooseAsk('')} className="rounded-md bg-white px-3 py-1.5 font-semibold text-gray-700">না</button>
+            </div>
+          </div>
+        )}
         <div className="flex items-center justify-between pt-1">
           <span className="text-xs text-muted">{hhmm(e.at)}</span>
           {!c.test && <button onClick={onOpen} className="rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-white">অর্ডার খুলুন →</button>}

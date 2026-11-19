@@ -199,8 +199,9 @@ function steadfast_create(array $o): array {
   $note = trim((string)($o['courierNote'] ?? $o['note'] ?? ''));
   if (!empty($o['abroadPhone'])) $note = trim($note . ' | বিদেশে অর্ডারদাতা: ' . $o['abroadPhone']);
   $color = sf_color_invoice($o);
+  $sfInv = ($color !== '' ? $color : $o['invoice']) . (!empty($o['rebookN']) ? '-R' . (int)$o['rebookN'] : ''); // Steadfast needs a unique invoice on a re-send
   $payload = [
-    'invoice' => $color !== '' ? $color : $o['invoice'], 'recipient_name' => sf_clean((string)$o['name'], 100), 'recipient_phone' => norm_phone((string)$o['phone']),
+    'invoice' => $sfInv, 'recipient_name' => sf_clean((string)$o['name'], 100), 'recipient_phone' => norm_phone((string)$o['phone']),
     'recipient_address' => sf_clean((string)$o['address'], 250), 'cod_amount' => cod_amount($o),
     'note' => sf_clean($note, 250), 'item_description' => sf_clean(item_summary($o), 250),
     'total_lot' => array_sum(array_map(fn($i) => (int)$i['quantity'], $o['items'] ?? [])),
@@ -208,7 +209,7 @@ function steadfast_create(array $o): array {
   [$code, $b, $err] = http_call(sf_base() . '/create_order', [CURLOPT_POST => true, CURLOPT_HTTPHEADER => steadfast_keys(), CURLOPT_POSTFIELDS => jenc($payload)]);
   $j = json_decode($b, true) ?: [];
   // Steadfast needs a unique invoice: if this colour was already used, send "Green-100123"
-  if (!$err && (int)($j['status'] ?? 0) !== 200 && $payload['invoice'] !== $o['invoice'] && stripos($b, 'invoice') !== false) {
+  if (!$err && (int)($j['status'] ?? 0) !== 200 && $color !== '' && stripos($b, 'invoice') !== false) {
     $payload['invoice'] = $payload['invoice'] . '-' . preg_replace('/\D+/', '', (string)$o['invoice']);
     [$code, $b, $err] = http_call(sf_base() . '/create_order', [CURLOPT_POST => true, CURLOPT_HTTPHEADER => steadfast_keys(), CURLOPT_POSTFIELDS => jenc($payload)]);
     $j = json_decode($b, true) ?: [];

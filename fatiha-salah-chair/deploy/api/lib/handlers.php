@@ -454,11 +454,18 @@ function h_upload(): void {
 
 function h_steadfast(): void {
   require_admin('orders');
-  $b = body(); $id = (string)($b['orderId'] ?? ''); $note = s($b['note'] ?? '', 250);
-  $o = tx(function () use ($id, $note) {
+  $b = body(); $id = (string)($b['orderId'] ?? ''); $note = s($b['note'] ?? '', 250); $rebook = !empty($b['rebook']);
+  $o = tx(function () use ($id, $note, $rebook) {
     $o = doc_get('orders', $id, true); if (!$o) fail(404, 'Order not found');
-    if (!empty($o['tracking']) && ($o['courier'] ?? '') === 'steadfast') return $o; // already booked — never a duplicate parcel
-    if (in_array($o['status'], ['cancelled', 'delivered', 'returned'], true)) fail(422, 'This order is ' . $o['status'] . ' and cannot be sent to the courier');
+    if (!empty($o['tracking']) && ($o['courier'] ?? '') === 'steadfast') {
+      if (!$rebook) return $o; // already booked — never a duplicate parcel
+      // re-send: only when Steadfast itself says the old parcel is dead (cancelled / on hold / problem), never while it is live or delivered
+      if (!in_array((string)($o['courierStatus'] ?? ''), ['cancelled', 'cancelled_approval_pending', 'hold', 'exceptional'], true)) fail(422, 'পুরনো পার্সেলটি এখনো কুরিয়ারের কাছে সক্রিয় — আগে সেটি ক্যান্সেল/হোল্ড হতে হবে');
+      if (in_array($o['status'], ['delivered', 'returned'], true)) fail(422, 'This order is ' . $o['status'] . ' and cannot be sent again');
+      $o['prevConsignments'] = array_merge($o['prevConsignments'] ?? [], [['tracking' => $o['tracking'], 'consignmentId' => $o['consignmentId'] ?? null, 'at' => (int)(microtime(true) * 1000)]]);
+      $o['rebookN'] = (int)($o['rebookN'] ?? 0) + 1;
+      unset($o['tracking']);
+    } elseif (in_array($o['status'], ['cancelled', 'delivered', 'returned'], true)) fail(422, 'This order is ' . $o['status'] . ' and cannot be sent to the courier');
     if ($note !== '') $o['courierNote'] = $note;
     $r = steadfast_create($o);
     $o['courier'] = 'steadfast'; $o['tracking'] = $r['tracking']; $o['consignmentId'] = $r['consignmentId']; $o['sfInvoice'] = $r['sfInvoice']; $o['courierStatus'] = $r['status'];

@@ -239,8 +239,8 @@ export const liveLandingView = (slug) => call('landing/view', { method: 'POST', 
 export const liveValidateCoupon = (code, subtotal) => call('coupons/validate', { method: 'POST', body: { code, subtotal } })
 
 /** Product a parcel with Steadfast through the server (the API keys never leave it). Returns the tracking code. */
-export async function bookSteadfast(order, note = '') {
-  const r = await call('admin/courier/steadfast', { method: 'POST', admin: true, body: { orderId: order.id, note } })
+export async function bookSteadfast(order, note = '', rebook = false) {
+  const r = await call('admin/courier/steadfast', { method: 'POST', admin: true, body: { orderId: order.id, note, rebook } })
   Object.assign(order, { consignmentId: r.consignmentId, courierLog: r.courierLog || [], courierStatus: r.courierStatus || '', codAmount: r.codAmount })
   return r.tracking
 }
@@ -268,9 +268,9 @@ export const liveCourierBalance = () => call('admin/courier/balance', { method: 
 export async function refreshAfterMirror() { since = 0; await poll() }
 
 /** Live courier booking: Steadfast through the server; Pathao / RedX need the consignment ID typed in (no API link yet). */
-export async function courierLive(o, c, by, note = '') {
+export async function courierLive(o, c, by, note = '', rebook = false) {
   let tracking
-  if (c === 'steadfast') tracking = await bookSteadfast(o, note)
+  if (c === 'steadfast') tracking = await bookSteadfast(o, note, rebook)
   else {
     tracking = (window.prompt(`${COURIERS[c].t} tracking / consignment ID for ${o.invoice}:`) || '').trim()
     if (!tracking) throw new Error('Tracking ID দিতে হবে')
