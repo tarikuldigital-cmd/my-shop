@@ -87,9 +87,18 @@ export default function VoiceFill({ onFill, className = '' }) {
 
   if (step < 0) {
     return (
-      <button type="button" onClick={() => listen(0)} className={`inline-flex items-center gap-2 rounded-full border border-accent/50 bg-accent/10 px-3 py-1.5 text-sm font-semibold text-accent transition hover:bg-accent/15 ${className}`}>
-        <MicIcon className="h-4 w-4" />ভয়েসে নাম, ফোন ও ঠিকানা দিন
-      </button>
+      <div className={`flex flex-wrap items-center gap-3 rounded-xl border border-line bg-gradient-to-r from-accent/5 to-transparent p-3 sm:flex-nowrap ${className}`}>
+        <button type="button" onClick={() => listen(0)} aria-label="Start talking" className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-ink text-white ring-4 ring-accent/15">
+          <MicIcon className="h-5 w-5" />
+        </button>
+        <div className="min-w-0 flex-1">
+          <p className="font-bold">শুধু বলুন, ফর্ম নিজেই পূরণ হবে</p>
+          <p className="text-xs text-muted">টাইপ করতে হবে না — আপনার <b className="text-ink">নাম, মোবাইল নাম্বার ও ঠিকানা</b> মুখে বলুন।</p>
+        </div>
+        <button type="button" onClick={() => listen(0)} className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-white shadow sm:w-auto">
+          <MicIcon className="h-4 w-4" />বলা শুরু করুন
+        </button>
+      </div>
     )
   }
 
