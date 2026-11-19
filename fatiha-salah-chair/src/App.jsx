@@ -4,24 +4,24 @@ import RequireAuth from './components/common/RequireAuth'
 import Home from './pages/Home'
 import ProductList from './pages/ProductList'
 import ProductDetail from './pages/ProductDetail'
-import Checkout from './pages/Checkout'
-import OrderSuccess from './pages/OrderSuccess'
-import Login from './pages/customer/Login'
-import Register from './pages/customer/Register'
-import ForgotPassword from './pages/customer/ForgotPassword'
-import OrderTrack from './pages/customer/OrderTrack'
-import Account from './pages/customer/Account'
-import Orders from './pages/customer/Orders'
-import OrderDetail from './pages/customer/OrderDetail'
-import Contact from './pages/info/Contact'
-import InfoPage from './pages/info/InfoPage'
-import NotFound from './pages/NotFound'
-import TrackOrder from './pages/TrackOrder'
 import LandingPage from './pages/LandingPage'
 import { lazy, Suspense } from 'react'
 import { Spinner } from './components/common/ui'
 
 // Admin is split into its own chunk so customers never download it
+const Checkout = lazy(() => import('./pages/Checkout'))
+const OrderSuccess = lazy(() => import('./pages/OrderSuccess'))
+const Login = lazy(() => import('./pages/customer/Login'))
+const Register = lazy(() => import('./pages/customer/Register'))
+const ForgotPassword = lazy(() => import('./pages/customer/ForgotPassword'))
+const OrderTrack = lazy(() => import('./pages/customer/OrderTrack'))
+const Account = lazy(() => import('./pages/customer/Account'))
+const Orders = lazy(() => import('./pages/customer/Orders'))
+const OrderDetail = lazy(() => import('./pages/customer/OrderDetail'))
+const Contact = lazy(() => import('./pages/info/Contact'))
+const InfoPage = lazy(() => import('./pages/info/InfoPage'))
+const NotFound = lazy(() => import('./pages/NotFound'))
+const TrackOrder = lazy(() => import('./pages/TrackOrder'))
 const AdminApp = lazy(() => import('./admin/AdminApp'))
 const ComplainNew = lazy(() => import('./pages/complain/Complain').then((m) => ({ default: m.ComplainNew })))
 const ComplainTrack = lazy(() => import('./pages/complain/Complain').then((m) => ({ default: m.ComplainTrack })))

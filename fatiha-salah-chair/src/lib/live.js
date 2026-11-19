@@ -43,18 +43,28 @@ function applyPublic(d) {
 
 export async function hydratePublic() {
   if (!LIVE) return
-  const ctl = new AbortController()
-  const t = setTimeout(() => ctl.abort(), 9000)
-  try {
-    const d = await call('bootstrap', { signal: ctl.signal })
-    applyPublic(d)
-    try { localStorage.setItem(BOOT_CACHE, JSON.stringify(d)) } catch { /* quota */ }
-  } catch (e) {
-    // server unreachable → show the last copy this browser saw (read-only browsing; ordering will still need the server)
-    try { const c = JSON.parse(localStorage.getItem(BOOT_CACHE)); if (c) applyPublic(c) } catch { /* nothing cached */ }
+  let cached = null
+  try { cached = JSON.parse(localStorage.getItem(BOOT_CACHE)) } catch { /* nothing cached */ }
+  const fetchFresh = async () => {
+    const ctl = new AbortController()
+    const t = setTimeout(() => ctl.abort(), 9000)
+    try {
+      const d = await call('bootstrap', { signal: ctl.signal })
+      applyPublic(d)
+      try { localStorage.setItem(BOOT_CACHE, JSON.stringify(d)) } catch { /* quota */ }
+    } finally { clearTimeout(t) }
+    refresh()
+  }
+  // returning visitor: paint instantly from the last copy, update from the server in the background
+  if (cached && !location.pathname.startsWith('/admin')) {
+    applyPublic(cached)
+    fetchFresh().catch((e) => console.warn('Bootstrap failed:', e.message))
+    return
+  }
+  try { await fetchFresh() } catch (e) {
+    if (cached) { applyPublic(cached); refresh() }
     console.warn('Bootstrap failed:', e.message)
-  } finally { clearTimeout(t) }
-  refresh()
+  }
 }
 
 /* ---------------- admin: login, load, sync ---------------- */

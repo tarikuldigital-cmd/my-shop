@@ -8,7 +8,8 @@ import settings from '../mocks/settings.json'
 
 export const db = { products, categories, home, pages, settings }
 
-export const delay = (ms = 150) => new Promise((r) => setTimeout(r, ms))
+// data is already in memory — no artificial waiting
+export const delay = () => Promise.resolve()
 
 export const bySlug = new Map(products.map((p) => [p.slug, p]))
 

@@ -29,3 +29,7 @@ const start = () => createRoot(document.getElementById('root')).render(
 
 // live mode: load products/settings from the server first so the first paint already has real data
 hydratePublic().finally(start)
+
+// after the first paint, quietly fetch the checkout page so "অর্ডার করুন" opens instantly
+const idle = window.requestIdleCallback || ((f) => setTimeout(f, 2500))
+idle(() => { import('./pages/Checkout'); import('./pages/OrderSuccess') })

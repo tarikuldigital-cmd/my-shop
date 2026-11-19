@@ -72,6 +72,8 @@ const STARS = [[8, 18, 0], [16, 70, 1.2], [26, 34, 2.1], [44, 12, .6], [58, 82, 
 function HeroColors() {
   const list = S.products.filter((p) => p.active !== false && p.group === 'salah-chair' && inStock(p) && p.images?.[0])
   const [i, setI] = useState(0)
+  const [seen] = useState(() => new Set([0]))
+  seen.add(i)
   useEffect(() => {
     if (list.length < 2) return
     const t = setInterval(() => setI((n) => (n + 1) % list.length), 3500)
@@ -81,10 +83,10 @@ function HeroColors() {
   return (
     <>
       <div className="fa-arch fa-float relative overflow-hidden border-4 border-gold/70 bg-cream shadow-2xl">
-        {list.length ? list.map((p, k) => (
+        {list.length ? list.map((p, k) => (k === i || k === (i + 1) % list.length || seen.has(k)) && (
           <Link key={p.slug} to={`/product/${p.slug}`} tabIndex={k === i ? 0 : -1} aria-hidden={k !== i}
             className={`absolute inset-0 transition-all duration-1000 ease-out ${k === i ? 'scale-100 opacity-100' : 'pointer-events-none scale-105 opacity-0'}`}>
-            <Img src={p.images[0]} alt={p.name} className="h-full w-full object-cover" />
+            <Img src={p.images[0]} alt={p.name} className="h-full w-full object-cover" loading={k === 0 ? 'eager' : 'lazy'} fetchPriority={k === 0 ? 'high' : 'auto'} />
           </Link>
         )) : <Img src="local:img/green-poster.webp" alt="Fatiha Ayat Salah Chair" className="absolute inset-0 h-full w-full object-cover" />}
         <div className="aspect-[3/4] w-full" />

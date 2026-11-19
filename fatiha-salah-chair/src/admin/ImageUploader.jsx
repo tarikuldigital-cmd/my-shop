@@ -1,6 +1,19 @@
 import { useRef, useState } from 'react'
 import Img from '../components/common/Img'
 import { uploadImage, MAX_UPLOAD_MB } from '../services/uploadService'
+
+/** Shrink big photos before upload (WebP, max width) so the shop loads fast; small or odd files go as they are. */
+async function toWebp(file, max) {
+  if (!/^image\/(jpeg|png|webp)$/.test(file.type) || file.size < 150 * 1024) return file
+  try {
+    const bmp = await createImageBitmap(file)
+    const k = Math.min(1, max / bmp.width)
+    const cv = document.createElement('canvas'); cv.width = Math.round(bmp.width * k); cv.height = Math.round(bmp.height * k)
+    cv.getContext('2d').drawImage(bmp, 0, 0, cv.width, cv.height)
+    const blob = await new Promise((r) => cv.toBlob(r, 'image/webp', 0.8))
+    return blob && blob.type === 'image/webp' && blob.size < file.size ? new File([blob], file.name.replace(/\.\w+$/, '') + '.webp', { type: 'image/webp' }) : file
+  } catch { return file }
+}
 import { deleteImage } from '../lib/imageStore'
 import { toast } from './ui'
 
@@ -21,7 +34,7 @@ export default function ImageUploader({ value, onChange, kind = 'product', multi
     setBusy(list.length)
     const refs = []
     for (const f of list) {
-      try { refs.push((await uploadImage(f, kind)).ref) } catch (e) { toast(e.message) }
+      try { refs.push((await uploadImage(await toWebp(f, kind === 'banner' ? 1800 : 1200), kind)).ref) } catch (e) { toast(e.message) }
       setBusy((n) => n - 1)
     }
     if (refs.length) {

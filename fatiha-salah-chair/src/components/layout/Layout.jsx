@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import Header from './Header'
@@ -29,7 +30,7 @@ export default function Layout() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="flex-1"><Outlet /></main>
+      <main className="flex-1"><Suspense fallback={<div className="min-h-[60vh]" />}><Outlet /></Suspense></main>
       <Footer />
       {!/^\/customer\/checkout/.test(pathname) && <><FloatingContact /><LiveChat /></>}
     </div>
