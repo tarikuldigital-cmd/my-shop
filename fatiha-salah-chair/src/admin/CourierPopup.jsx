@@ -181,7 +181,7 @@ function Card({ c, onClose, onOpen, hold }) {
         </div>
         {ask && (
           <div className="rounded-lg border border-amber-300 bg-amber-50 p-2.5 text-xs text-amber-900">
-            <p className="font-semibold">{ask === 'resend' ? 'নতুন করে কুরিয়ারে পার্সেল বুক হবে। কাকে কল দিতে হবে বেছে নিন — নম্বরসহ নোটটি পার্সেলের সাথে Steadfast-এ যাবে। নিশ্চিত?' : 'অর্ডারটি "Returned" হিসেবে মার্ক হবে। নিশ্চিত?'}</p>
+            <p className="font-semibold">{ask === 'resend' ? 'আবার ডেলিভারি পাঠাবেন?' : 'অর্ডারটি "Returned" হিসেবে মার্ক হবে। নিশ্চিত?'}</p>
             {ask === 'resend' && (
               <div className="mt-2 grid grid-cols-1 gap-1.5">
                 <button type="button" onClick={() => setWho('customer')} className={`rounded-md border px-2 py-1.5 text-left font-semibold ${who === 'customer' ? 'border-gray-900 bg-white' : 'border-amber-200 bg-amber-100/50'}`}>{who === 'customer' ? '●' : '○'} কাস্টমারকে কল দিন · {phone || 'নম্বর নেই'}</button>
