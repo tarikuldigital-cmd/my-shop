@@ -45,6 +45,8 @@ async function courierCodes(o) {
   return { id, qr, bar: svg.outerHTML }
 }
 
+const itemColour = (i) => productById?.(i.productId)?.color || (String(i.name || '').split(/\s[—–-]\s/).pop()) || i.name
+
 function labelHtml(o, c, st) {
   const cod = o.payment?.status === 'paid' ? 0 : o.total
   return `
@@ -56,6 +58,7 @@ function labelHtml(o, c, st) {
       </div>
       <div class="bar">${c.bar}</div>
       <div class="to"><b>${esc(o.name)}</b> · <b>${esc(o.phone)}</b><div class="addr">${esc(o.address)}</div></div>
+      <div class="var"><div class="m">Product variation</div>${o.items.map((i) => `<div class="vr"><span>Colour: <b>${esc(itemColour(i))}</b></span><b>×${i.quantity}</b></div>`).join('')}</div>
       <div class="lf"><span>From: ${esc(st.siteName)} · ${esc(st.phone)}</span><b>${esc(o.sfInvoice || o.invoice)}</b></div>
     </div>`
 }
@@ -77,7 +80,8 @@ async function printLabels(orders) {
 .m{font-size:7.5pt;color:#222;word-break:break-all}.big{font-size:15pt;font-weight:700;letter-spacing:.5px;word-break:break-all}
 .codbox{display:inline-block;margin-top:1.5mm;border:1.5px solid #000;border-radius:3px;padding:.5mm 2mm;font-size:13pt}
 .bar svg{width:100%;height:13mm;display:block}
-.to{border-top:1px dashed #000;padding-top:1.5mm;flex:1;overflow:hidden;font-size:11pt}.addr{font-size:10pt;margin-top:1mm;max-height:22mm;overflow:hidden}
+.to{border-top:1px dashed #000;padding-top:1.5mm;overflow:hidden;font-size:11pt}
+.var{flex:1;border-top:1px dashed #000;padding-top:1.5mm;overflow:hidden}.vr{display:flex;justify-content:space-between;font-size:13pt;margin-top:.5mm}.addr{font-size:10pt;margin-top:1mm;max-height:22mm;overflow:hidden}
 .lf{display:flex;justify-content:space-between;gap:2mm;border-top:1px solid #000;padding-top:1mm;font-size:8pt}
 @media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}`
   w.document.open()
