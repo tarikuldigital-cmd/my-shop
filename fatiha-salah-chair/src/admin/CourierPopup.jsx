@@ -41,6 +41,7 @@ const kind = (e) => {
   if (e.status === 'exceptional') return { label: 'কুরিয়ারে সমস্যা', tone: 'red', icon: '⚠' }
   return { label: 'রাইডার নোট', tone: 'blue', icon: '🛵' }
 }
+const alertKind = (list) => { const ks = list.map((c) => kind(c.e).label); return ks.includes('পার্সেল ফেরত') ? 'return' : ks.some((l) => l === 'ডেলিভারি ক্যান্সেল' || l === 'কুরিয়ারে সমস্যা') ? 'cancel' : 'note' }
 const TONE = {
   red: { bar: 'bg-red-600', head: 'bg-red-50 text-red-800', ring: 'border-red-300' },
   amber: { bar: 'bg-amber-500', head: 'bg-amber-50 text-amber-800', ring: 'border-amber-300' },
@@ -63,7 +64,7 @@ export default function CourierPopup() {
   const add = (list) => setCards((cur) => {
     const have = new Set(cur.map((c) => c.key))
     const fresh = list.filter((c) => !have.has(c.key) && !ignored.current.has(c.key)).map((c) => ({ ...c, shownAt: Date.now() }))
-    if (fresh.length) setTimeout(() => playAlert(fresh.some((c) => kind(c.e).tone === 'red') ? 'cancel' : 'note'), 0)
+    if (fresh.length) setTimeout(() => playAlert(alertKind(fresh)), 0)
     return fresh.length ? [...fresh, ...cur].slice(0, MAX_CARDS) : cur
   })
 

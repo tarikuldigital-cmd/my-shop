@@ -63,7 +63,8 @@ export default function CourierBell({ className = '' }) {
               {snd.on && (
                 <>
                   <select className="field !py-1 text-xs" value={snd.mode} onChange={(e) => upd({ mode: e.target.value })}>
-                    <option value="voice">কণ্ঠ — নাম ধরে বলবে</option>
+                    <option value="pro">প্রফেশনাল ভয়েস (রেকর্ড করা)</option>
+                    <option value="voice">ব্রাউজারের কণ্ঠ — নাম ধরে বলবে</option>
                     <option value="beep">শুধু বিপ</option>
                     <option value="custom">নিজের অডিও ফাইল</option>
                   </select>
