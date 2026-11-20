@@ -50,7 +50,8 @@ export async function hydratePublic() {
     const ctl = new AbortController()
     const t = setTimeout(() => ctl.abort(), 9000)
     try {
-      const d = await call('bootstrap', { signal: ctl.signal })
+      const early = window.__boot; window.__boot = null
+      const d = (early && await early) || await call('bootstrap', { signal: ctl.signal })   // index.html already started the request while the JS was downloading
       applyPublic(d)
       try { localStorage.setItem(BOOT_CACHE, JSON.stringify(d)) } catch { /* quota */ }
     } finally { clearTimeout(t) }

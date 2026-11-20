@@ -154,7 +154,7 @@ export default function LandingPage() {
       </div>
       <header className="border-b border-gray-100 bg-white">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          <Link to="/"><Img src={settings.logoDark} alt="Fatiha Ayat Salah Chair" className="h-11" /></Link>
+          <Link to="/"><Img src={settings.logoDark} alt="Fatiha Ayat Salah Chair" loading="eager" className="h-11" /></Link>
           <a href={`tel:${settings.phone}`} className="text-sm font-semibold" style={{ color: th.c }}>📞 {settings.phone}</a>
         </div>
       </header>
@@ -177,7 +177,7 @@ export default function LandingPage() {
           <div className="order-1 md:order-2">
             <div className="relative mx-auto max-w-sm">
               <div className="absolute -inset-4 rounded-[2rem] opacity-20 blur-2xl" style={{ background: th.c }} />
-              <Img src={product.images[0]} alt={product.name} className="relative mx-auto max-h-[420px] w-full rounded-2xl bg-white object-contain p-3 shadow-2xl" />
+              <Img src={product.images[0]} alt={product.name} loading="eager" fetchPriority="high" className="relative mx-auto max-h-[420px] w-full rounded-2xl bg-white object-contain p-3 shadow-2xl" />
             </div>
           </div>
         </div>

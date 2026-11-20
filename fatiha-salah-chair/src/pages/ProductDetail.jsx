@@ -22,7 +22,7 @@ function Gallery({ images, name, lookInside, onLook }) {
   return (
     <div>
       <div className="card relative flex aspect-square items-center justify-center overflow-hidden p-3">
-        <Img src={images[active]} alt={name} className="h-full w-full object-contain" />
+        <Img src={images[active]} alt={name} loading="eager" fetchPriority="high" className="h-full w-full object-contain" />
         {lookInside.length > 0 && (
           <button onClick={onLook} className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white shadow-lg hover:bg-brand-dark">📖 একটু পড়ে দেখুন</button>
         )}
