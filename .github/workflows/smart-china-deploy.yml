@@ -1,0 +1,46 @@
+# Smart China Gallery → Hostinger (smartchina.store)
+# Every push that changes smart-china/deploy/ uploads ONLY the changed files to public_html over FTP.
+# One-time setup:
+#   1. hPanel → Files → FTP Accounts → create an FTP account for smartchina.store whose folder is
+#      domains/smartchina.store/public_html (note the hostname, username, password).
+#   2. GitHub → repo Settings → Secrets and variables → Actions → New repository secret:
+#        SMART_FTP_SERVER    e.g. ftp.smartchina.store  (or the FTP IP shown in hPanel)
+#        SMART_FTP_USERNAME  the FTP username
+#        SMART_FTP_PASSWORD  the FTP password
+#        SMART_FTP_DIR       (optional) site folder as the FTP user sees it, default "./"
+# Database settings (api/config.php), customer uploads and local-only files are never touched.
+name: Deploy Smart China site to Hostinger
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['smart-china/deploy/**', '.github/workflows/smart-china-deploy.yml']
+concurrency: { group: smart-china-deploy, cancel-in-progress: false }
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check FTP secrets
+        id: chk
+        env: { S: '${{ secrets.SMART_FTP_SERVER }}' }
+        run: if [ -z "$S" ]; then echo "FTP secrets are not set yet — skipping deploy"; echo "ok=no" >> $GITHUB_OUTPUT; else echo "ok=yes" >> $GITHUB_OUTPUT; fi
+      - uses: actions/checkout@v4
+        if: steps.chk.outputs.ok == 'yes'
+      - name: Upload changed files
+        if: steps.chk.outputs.ok == 'yes'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.SMART_FTP_SERVER }}
+          username: ${{ secrets.SMART_FTP_USERNAME }}
+          password: ${{ secrets.SMART_FTP_PASSWORD }}
+          protocol: ftp
+          local-dir: ./smart-china/deploy/
+          server-dir: ${{ secrets.SMART_FTP_DIR || './' }}
+          state-name: .ftp-deploy-sync-state.json
+          exclude: |
+            **/.git*
+            **/.git*/**
+            api/config.php
+            api/secrets.php
+            api/uploads/**
+            README-BN.md

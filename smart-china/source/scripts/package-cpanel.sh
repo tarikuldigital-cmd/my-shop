@@ -11,3 +11,5 @@ rm -rf out/pkg/api/config.php out/pkg/api/uploads out/pkg/api/error_log out/pkg/
 cp docs/CPANEL_GUIDE_BN.md out/pkg/README-BN.md
 (cd out/pkg && rm -f ../smart-china-cpanel-upload.zip && zip -qr ../smart-china-cpanel-upload.zip . -x '*.DS_Store')
 echo "→ out/smart-china-cpanel-upload.zip ($(du -h out/smart-china-cpanel-upload.zip | cut -f1))"
+# keep the GitHub→FTP deploy folder in step with the package (.github/workflows/smart-china-deploy.yml)
+rm -rf ../deploy && cp -r out/pkg ../deploy && rm -f ../deploy/README-BN.md
