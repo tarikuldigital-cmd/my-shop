@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { S, STATUS, ST_KEYS, COURIERS, DAY, HOUR, riskOf, useDb, clearDemoData } from '../store/db'
 import { Chips, HBars, Kpi, Panel, tk, startOfDay, toast } from './ui'
 import { LiveVisitorsPanel } from './LiveVisitors'
+import { EmployeePerformance, ParcelSuccess } from './PerformancePanels'
 
 const RANGES = [['today', 'Today'], ['yesterday', 'Yesterday'], ['7', '7 days'], ['30', '30 days'], ['all', 'All time']]
 function bounds(r) {
@@ -140,6 +141,8 @@ export default function Dashboard() {
           </table>
         </Panel>
         <Panel title="COD with couriers"><p className="text-2xl font-bold">{tk(codPipe)}</p><p className="text-xs text-muted">Ready + in-transit orders, cash still to collect</p></Panel>
+        <ParcelSuccess />
+        <EmployeePerformance from={a} to={b} rangeLabel={(RANGES.find((r) => r[0] === range) || [])[1]} />
       </div>
     </div>
   )
