@@ -1,13 +1,17 @@
 import { LIVE } from '../config/env'
-import { courierLive, refreshCourier, refreshAllCouriers } from '../lib/live'
-import { useMemo, useState } from 'react'
+import { courierLive, liveCourierRefresh, liveCourierRefreshAll } from '../lib/live'
+import { COURIER_ST, CourierLog } from './courierLog'
+import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import {
   S, STATUS, ST_KEYS, COURIERS, PAY, PAY_ST, CANCEL_REASONS, RETURN_REASONS, SOURCES, DAY,
-  save, useDb, setStatus, sendToCourier, createOrder, riskOf, trackUrl, waNum, validPhone, meName, shippingFor, codOf, parcelText, COURIER_ST, hasOptions, mapUrl,
+  save, useDb, setStatus, product, productById, sendToCourier, createOrder, riskOf, trackUrl, waNum, validPhone, meName, shippingFor, normPhone, openIncompleteFor, codOf, parcelText, hasOptions, variantOf, mapUrl,
 } from '../store/db'
 import { Empty, Field, Modal, Pill, tk, fdate, startOfDay, toast } from './ui'
-import { WhatsAppIcon } from '../components/common/Icon'
-import { busy, fraudCheck, getKey, ratioTone } from './fraud'
+import Icon, { WhatsAppIcon } from '../components/common/Icon'
+import Img from '../components/common/Img'
+import { busy, fraudCheck, getKey, ratioTone, fraudText } from './fraud'
+import { flag, countryName } from './country'
 import { trackLink, renderSms, sendSms, SMS_EVENTS } from '../lib/sms'
 
 const PER_PAGE = 20
@@ -21,42 +25,116 @@ function FraudBadge({ phone }) {
   const run = (e) => { e.stopPropagation(); fraudCheck(p, !!c, () => re((x) => x + 1)).catch((err) => toast(err.message)) }
   if (busy.has(p)) return <span className="text-xs text-muted">Checking…</span>
   if (!c) return <button onClick={run} className="rounded border border-line px-2 py-0.5 text-xs hover:border-brand">Check</button>
-  if (!c.sum.total) return <button onClick={run}><Pill tone="sky">New customer</Pill></button>
+  if (!c.sum.total) return <button onClick={run} title={fraudText(c)}><Pill tone="sky">New customer</Pill></button>
+  if (c.sf) return <button onClick={run} title={fraudText(c)} className="flex flex-col items-start gap-0.5"><Pill tone={c.sf.reports ? 'red' : ratioTone(c.sf.delivery)}>{c.sf.delivery}% · {c.sf.range}</Pill>{c.sf.reports > 0 && <span className="text-[10px] font-semibold text-red-600">⚠ {c.sf.reports} report</span>}</button>
   return <button onClick={run} title={`Total ${c.sum.total} · Delivered ${c.sum.ok} · Cancelled ${c.sum.cancel}`}><Pill tone={ratioTone(c.sum.ratio)}>{Math.round(c.sum.ratio)}% · {c.sum.ok}/{c.sum.total}</Pill></button>
 }
 
-/* ---------- printable invoices ---------- */
-function printInvoices(orders) {
+/* ---------- printable invoices (with Steadfast courier label) ---------- */
+const esc = (v) => String(v ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
+
+async function courierCodes(o) {
+  const id = String(o.consignmentId || o.tracking || '')
+  if (!id) return null
+  const [{ default: QR }, { default: JsBarcode }] = await Promise.all([import('qrcode'), import('jsbarcode')])
+  const qr = await QR.toString(id, { type: 'svg', margin: 0, errorCorrectionLevel: 'M' })
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+  JsBarcode(svg, id, { format: 'CODE128', width: 2, height: 52, displayValue: false, margin: 0 })
+  svg.setAttribute('viewBox', `0 0 ${parseFloat(svg.getAttribute('width'))} ${parseFloat(svg.getAttribute('height'))}`)
+  svg.setAttribute('preserveAspectRatio', 'none')
+  return { id, qr, bar: svg.outerHTML }
+}
+
+const itemColour = (i) => i.variant || i.name
+
+function labelHtml(o, c, st) {
+  const cod = o.payment?.status === 'paid' ? 0 : o.total
+  return `
+    <div class="lbl">
+      <div class="lh"><b>${esc(COURIERS[o.courier]?.t || 'Courier')}</b><span>${new Date().toLocaleDateString('en-GB')}</span></div>
+      <div class="lc">
+        <div class="lq">${c.qr}</div>
+        <div class="li"><div class="m">Consignment ID</div><div class="big">${esc(c.id)}</div>${o.tracking && o.tracking !== c.id ? `<div class="m">${esc(o.tracking)}</div>` : ''}<div class="codbox"><span class="m">COD</span> <b>৳${cod}</b></div></div>
+      </div>
+      <div class="bar">${c.bar}</div>
+      <div class="to"><b>${esc(o.name)}</b> · <b>${esc(o.phone)}</b><div class="addr">${esc(o.address)}</div></div>
+      <div class="var"><div class="m">Product variation</div>${o.items.map((i) => `<div class="vr"><span><b>${esc(itemColour(i))}</b></span><b>×${i.quantity}</b></div>`).join('')}</div>
+      <div class="lf"><span>From: ${esc(st.siteName)} · ${esc(st.phone)}</span><b>${esc(o.sfInvoice || o.invoice)}</b></div>
+    </div>`
+}
+
+/** 75 × 100 mm courier labels — one sticker per page. */
+async function printLabels(orders) {
+  const list = orders.filter((o) => o.consignmentId || o.tracking)
+  if (!list.length) return toast('No courier booking yet — send to Steadfast first')
+  const w = window.open('', '_blank')
+  if (!w) return toast('Allow pop-ups to print labels')
+  w.document.write('<p style="font-family:Arial;padding:24px">Preparing…</p>')
+  const codes = await Promise.all(list.map((o) => courierCodes(o).catch(() => null)))
+  const html = list.map((o, k) => (codes[k] ? labelHtml(o, codes[k], S.settings) : '')).join('')
+  const css = `@page{size:75mm 100mm;margin:0}*{box-sizing:border-box}html,body{margin:0;padding:0}body{font-family:Arial,sans-serif;color:#000}
+.lbl{width:75mm;height:100mm;padding:3mm 3.5mm;page-break-after:always;break-after:page;overflow:hidden;display:flex;flex-direction:column;gap:1.5mm;font-size:9pt;line-height:1.2}
+.lbl:last-child{page-break-after:auto;break-after:auto}
+.lh{display:flex;justify-content:space-between;border-bottom:1px solid #000;padding-bottom:1mm;font-size:11pt}
+.lc{display:flex;gap:3mm;align-items:center}.lq svg{width:27mm;height:27mm;display:block}.li{flex:1;min-width:0}
+.m{font-size:7.5pt;color:#222;word-break:break-all}.big{font-size:15pt;font-weight:700;letter-spacing:.5px;word-break:break-all}
+.codbox{display:inline-block;margin-top:1.5mm;border:1.5px solid #000;border-radius:3px;padding:.5mm 2mm;font-size:13pt}
+.bar svg{width:100%;height:13mm;display:block}
+.to{border-top:1px dashed #000;padding-top:1.5mm;overflow:hidden;font-size:11pt}
+.var{flex:1;border-top:1px dashed #000;padding-top:1.5mm;overflow:hidden}.vr{display:flex;justify-content:space-between;font-size:13pt;margin-top:.5mm}.addr{font-size:10pt;margin-top:1mm;max-height:22mm;overflow:hidden}
+.lf{display:flex;justify-content:space-between;gap:2mm;border-top:1px solid #000;padding-top:1mm;font-size:8pt}
+@media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}`
+  w.document.open()
+  w.document.write(`<html><head><title>Labels</title><style>${css}</style></head><body>${html}<script>window.onload=()=>window.print()</script></body></html>`)
+  w.document.close()
+}
+
+async function printInvoices(orders) {
+  const w = window.open('', '_blank')
+  if (!w) return toast('Allow pop-ups to print invoices')
+  w.document.write('<p style="font-family:Arial;padding:24px">Preparing…</p>')
   const st = S.settings
-  const rows = (o) => o.items.map((i) => `<tr><td>${i.name}${i.variant ? ` <small>(${i.variant})</small>` : ''}</td><td style="text-align:center">${i.quantity}</td><td style="text-align:right">৳${i.price}</td><td style="text-align:right">৳${i.price * i.quantity}</td></tr>`).join('')
+  const rows = (o) => o.items.map((i) => `<tr><td>${esc(i.name)}${i.variant ? ` <small>(${esc(i.variant)})</small>` : ''}</td><td style="text-align:center">${i.quantity}</td><td style="text-align:right">৳${i.price}</td><td style="text-align:right">৳${i.price * i.quantity}</td></tr>`).join('')
   const html = orders.map((o) => `
     <section style="page-break-after:always;padding:24px;font-family:Arial,sans-serif;font-size:13px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
-        <div><h2 style="margin:0">${st.siteName}</h2><div>${st.address}</div><div>Hotline: ${st.phone}</div></div>
-        <div style="text-align:right"><h3 style="margin:0">INVOICE</h3><div><b>${o.invoice}</b></div><div>${new Date(o.createdAt).toLocaleDateString('en-GB')}</div>${o.tracking ? `<div>${COURIERS[o.courier]?.t || ''}: ${o.tracking}</div>` : ''}</div>
+        <div><h2 style="margin:0">${esc(st.siteName)}</h2><div>${esc(st.address)}</div><div>Hotline: ${esc(st.phone)}</div></div>
+        <div style="text-align:right"><h3 style="margin:0">INVOICE</h3><div><b>${o.invoice}</b></div><div>${new Date(o.createdAt).toLocaleDateString('en-GB')}</div>${o.tracking ? `<div>${COURIERS[o.courier]?.t || ''}: ${esc(o.tracking)}</div>` : ''}</div>
       </div>
-      <hr/><div><b>Bill to:</b> ${o.name} · ${o.phone}<br/>${o.address}</div>
+      <hr/><div><b>Bill to:</b> ${esc(o.name)} · ${esc(o.phone)}<br/>${esc(o.address)}</div>
       <table style="width:100%;border-collapse:collapse;margin-top:12px" border="1" cellpadding="6">
         <thead><tr style="background:#f3f4f6"><th style="text-align:left">Product</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>${rows(o)}</tbody>
       </table>
-      <table style="margin-left:auto;margin-top:8px"><tr><td>Subtotal</td><td style="text-align:right">৳${o.subtotal}</td></tr><tr><td>Delivery</td><td style="text-align:right">৳${o.shippingCharge}</td></tr>${o.discount ? `<tr><td>Discount</td><td style="text-align:right">-৳${o.discount}</td></tr>` : ''}<tr><td><b>${o.payment?.status === 'paid' ? 'Paid' : 'Collect (COD)'}</b></td><td style="text-align:right"><b>৳${o.payment?.status === 'paid' ? 0 : o.total}</b></td></tr></table>
+      <table style="margin-left:auto;margin-top:8px"><tr><td>Subtotal</td><td style="text-align:right">৳${o.subtotal}</td></tr><tr><td>Delivery</td><td style="text-align:right">৳${o.shippingCharge}</td></tr>${o.discount ? `<tr><td>Discount</td><td style="text-align:right">-৳${o.discount}</td></tr>` : ''}${o.adminDiscount ? `<tr><td>Special discount</td><td style="text-align:right">-৳${o.adminDiscount}</td></tr>` : ''}<tr><td><b>${o.payment?.status === 'paid' ? 'Paid' : 'Collect (COD)'}</b></td><td style="text-align:right"><b>৳${o.payment?.status === 'paid' ? 0 : o.total}</b></td></tr></table>
       <p style="margin-top:24px;color:#555">Thank you for shopping with us! Please check the product in front of the delivery person.</p>
     </section>`).join('')
-  const w = window.open('', '_blank')
-  if (!w) return toast('Allow pop-ups to print invoices')
-  w.document.write(`<html><head><title>Invoices</title></head><body style="margin:0">${html}<script>window.onload=()=>window.print()</script></body></html>`)
+  const css = `.lbl{border:2px solid #000;border-radius:6px;max-width:520px;padding:10px 12px}.lh{display:flex;justify-content:space-between;border-bottom:1px solid #000;padding-bottom:4px;font-size:15px}.lc{display:flex;gap:12px;align-items:center;padding:8px 0;border-bottom:1px dashed #000}.lq svg{width:110px;height:110px;display:block}.li{flex:1;min-width:0}.big{font-size:22px;font-weight:700;letter-spacing:1px}.bar svg{width:100%;height:52px;display:block;margin-top:4px}.muted{color:#444;font-size:11px}.lt{display:flex;gap:10px;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #000}.codbox{text-align:right;border:2px solid #000;border-radius:4px;padding:2px 8px;align-self:flex-start}.cod{font-size:20px;font-weight:700}.lf{display:flex;justify-content:space-between;gap:8px;padding-top:5px;font-size:11px}.cut{color:#888;margin:14px 0;font-size:11px;white-space:nowrap;overflow:hidden}@media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}`
+  w.document.open()
+  w.document.write(`<html><head><title>Invoices</title><style>${css}</style></head><body style="margin:0">${html}<script>window.onload=()=>window.print()</script></body></html>`)
   w.document.close()
 }
 
 function exportCSV(list) {
-  const head = ['Invoice', 'Date', 'Name', 'Phone', 'Address', 'Area', 'Products', 'Subtotal', 'Delivery', 'Discount', 'Total', 'Status', 'Payment', 'Payment status', 'TrxID', 'Courier', 'Tracking', 'Courier status', 'Source']
-  const rows = list.map((o) => [o.invoice, new Date(o.createdAt).toISOString().slice(0, 16).replace('T', ' '), o.name, o.phone, o.address, o.shippingArea, o.items.map((i) => `${i.name}${i.variant ? ` (${i.variant})` : ''} x${i.quantity}`).join('; '), o.subtotal, o.shippingCharge, o.discount || 0, o.total, STATUS[o.status].t, PAY[o.payment?.method || 'cod'], PAY_ST[o.payment?.status || 'unpaid'], o.payment?.trx || '', o.courier ? COURIERS[o.courier].t : '', o.tracking, COURIER_ST[o.courierStatus] || o.courierStatus || '', o.source])
+  const head = ['Invoice', 'Date', 'Name', 'Phone', 'Address', 'Area', 'Products', 'Subtotal', 'Delivery', 'Discount', 'Total', 'Status', 'Payment', 'Payment status', 'TrxID', 'Courier', 'Tracking', 'Source', 'Country (IP)']
+  const rows = list.map((o) => [o.invoice, new Date(o.createdAt).toISOString().slice(0, 16).replace('T', ' '), o.name, o.phone, o.address, o.shippingArea, o.items.map((i) => `${i.name}${i.variant ? ` (${i.variant})` : ''} x${i.quantity}`).join('; '), o.subtotal, o.shippingCharge, (o.discount || 0) + (o.adminDiscount || 0), o.total, STATUS[o.status].t, PAY[o.payment?.method || 'cod'], PAY_ST[o.payment?.status || 'unpaid'], o.payment?.trx || '', o.courier ? COURIERS[o.courier].t : '', o.tracking, o.source, o.country ? countryName(o.country) : ''])
   const csv = '﻿' + [head, ...rows].map((r) => r.map((v) => { v = String(v ?? ''); return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v }).join(',')).join('\n')
   const a = document.createElement('a')
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
   a.download = `smart-china-orders-${new Date().toISOString().slice(0, 10)}.csv`
   a.click()
   toast(`CSV of ${list.length} orders downloaded`)
+}
+
+/* ---------- order drawer ---------- */
+const NEXT = {
+  pending: [['confirmed', 'Confirm', 'btn-accent'], ['hold', 'Put on hold', 'btn-outline'], ['cancelled', 'Cancel', 'btn-outline text-red-600']],
+  confirmed: [['courier', 'Send to courier', 'btn-accent'], ['hold', 'Put on hold', 'btn-outline'], ['cancelled', 'Cancel', 'btn-outline text-red-600']],
+  hold: [['confirmed', 'Confirm', 'btn-accent'], ['cancelled', 'Cancel', 'btn-outline text-red-600']],
+  ready: [['transit', 'Picked up by courier', 'btn-accent'], ['cancelled', 'Cancel', 'btn-outline text-red-600']],
+  transit: [['delivered', 'Delivered', 'btn-accent'], ['partial', 'Partial return', 'btn-outline'], ['returned', 'Returned', 'btn-outline text-red-600']],
+  delivered: [['returned', 'Return / replacement', 'btn-outline']],
+  cancelled: [['pending', 'Move back to pending', 'btn-outline']],
+  partial: [], returned: [],
 }
 
 /* ---------- copy helpers ---------- */
@@ -73,52 +151,112 @@ function CopyBtn({ text, label, title = 'Copy' }) {
   return <button type="button" onClick={(e) => { e.stopPropagation(); copy(text, label) }} title={title} aria-label={title} className="rounded border border-line px-1.5 py-0.5 text-[11px] font-medium text-muted hover:border-brand hover:text-brand">Copy</button>
 }
 
-/** Courier timeline: every status / rider note the courier sent (webhook or "Refresh status") */
-export function CourierLog({ o }) {
-  const log = [...(o.courierLog || [])].reverse()
-  if (!log.length) return <p className="text-xs text-muted">No courier updates yet.{o.courier === 'steadfast' ? ' Updates arrive by webhook, or press “Refresh status”.' : ''}</p>
+/* ---------- drawer helpers ---------- */
+const itemImage = (i) => i.image || productById(i.productId)?.images?.[0] || product(i.slug)?.images?.[0] || null
+
+function ContactRow({ label, phone, wa, msg, highlight }) {
   return (
-    <ol className="space-y-2 border-l-2 border-brand/30 pl-4 text-xs">
-      {log.map((e, i) => (
-        <li key={i} className="relative">
-          <span className={`absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full ${i === 0 ? 'bg-brand ring-4 ring-brand/15' : 'bg-gray-300'}`} />
-          <p className="font-medium text-ink">{e.message}</p>
-          <p className="text-muted">{fdate(e.at)}{COURIER_ST[e.status] && COURIER_ST[e.status] !== e.message ? ` · ${COURIER_ST[e.status]}` : ''}</p>
-        </li>
-      ))}
-    </ol>
+    <div className={`flex flex-wrap items-center justify-between gap-3 rounded-lg border px-3 py-2.5 ${highlight ? 'border-accent/40 bg-accent/5' : 'border-line bg-surface/60'}`}>
+      <div className="min-w-0">
+        <p className="text-[11px] font-medium uppercase tracking-wide text-muted">{label}</p>
+        <p className={`text-base font-bold tabular-nums ${highlight ? 'text-accent' : 'text-ink'}`}>{phone}</p>
+      </div>
+      <div className="flex gap-2">
+        <a href={`tel:${phone}`} className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-dark"><Icon name="phone" className="h-4 w-4" />Call</a>
+        <a href={`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`} target="_blank" rel="noreferrer" title="Confirm on WhatsApp" className="inline-flex items-center gap-1.5 rounded-lg bg-[#25D366] px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1ebe5a]"><WhatsAppIcon className="h-4 w-4" />WhatsApp</a>
+      </div>
+    </div>
   )
 }
 
-/* ---------- order drawer ---------- */
-const NEXT = {
-  pending: [['confirmed', 'Confirm', 'btn-accent'], ['hold', 'Put on hold', 'btn-outline'], ['cancelled', 'Cancel', 'btn-outline text-red-600']],
-  confirmed: [['courier', 'Send to courier', 'btn-accent'], ['hold', 'Put on hold', 'btn-outline'], ['cancelled', 'Cancel', 'btn-outline text-red-600']],
-  hold: [['confirmed', 'Confirm', 'btn-accent'], ['cancelled', 'Cancel', 'btn-outline text-red-600']],
-  ready: [['transit', 'Picked up by courier', 'btn-accent'], ['cancelled', 'Cancel', 'btn-outline text-red-600']],
-  transit: [['delivered', 'Delivered', 'btn-accent'], ['partial', 'Partial return', 'btn-outline'], ['returned', 'Returned', 'btn-outline text-red-600']],
-  delivered: [['returned', 'Return / replacement', 'btn-outline']],
-  cancelled: [['pending', 'Move back to pending', 'btn-outline']],
-  partial: [], returned: [],
+function DetailRow({ label, children }) {
+  return <div className="grid grid-cols-[110px_1fr] gap-3 px-4 py-2.5"><dt className="text-muted">{label}</dt><dd className="min-w-0">{children}</dd></div>
+}
+
+
+/* ---------- edit customer info + special discount ---------- */
+export const orderTotal = (o) => Math.max(0, (o.subtotal || 0) + (o.shippingCharge || 0) - (o.discount || 0) - (o.adminDiscount || 0))
+
+function OrderEdit({ o, focus, onClose }) {
+  const [f, setF] = useState({ name: o.name || '', phone: o.phone || '', address: o.address || '', shippingArea: o.shippingArea || 'inside_dhaka', note: o.note || '', shippingCharge: o.shippingCharge ?? 0, disc: o.adminDiscount || 0, discType: 'tk' })
+  const [err, setErr] = useState('')
+  const set = (k) => (e) => setF({ ...f, [k]: e.target.value })
+  const base = (o.subtotal || 0) + (+f.shippingCharge || 0) - (o.discount || 0)
+  const discTk = Math.min(base, Math.max(0, Math.round(f.discType === 'pct' ? (base * (+f.disc || 0)) / 100 : +f.disc || 0)))
+  const newTotal = Math.max(0, base - discTk)
+  const booked = o.courier && o.tracking
+  const submit = (e) => {
+    e.preventDefault()
+    if (!f.name.trim()) return setErr('Enter the name')
+    if (!validPhone(f.phone)) return setErr('Enter a valid 11-digit mobile number')
+    if (f.address.trim().length < 5) return setErr('Enter the address')
+    const changes = []
+    const upd = (k, v, label) => { if ((o[k] ?? '') !== v) { o[k] = v; changes.push(label) } }
+    upd('name', f.name.trim(), 'Name')
+    upd('phone', normPhone(f.phone), 'Phone')
+    upd('address', f.address.trim(), 'Address')
+    upd('note', f.note.trim(), 'Note')
+    if (o.shippingArea !== f.shippingArea) { o.shippingArea = f.shippingArea; changes.push('Delivery area') }
+    if ((o.shippingCharge ?? 0) !== Math.max(0, +f.shippingCharge || 0)) { o.shippingCharge = Math.max(0, +f.shippingCharge || 0); changes.push(`Delivery charge ৳${o.shippingCharge}`) }
+    if ((o.adminDiscount || 0) !== discTk) { o.adminDiscount = discTk; changes.push(discTk ? `Discount ৳${discTk}` : 'Discount removed') }
+    if (!changes.length) return onClose()
+    o.total = orderTotal(o)
+    o.history.push({ s: 'note', by: meName(), at: Date.now(), note: `Edited: ${changes.join(', ')} · Total ৳${o.total}` })
+    save(); toast(`${o.invoice} updated`); onClose()
+  }
+  return (
+    <form onSubmit={submit} className="space-y-3 text-sm" noValidate>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field label="Customer name *"><input className="field" value={f.name} onChange={set('name')} autoFocus={focus !== 'discount'} /></Field>
+        <Field label="Mobile number *"><input className="field" type="tel" value={f.phone} onChange={set('phone')} /></Field>
+      </div>
+      <Field label="Address *"><textarea className="field" rows={2} value={f.address} onChange={set('address')} /></Field>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field label="Delivery area"><select className="field" value={f.shippingArea} onChange={(e) => { const a = e.target.value; setF({ ...f, shippingArea: a, shippingCharge: shippingFor(a, o.subtotal) }) }}>{S.settings.shipping.map((x) => <option key={x.id} value={x.id}>{x.labelEn} (৳{x.charge})</option>)}</select></Field>
+        <Field label="Delivery charge (৳)"><input className="field" type="number" min={0} value={f.shippingCharge} onChange={set('shippingCharge')} /></Field>
+      </div>
+      <Field label="Customer note"><input className="field" value={f.note} onChange={set('note')} /></Field>
+
+      <div className={`rounded-lg border-2 p-3 ${focus === 'discount' ? 'border-accent bg-accent/5' : 'border-line bg-surface/60'}`}>
+        <p className="mb-2 font-semibold">🎁 Special discount</p>
+        <div className="flex gap-2">
+          <input className="field" type="number" min={0} value={f.disc} onChange={set('disc')} autoFocus={focus === 'discount'} aria-label="Discount" />
+          <select className="field w-28" value={f.discType} onChange={set('discType')}><option value="tk">৳ Taka</option><option value="pct">% Percent</option></select>
+        </div>
+        <div className="mt-2 space-y-0.5 text-xs">
+          <div className="flex justify-between"><span className="text-muted">Products</span><span>{tk(o.subtotal)}</span></div>
+          <div className="flex justify-between"><span className="text-muted">Delivery</span><span>{tk(+f.shippingCharge || 0)}</span></div>
+          {o.discount > 0 && <div className="flex justify-between"><span className="text-muted">Coupon{o.coupon && ` (${o.coupon})`}</span><span>−{tk(o.discount)}</span></div>}
+          {discTk > 0 && <div className="flex justify-between text-green-700"><span>Special discount</span><span>−{tk(discTk)}</span></div>}
+          <div className="flex justify-between border-t border-dashed border-line pt-1 text-sm font-bold"><span>New total</span><span className="text-brand">{tk(newTotal)}</span></div>
+        </div>
+      </div>
+
+      {booked && <p className="rounded-md bg-amber-50 p-2 text-xs text-amber-900">⚠ This order is already booked with {COURIERS[o.courier]?.t || o.courier}. Changes here do not update the courier's parcel (name / address / COD) — fix it in the courier panel too.</p>}
+      {err && <p className="text-red-600">{err}</p>}
+      <div className="flex gap-2"><button className="btn-accent flex-1 py-2.5">Save</button><button type="button" className="btn-outline" onClick={onClose}>Cancel</button></div>
+    </form>
+  )
 }
 
 function OrderDrawer({ order: o, onClose }) {
   useDb()
   const [extra, setExtra] = useState(null)
   const [note, setNote] = useState('')
-  const [courier, setCourier] = useState(S.settings.courier?.defaultCourier || 'steadfast')
-  const [trackId, setTrackId] = useState('')
+  const [courier, setCourier] = useState('steadfast')
   const [riderNote, setRiderNote] = useState('')
+  const [trackId, setTrackId] = useState('')
   const [busyC, setBusyC] = useState(false)
+  const [busyRef, setBusyRef] = useState(false)
   const [reason, setReason] = useState('')
+  const [editing, setEditing] = useState(null)
   const [, re] = useState(0)
   if (!o) return null
   const risk = riskOf(o)
   const prev = S.orders.filter((x) => x.phone === o.phone && x.id !== o.id)
   const p = o.payment || { method: 'cod', status: 'unpaid' }
   const fr = S.fraud[o.phone]
-  const refreshNow = async () => { setBusyC(true); try { const r = await refreshCourier(o); toast(`${o.invoice}: ${COURIER_ST[r?.courierStatus] || r?.courierStatus || 'updated'}`) } catch (e) { toast(e.message) } finally { setBusyC(false) } }
-  const confirmMsg = `Assalamu alaikum ${o.name}, this is ${S.settings.siteName}. Your order ${o.invoice}: ${o.items.map((i) => `${i.name}${i.variant ? ` (${i.variant})` : ''} ×${i.quantity}`).join(', ')}. Total ৳${o.total} (cash on delivery). Address: ${o.address}. Please reply "Yes" to confirm the order.`
+  const confirmMsg = `Assalamu alaikum ${o.name}, this is ${S.settings.siteName}. Your order ${o.invoice}: ${o.items.map((i) => `${i.name}${i.variant ? ` (${i.variant})` : ''} ×${i.quantity}`).join(', ')}. Total ৳${o.total}${codOf(o) ? ' (cash on delivery)' : ' (already paid)'}. Address: ${o.address}. Please reply "Yes" to confirm the order.`
 
   const act = (s) => {
     if (['courier', 'cancelled', 'returned', 'partial'].includes(s)) { setExtra(s); setReason(s === 'cancelled' ? CANCEL_REASONS[0] : RETURN_REASONS[0]); return }
@@ -128,8 +266,8 @@ function OrderDrawer({ order: o, onClose }) {
     if (extra === 'courier') {
       if (courier !== 'steadfast' && !trackId.trim()) return toast(`Enter the ${COURIERS[courier].t} consignment ID (book it in their panel first — use “Copy for courier”)`)
       setBusyC(true)
-      try { await (LIVE ? courierLive(o, courier, meName(), { tracking: trackId, note: riderNote }) : sendToCourier(o, courier, meName(), trackId.trim())); toast(`${o.invoice} sent to ${COURIERS[courier].t} · COD ৳${codOf(o)}`) } catch (e) { setBusyC(false); return toast(e.message) }
-      setBusyC(false); setTrackId(''); setRiderNote('')
+      try { await (LIVE ? courierLive(o, courier, meName(), { tracking: trackId, note: riderNote.trim() }) : sendToCourier(o, courier, meName(), trackId.trim())); setRiderNote(''); setTrackId(''); toast(`${o.invoice} sent to ${COURIERS[courier].t} · COD ৳${codOf(o)}`) } catch (e) { setBusyC(false); return toast(e.message) }
+      setBusyC(false)
     }
     else { setStatus(o, extra, meName(), reason); toast(`${o.invoice}: ${STATUS[extra].t}`) }
     save(); setExtra(null)
@@ -137,40 +275,91 @@ function OrderDrawer({ order: o, onClose }) {
   const payStatus = (s) => { o.payment.status = s; o.history.push({ s: 'note', by: meName(), at: Date.now(), note: `Payment: ${PAY_ST[s]}` }); save(); toast('Payment updated') }
 
   return (
-    <Modal open onClose={onClose} drawer title={<>{o.invoice} <Pill s={o.status} /></>}>
+    <Modal open onClose={onClose} drawer title={<>{o.invoice} <Pill s={o.status} /> <span className="text-xs font-normal text-muted">{fdate(o.createdAt)}</span></>}>
       <div className="space-y-5 text-sm">
         {risk.length > 0 && <div className="rounded-md border border-red-200 bg-red-50 p-3 text-red-800">{risk.map((r) => <p key={r}>⚠ {r}</p>)}</div>}
 
-        <dl className="grid grid-cols-[110px_1fr] gap-x-3 gap-y-1.5">
-          <dt className="text-muted">Customer</dt><dd className="flex items-center gap-2 font-semibold">{o.name} <CopyBtn text={o.name} label="Name copied" /></dd>
-          <dt className="text-muted">Phone</dt><dd className="flex flex-wrap items-center gap-2">{o.phone} <CopyBtn text={o.phone} label="Phone copied" /><a href={`tel:${o.phone}`} className="text-brand">Call</a><a href={`https://wa.me/${waNum(o.phone)}?text=${encodeURIComponent(confirmMsg)}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-green-600"><WhatsAppIcon className="h-4 w-4" />Confirm on WhatsApp</a></dd>
-          <dt className="text-muted">Address</dt><dd><span>{o.address}</span> <CopyBtn text={o.address} label="Address copied" /><span className="block text-xs text-muted">{o.shippingArea === 'inside_dhaka' ? 'Inside Dhaka' : 'Outside Dhaka'}</span>{o.location && <a href={mapUrl(o)} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 rounded bg-green-50 px-2 py-0.5 text-xs font-semibold text-green-700">📍 Customer's location on Google Maps{o.location.accuracy ? ` (±${o.location.accuracy} m)` : ''} ↗</a>}</dd>
-          <dt className="text-muted">Collect (COD)</dt><dd className="font-semibold">{tk(codOf(o))}{codOf(o) === 0 && <span className="ml-1 text-xs font-normal text-green-700">already paid</span>}</dd>
-          <dt className="text-muted">Source</dt><dd>{o.source}{o.coupon && ` · coupon ${o.coupon}`}</dd>
-          {o.note && <><dt className="text-muted">Customer note</dt><dd>{o.note}</dd></>}
-          <dt className="text-muted">Payment</dt>
-          <dd>
-            {PAY[p.method]} · <Pill tone={p.status === 'paid' ? 'green' : p.status === 'pending' ? 'amber' : p.status === 'failed' ? 'red' : 'gray'}>{PAY_ST[p.status]}</Pill>
-            {p.trx && <p className="mt-1">TrxID <b>{p.trx}</b> · from {p.sender}</p>}
-            {p.method !== 'cod' && p.status !== 'paid' && <div className="mt-2 flex gap-2"><button className="btn-accent" onClick={() => payStatus('paid')}>Payment received</button><button className="btn-outline text-red-600" onClick={() => payStatus('failed')}>TrxID doesn't match</button></div>}
-          </dd>
-          <dt className="text-muted">Courier</dt><dd>{o.courier ? <>{COURIERS[o.courier].t} · {trackUrl(o) ? <a className="text-brand" href={trackUrl(o)} target="_blank" rel="noreferrer">{o.tracking} ↗</a> : o.tracking}{o.courierStatus && <> · <Pill tone={o.status === 'delivered' ? 'green' : o.status === 'returned' ? 'rose' : 'sky'}>{COURIER_ST[o.courierStatus] || o.courierStatus}</Pill></>}</> : '—'}</dd>
-          <dt className="text-muted">Courier history</dt>
-          <dd>{fr ? <>{fr.sum.total ? <><b>{Math.round(fr.sum.ratio)}%</b> success · {fr.sum.ok} delivered / {fr.sum.cancel} cancelled of {fr.sum.total}</> : 'New customer (no parcels with any courier)'}</>
-            : <button className="text-brand" onClick={() => fraudCheck(o.phone, true, () => re((x) => x + 1)).catch((e) => toast(e.message))}>{getKey() ? 'Check courier history' : 'Add BD Courier key in Settings → Courier'}</button>}</dd>
-          <dt className="text-muted">Previous orders</dt><dd>{prev.length ? prev.map((x) => <span key={x.id} className="mr-2 inline-flex items-center gap-1">{x.invoice} <Pill s={x.status} /></span>) : 'First order'}</dd>
-        </dl>
+        {/* ---------- customer & contact card ---------- */}
+        <section className="overflow-hidden rounded-xl border border-line bg-white shadow-sm">
+          <div className="flex items-center gap-3 bg-gradient-to-r from-brand to-brand-dark px-4 py-3 text-white">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/15 text-lg font-bold ring-2 ring-gold/70">{(o.name || '?').trim().charAt(0).toUpperCase()}</span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-base font-bold leading-tight">{o.name}</p>
+              <p className="text-xs text-white/75">Customer · ordered {fdate(o.createdAt)}</p>
+            </div>
+            {o.country && <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-xs font-semibold" title="By IP address">{flag(o.country)} {countryName(o.country)}</span>}
+            <button type="button" className="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-bold text-brand shadow hover:bg-gold" onClick={() => setEditing('info')}>✏️ Edit</button>
+          </div>
+          <div className="space-y-3 p-4">
+            <ContactRow label="Phone" phone={o.phone} wa={waNum(o.phone)} msg={confirmMsg} />
+            <div className="flex items-start gap-3 rounded-lg border border-line bg-surface/60 px-3 py-2.5">
+              <Icon name="location" className="mt-0.5 h-5 w-5 shrink-0 text-brand" />
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-muted">Delivery address</p>
+                <p className="break-words font-medium leading-snug">{o.address}</p>
+                {o.location && <a className="mt-1 inline-block text-xs font-semibold text-brand underline" href={mapUrl(o)} target="_blank" rel="noreferrer">📍 Open the shared location in Google Maps{o.location.accuracy ? ` (±${Math.round(o.location.accuracy)} m)` : ''}</a>}
+              </div>
+              <span className="shrink-0 rounded-full bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand">{o.shippingArea === 'inside_dhaka' ? 'Inside Dhaka' : 'Outside Dhaka'}</span>
+            </div>
+            {o.note && <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-amber-900"><p className="text-[11px] font-semibold uppercase tracking-wide">Customer note</p><p>{o.note}</p></div>}
+          </div>
+        </section>
 
-        <table className="w-full">
-          <thead className="bg-surface text-left text-xs text-muted"><tr><th className="p-2">Product</th><th className="p-2">Qty</th><th className="p-2 text-right">Total</th></tr></thead>
-          <tbody>{o.items.map((i, k) => <tr key={k} className="border-b border-line"><td className="p-2">{i.name}{i.variant && <span className="ml-1 rounded bg-surface px-1.5 text-xs">{i.variant}</span>}<div className="text-xs text-muted">{tk(i.price)} each</div></td><td className="p-2">{i.quantity}</td><td className="p-2 text-right">{tk(i.price * i.quantity)}</td></tr>)}</tbody>
-          <tfoot>
-            <tr><td colSpan={2} className="p-2 text-right text-muted">Subtotal</td><td className="p-2 text-right">{tk(o.subtotal)}</td></tr>
-            <tr><td colSpan={2} className="p-2 text-right text-muted">Delivery</td><td className="p-2 text-right">{tk(o.shippingCharge)}</td></tr>
-            {o.discount > 0 && <tr><td colSpan={2} className="p-2 text-right text-muted">Discount</td><td className="p-2 text-right">−{tk(o.discount)}</td></tr>}
-            <tr className="font-bold"><td colSpan={2} className="p-2 text-right">Total</td><td className="p-2 text-right">{tk(o.total)}</td></tr>
-          </tfoot>
-        </table>
+        {/* ---------- ordered products (with photos) ---------- */}
+        <section className="overflow-hidden rounded-xl border border-line bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
+            <h3 className="font-semibold">Ordered products</h3>
+            <span className="rounded-full bg-surface px-2.5 py-0.5 text-xs font-semibold text-muted">{(() => { const n = o.items.reduce((s, i) => s + i.quantity, 0); return `${n} ${n > 1 ? 'pcs' : 'pc'}` })()}</span>
+          </div>
+          <ul className="divide-y divide-line">
+            {o.items.map((i) => (
+              <li key={`${i.slug || i.productId}|${i.variant || ''}`} className="flex items-center gap-3 p-3">
+                <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-line bg-surface sm:h-20 sm:w-20">
+                  <Img src={itemImage(i)} alt={i.name} className="h-full w-full object-cover text-[9px]" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold leading-snug">{i.name}{i.variant && <span className="ml-1.5 rounded bg-surface px-1.5 py-0.5 text-xs font-medium">{i.variant}</span>}</p>
+                  <p className="mt-0.5 text-xs text-muted">{tk(i.price)} each</p>
+                </div>
+                <div className="shrink-0 text-right">
+                  <span className="inline-block rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-bold text-brand">× {i.quantity}</span>
+                  <p className="mt-1 font-bold">{tk(i.price * i.quantity)}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <div className="space-y-1 border-t border-line bg-surface/60 px-4 py-3 text-sm">
+            <div className="flex justify-between"><span className="text-muted">Subtotal</span><span>{tk(o.subtotal)}</span></div>
+            <div className="flex justify-between"><span className="text-muted">Delivery</span><span>{tk(o.shippingCharge)}</span></div>
+            {o.discount > 0 && <div className="flex justify-between"><span className="text-muted">Discount{o.coupon && ` (${o.coupon})`}</span><span className="text-green-700">−{tk(o.discount)}</span></div>}
+            {o.adminDiscount > 0 && <div className="flex justify-between"><span className="text-muted">Special discount</span><span className="text-green-700">−{tk(o.adminDiscount)}</span></div>}
+            <div className="flex justify-end"><button type="button" className="text-xs font-semibold text-accent hover:underline" onClick={() => setEditing('discount')}>🎁 {o.adminDiscount > 0 ? 'Change discount' : 'Add discount'}</button></div>
+            <div className="mt-1 flex items-center justify-between border-t border-dashed border-line pt-2">
+              <span className="font-semibold">Total</span>
+              <span className="text-xl font-bold text-brand">{tk(o.total)}</span>
+            </div>
+            <p className={`text-right text-xs font-medium ${codOf(o) ? 'text-accent' : 'text-green-700'}`}>{codOf(o) ? `Cash on delivery — collect ${tk(codOf(o))}` : 'Already paid — collect nothing'}</p>
+          </div>
+        </section>
+
+        {/* ---------- order details ---------- */}
+        <section className="overflow-hidden rounded-xl border border-line bg-white shadow-sm">
+          <h3 className="border-b border-line px-4 py-2.5 font-semibold">Order details</h3>
+          <dl className="divide-y divide-line text-sm">
+            <DetailRow label="Source">{o.source}{o.coupon && ` · coupon ${o.coupon}`}</DetailRow>
+            <DetailRow label="Payment">
+              {PAY[p.method]} · <Pill tone={p.status === 'paid' ? 'green' : p.status === 'pending' ? 'amber' : p.status === 'failed' ? 'red' : 'gray'}>{PAY_ST[p.status]}</Pill>
+              {p.trx && <p className="mt-1">TrxID <b>{p.trx}</b> · from {p.sender}</p>}
+              {p.method !== 'cod' && p.status !== 'paid' && <div className="mt-2 flex gap-2"><button className="btn-accent" onClick={() => payStatus('paid')}>Payment received</button><button className="btn-outline text-red-600" onClick={() => payStatus('failed')}>TrxID doesn't match</button></div>}
+            </DetailRow>
+            <DetailRow label="Courier">{o.courier ? <>{COURIERS[o.courier].t} · {trackUrl(o) ? <a className="text-brand" href={trackUrl(o)} target="_blank" rel="noreferrer">{o.tracking} ↗</a> : o.tracking}</> : '—'}</DetailRow>
+            <DetailRow label="Courier history">
+              {fr ? <><span className={fr.sf?.reports ? 'font-semibold text-red-600' : ''}>{fraudText(fr)}</span> <button className="ml-1 text-xs text-brand" onClick={() => fraudCheck(o.phone, true, () => re((x) => x + 1)).catch((e) => toast(e.message))}>↻</button></>
+                : <button className="text-brand" onClick={() => fraudCheck(o.phone, true, () => re((x) => x + 1)).catch((e) => toast(e.message))}>{LIVE || getKey() ? 'Check courier history' : 'Add BD Courier key in Settings → Courier'}</button>}
+            </DetailRow>
+            <DetailRow label="Previous orders">{prev.length ? prev.map((x) => <span key={x.id} className="mr-2 inline-flex items-center gap-1">{x.invoice} <Pill s={x.status} /></span>) : 'First order'}</DetailRow>
+          </dl>
+        </section>
 
         <div>
           <p className="mb-2 font-semibold">Actions</p>
@@ -178,33 +367,29 @@ function OrderDrawer({ order: o, onClose }) {
             {NEXT[o.status].map(([s, label, cls]) => <button key={s} className={cls} onClick={() => act(s)}>{label}</button>)}
             <button className="btn-outline" onClick={() => copy(parcelText(o), 'Name, phone, address & COD copied')}>📋 Copy for courier</button>
             <button className="btn-outline" onClick={() => printInvoices([o])}>Print invoice</button>
+            {(o.consignmentId || o.tracking) && <button className="btn-outline" onClick={() => printLabels([o])}>Print label</button>}
           </div>
           {extra && (
             <div className="mt-3 space-y-2 rounded-md border border-line bg-surface p-3">
-              {extra === 'courier' ? <>
-                <Field label="Courier"><select className="field" value={courier} onChange={(e) => setCourier(e.target.value)}>{Object.entries(COURIERS).map(([k, c]) => <option key={k} value={k}>{c.t}{k === 'steadfast' ? ' — automatic (API)' : ' — enter consignment ID'}</option>)}</select></Field>
-                <div className="rounded-md bg-white p-2 text-xs leading-5">
-                  <p><b>{o.name}</b> · {o.phone}</p><p>{o.address}</p>
-                  <p>COD to collect: <b className="text-accent">{tk(codOf(o))}</b> · {o.items.reduce((n, i) => n + i.quantity, 0)} item(s)</p>
-                </div>
-                {courier === 'steadfast'
-                  ? <Field label="Note for the rider (optional)"><input className="field" value={riderNote} onChange={(e) => setRiderNote(e.target.value)} placeholder="e.g. call before delivery, fragile" maxLength={200} /></Field>
-                  : <Field label={`${COURIERS[courier].t} consignment / tracking ID`}><input className="field" value={trackId} onChange={(e) => setTrackId(e.target.value)} placeholder="Book in their panel, then paste the ID here" /></Field>}
-              </> : <Field label="Reason"><select className="field" value={reason} onChange={(e) => setReason(e.target.value)}>{(extra === 'cancelled' ? CANCEL_REASONS : RETURN_REASONS).map((r) => <option key={r}>{r}</option>)}</select></Field>}
+              {extra === 'courier'
+                ? <><Field label="Courier"><select className="field" value={courier} onChange={(e) => setCourier(e.target.value)}>{Object.entries(COURIERS).map(([k, c]) => <option key={k} value={k}>{c.t}{k === 'steadfast' ? ' — automatic (API)' : ' — enter consignment ID'}</option>)}</select></Field>
+                  {courier !== 'steadfast' && <Field label={`${COURIERS[courier].t} consignment / tracking ID`}><input className="field" value={trackId} onChange={(e) => setTrackId(e.target.value)} placeholder="Book in their panel, then paste the ID here" /></Field>}
+                  {courier === 'steadfast' && <Field label="Note for the rider (optional)" hint="Goes into the Steadfast parcel note."><input className="field" value={riderNote} onChange={(e) => setRiderNote(e.target.value)} placeholder="e.g. call before delivery" /></Field>}</>
+                : <Field label="Reason"><select className="field" value={reason} onChange={(e) => setReason(e.target.value)}>{(extra === 'cancelled' ? CANCEL_REASONS : RETURN_REASONS).map((r) => <option key={r}>{r}</option>)}</select></Field>}
               <div className="flex gap-2"><button className="btn-brand" disabled={busyC} onClick={confirmExtra}>{busyC ? 'Sending…' : extra === 'courier' ? `Send to ${COURIERS[courier].t} · COD ${tk(codOf(o))}` : 'Confirm'}</button><button className="btn-outline" onClick={() => setExtra(null)}>Back</button></div>
-              {extra === 'courier' && courier === 'steadfast' && <p className="text-xs text-muted">{LIVE ? 'Creates the parcel in your Steadfast account with this name, phone, address and COD amount. The tracking code is saved here and sent to the customer by SMS.' : 'Demo: creates a sample tracking code. On your server this calls the Steadfast API.'}</p>}
+              {extra === 'courier' && <p className="text-xs text-muted">{LIVE ? 'Steadfast: the parcel is booked directly in your Steadfast account (with COD) and the real tracking code is saved. For other couriers, enter the tracking ID by hand.' : 'Demo creates a tracking code. On the live site this books the parcel in Steadfast.'}</p>}
             </div>
           )}
         </div>
 
         {o.courier && (
           <div className="rounded-md border border-line p-3">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <p className="font-semibold">Courier tracking {o.courierCheckedAt && <span className="text-xs font-normal text-muted">· checked {fdate(o.courierCheckedAt)}</span>}</p>
-              {LIVE && o.courier === 'steadfast' && <button className="btn-outline px-2 py-1 text-xs" disabled={busyC} onClick={refreshNow}>{busyC ? 'Checking…' : '↻ Refresh status'}</button>}
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+              <p className="font-semibold">🚚 Courier updates & rider notes{o.courierStatus && <span className="ml-2 rounded bg-surface px-1.5 py-0.5 text-xs font-normal">{COURIER_ST[o.courierStatus] || o.courierStatus}</span>}</p>
+              {LIVE && o.courier === 'steadfast' && o.tracking && <button className="btn-outline px-2 py-1 text-xs" disabled={busyRef} onClick={async () => { setBusyRef(true); try { await liveCourierRefresh(o); toast('Latest update fetched from Steadfast') } catch (e) { toast(e.message) } finally { setBusyRef(false) } }}>{busyRef ? 'Refreshing…' : '↻ Refresh status'}</button>}
             </div>
+            {(o.codAmount != null || o.codCollected != null || o.courierCharge != null) && <p className="mb-2 text-xs text-muted">{o.codAmount != null && <>COD ৳{o.codAmount}</>}{o.codCollected != null && <> · Collected ৳{o.codCollected}</>}{o.courierCharge != null && <> · Courier charge ৳{o.courierCharge}</>}</p>}
             <CourierLog o={o} />
-            <p className="mt-2 text-[11px] text-muted">The customer sees these updates on their tracking page.</p>
           </div>
         )}
 
@@ -240,13 +425,14 @@ function OrderDrawer({ order: o, onClose }) {
           </div>
         </div>
       </div>
+      <Modal open={!!editing} onClose={() => setEditing(null)} title={`${o.invoice} — ${editing === 'discount' ? 'Add discount' : 'Edit order'}`}>{editing && <OrderEdit o={o} focus={editing} onClose={() => setEditing(null)} />}</Modal>
     </Modal>
   )
 }
 
 /* ---------- manual order (phone / Facebook / WhatsApp) ---------- */
 export function NewOrderForm({ onDone, initial }) {
-  const [f, setF] = useState({ name: initial?.name || '', phone: initial?.phone || '', address: initial?.address || '', shippingArea: initial?.shippingArea || 'inside_dhaka', source: initial ? 'Recovered from incomplete' : 'Phone', confirmed: true })
+  const [f, setF] = useState({ name: initial?.name || '', phone: initial?.phone || '', address: initial?.address || '', shippingArea: initial?.shippingArea || 'inside_dhaka', source: initial ? 'Recovered from incomplete' : 'Phone', confirmed: true, disc: '' })
   const [items, setItems] = useState(initial?.items?.map((i) => ({ ...i })) || [])
   const [q, setQ] = useState('')
   const [err, setErr] = useState('')
@@ -259,7 +445,9 @@ export function NewOrderForm({ onDone, initial }) {
   const submit = (e) => {
     e.preventDefault()
     if (!f.name.trim() || !validPhone(f.phone) || f.address.trim().length < 5 || !items.length) return setErr('Name, valid phone, address and at least one product are required')
-    const o = createOrder({ ...f, items, source: f.source, by: meName(), status: f.confirmed ? 'confirmed' : 'pending' })
+    const out = items.find((i) => { const p = productById(i.productId) || product(i.slug); const v = p && variantOf(p, i.variant); const left = v ? v.stock : p?.stock; return typeof left === 'number' && left < i.quantity })
+    if (out) { const p = productById(out.productId) || product(out.slug); const v = variantOf(p, out.variant); return setErr(`"${out.name}${out.variant ? ` (${out.variant})` : ''}" has only ${v ? v.stock : p.stock} in stock`) }
+    const o = createOrder({ ...f, items, source: f.source, by: meName(), status: f.confirmed ? 'confirmed' : 'pending', adminDiscount: +f.disc || 0 })
     toast(`${o.invoice} created`)
     onDone(o)
   }
@@ -296,7 +484,8 @@ export function NewOrderForm({ onDone, initial }) {
               <button type="button" className="text-red-600" onClick={() => setItems((x) => x.filter((y) => !same(y, i)))} aria-label="Remove">×</button>
             </li>
           ))}
-          <li className="flex justify-between p-2 font-semibold"><span>Total incl. delivery {tk(ship)}</span><span>{tk(sub + ship)}</span></li>
+          <li className="flex items-center justify-between gap-2 p-2"><span className="text-muted">🎁 Discount (৳)</span><input type="number" min={0} className="field w-28" value={f.disc} onChange={set('disc')} placeholder="0" /></li>
+          <li className="flex justify-between p-2 font-semibold"><span>Total incl. delivery {tk(ship)}</span><span>{tk(Math.max(0, sub + ship - (+f.disc || 0)))}</span></li>
         </ul>
       )}
       <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={f.confirmed} onChange={set('confirmed')} />Customer already confirmed by phone</label>
@@ -319,6 +508,10 @@ export default function Orders() {
   const [bulk, setBulk] = useState('')
   const [openId, setOpenId] = useState(null)
   const [newOpen, setNewOpen] = useState(false)
+  const [refAll, setRefAll] = useState(false)
+  // ?open=FA100123 (from the notification bell) opens that order
+  const [sp, setSp] = useSearchParams()
+  useEffect(() => { const inv = sp.get('open'); if (!inv) return; const o = S.orders.find((x) => x.invoice === inv); if (o) setOpenId(o.id); sp.delete('open'); setSp(sp, { replace: true }) }, [sp]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const base = useMemo(() => {
     const a = from ? new Date(from + 'T00:00').getTime() : 0
@@ -340,8 +533,9 @@ export default function Orders() {
     if (bulk === 'csv') return exportCSV(sel.size ? all.filter((o) => sel.has(o.id)) : all)
     if (!sel.size) return toast('Select orders first')
     const chosen = S.orders.filter((o) => sel.has(o.id))
-    if (bulk === 'print') return printInvoices(chosen)
     if (bulk === 'copy') return copy(chosen.map(parcelText).join('\n\n'), `${chosen.length} order(s) copied`)
+    if (bulk === 'print') return printInvoices(chosen)
+    if (bulk === 'labels') return printLabels(chosen)
     if (bulk.startsWith('st:')) { const s = bulk.slice(3); chosen.forEach((o) => setStatus(o, s, meName(), s === 'cancelled' ? 'Bulk cancelled' : '')); toast(`${chosen.length} orders → ${STATUS[s].t}`) }
     if (bulk.startsWith('c:')) {
       const c = bulk.slice(2); let n = 0, err = ''
@@ -354,16 +548,14 @@ export default function Orders() {
     save(); setSel(new Set())
   }
 
-  const [syncing, setSyncing] = useState(false)
-  const syncCouriers = async () => {
-    setSyncing(true)
-    try { const r = await refreshAllCouriers(); toast(`Checked ${r.checked} of ${r.open} open Steadfast parcels · ${r.statusChanged} status change(s)${r.errors?.length ? ` · ${r.errors[0]}` : ''}`) } catch (e) { toast(e.message) } finally { setSyncing(false) }
-  }
   const allSel = list.length > 0 && list.every((o) => sel.has(o.id))
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <h1 className="text-2xl font-bold">Order management</h1>
+        <div>
+          <h1 className="text-2xl font-bold">Order management</h1>
+          {LIVE && <button className="btn-outline mt-2 px-3 py-1.5 text-xs" disabled={refAll} onClick={async () => { setRefAll(true); try { const r = await liveCourierRefreshAll(); toast(`Steadfast: checked ${r.checked} parcel(s), ${r.statusChanged} status change(s)${r.errors?.length ? ' · ' + r.errors[0] : ''}`) } catch (e) { toast(e.message) } finally { setRefAll(false) } }}>{refAll ? 'Checking Steadfast…' : '↻ Update all courier parcel statuses'}</button>}
+        </div>
         <div className="rounded-lg bg-brand px-4 py-2 text-white">
           <p className="text-[11px] uppercase tracking-wide text-white/70">Today</p>
           <p className="text-xl font-bold">{today.length} new · {today.filter((o) => o.status === 'pending').length} pending</p>
@@ -392,14 +584,13 @@ export default function Orders() {
           <option value="">Bulk action…</option>
           <optgroup label="Change status">{ST_KEYS.map((k) => <option key={k} value={`st:${k}`}>{STATUS[k].t}</option>)}</optgroup>
           <optgroup label="Send to courier">{Object.entries(COURIERS).map(([k, c]) => <option key={k} value={`c:${k}`}>{c.t}</option>)}</optgroup>
-          <optgroup label="Other"><option value="copy">Copy name / phone / address / COD</option><option value="print">Print invoices</option><option value="csv">Export CSV</option></optgroup>
+          <optgroup label="Other"><option value="copy">Copy name / phone / address / COD</option><option value="print">Print invoices</option><option value="labels">Print courier labels (75×100 mm)</option><option value="csv">Export CSV</option></optgroup>
         </select>
         <button className="btn-brand" onClick={applyBulk}>Apply{sel.size ? ` (${sel.size})` : ''}</button>
         <span className="flex-1" />
         <span className="text-sm text-muted">Page {pg}/{pages}</span>
         <button className="btn-outline" disabled={pg <= 1} onClick={() => setPage(pg - 1)}>‹</button>
         <button className="btn-outline" disabled={pg >= pages} onClick={() => setPage(pg + 1)}>›</button>
-        {LIVE && <button className="btn-outline" disabled={syncing} onClick={syncCouriers} title="Ask Steadfast for the latest status of every open parcel">{syncing ? 'Checking couriers…' : '↻ Courier status'}</button>}
         <button className="btn-accent" onClick={() => setNewOpen(true)}>+ New order</button>
       </div>
 
@@ -419,12 +610,12 @@ export default function Orders() {
                 <tr key={o.id} className={`cursor-pointer hover:bg-surface ${sel.has(o.id) ? 'bg-brand/5' : ''}`} onClick={() => setOpenId(o.id)}>
                   <td className="p-3" onClick={(e) => e.stopPropagation()}><input type="checkbox" checked={sel.has(o.id)} onChange={(e) => { const s = new Set(sel); e.target.checked ? s.add(o.id) : s.delete(o.id); setSel(s) }} aria-label={`Select ${o.invoice}`} /></td>
                   <td className="p-3"><b>{o.invoice}</b> {risk.length > 0 && <Pill tone="red">Risk</Pill>}{o.demo && <Pill tone="gray">sample</Pill>}<div className="text-xs text-muted">{fdate(o.createdAt)}</div></td>
-                  <td className="p-3"><span className="flex items-center gap-1.5">{o.name}<span onClick={(e) => e.stopPropagation()}><CopyBtn text={parcelText(o)} label="Name, phone, address & COD copied" title="Copy name, phone, address & COD" /></span></span><div className="max-w-52 truncate text-xs text-muted">{o.address} · {o.items.reduce((n, i) => n + i.quantity, 0)} item(s)</div></td>
-                  <td className="whitespace-nowrap p-3">{o.phone} <a href={`https://wa.me/${waNum(o.phone)}`} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="inline-block align-middle text-green-600" aria-label="WhatsApp"><WhatsAppIcon className="h-4 w-4" /></a></td>
+                  <td className="p-3"><span className="flex items-center gap-1.5">{o.name}<span onClick={(e) => e.stopPropagation()}><CopyBtn text={parcelText(o)} label="Name, phone, address & COD copied" title="Copy name, phone, address & COD" /></span></span>{o.country && <span className={`ml-1 inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-semibold ${o.country === 'BD' ? 'border-line text-muted' : 'border-accent/40 bg-accent/10 text-accent'}`} title={`Order placed from: ${countryName(o.country)} (by IP)`}>{flag(o.country)} {countryName(o.country)}</span>}<div className="max-w-52 truncate text-xs text-muted">{o.address} · {o.items.reduce((n, i) => n + i.quantity, 0)} products</div></td>
+                  <td className="whitespace-nowrap p-3">{o.phone} <a href={`https://wa.me/${waNum(o.phone)}`} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="inline-block align-middle text-green-600" aria-label="WhatsApp"><WhatsAppIcon className="h-4 w-4" /></a>{o.status === 'pending' && openIncompleteFor(o.phone).length > 0 && <div className="mt-1"><span className="rounded bg-red-600 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white" title="This number is also in Incomplete orders">Duplicate</span> <span className="text-xs text-muted">Also in Incomplete</span></div>}</td>
                   <td className="p-3" onClick={(e) => e.stopPropagation()}><FraudBadge phone={o.phone} /></td>
                   <td className="p-3"><Pill s={o.status} /></td>
                   <td className="p-3 font-semibold">{tk(o.total)}</td>
-                  <td className="p-3 text-xs">{o.courier ? <>{COURIERS[o.courier].t}<br />{trackUrl(o) ? <a className="text-brand" href={trackUrl(o)} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>{o.tracking} ↗</a> : o.tracking}{o.courierLog?.length > 0 && <span className="mt-0.5 block max-w-40 truncate text-muted" title={o.courierLog[o.courierLog.length - 1].message}>{o.courierLog[o.courierLog.length - 1].message}</span>}</> : '—'}</td>
+                  <td className="p-3 text-xs">{o.courier ? <>{COURIERS[o.courier].t}<br />{trackUrl(o) ? <a className="text-brand" href={trackUrl(o)} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>{o.tracking} ↗</a> : o.tracking}{o.courierLog?.length > 0 && <p className="mt-0.5 max-w-44 truncate text-muted" title={o.courierLog[o.courierLog.length - 1].message}>{!o.courierLog[o.courierLog.length - 1].status && '🛵 '}{o.courierLog[o.courierLog.length - 1].message}</p>}</> : '—'}</td>
                   <td className="p-3"><Pill tone={paid ? 'green' : o.payment?.status === 'pending' ? 'amber' : 'gray'}>{paid ? 'PAID' : o.payment?.status === 'pending' ? 'VERIFY' : 'DUE'}</Pill>{o.payment?.method !== 'cod' && <div className="text-xs text-muted">{PAY[o.payment?.method]}</div>}</td>
                 </tr>
               )

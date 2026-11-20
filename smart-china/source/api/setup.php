@@ -46,7 +46,7 @@ function run_install(array $p): array {
         kv_set('settings', $set); kv_set('home', $seed['home']); kv_set('pages', $seed['pages']); kv_set('fraud', new stdClass());
         kv_set('nextInvoice', (int)$seed['nextInvoice']);
       }
-      q('INSERT INTO admins (email, name, pass, created) VALUES (?,?,?,?)', [$email, trim((string)($p['admin_name'] ?? '')) ?: 'Admin', password_hash($pass, PASSWORD_DEFAULT), now_ms()]);
+      q('INSERT INTO admins (email, name, pass, created, role, active) VALUES (?,?,?,?,?,1)', [$email, trim((string)($p['admin_name'] ?? '')) ?: 'Admin', password_hash($pass, PASSWORD_DEFAULT), now_ms(), 'super_admin']);
     });
     $up = $config['upload_dir'];
     if (!is_dir($up)) @mkdir($up, 0755, true);

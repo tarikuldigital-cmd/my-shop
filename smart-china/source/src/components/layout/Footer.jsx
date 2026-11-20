@@ -16,7 +16,7 @@ export default function Footer() {
         </div>
         <div>
           <h3 className="mb-3 font-semibold text-white">Customer care</h3>
-          <ul className="space-y-2 text-sm">{settings.footerUsefulLinks.map((l) => <li key={l.to}><Link to={l.to} className="hover:text-white">{l.label}</Link></li>)}</ul>
+          <ul className="space-y-2 text-sm">{settings.footerUsefulLinks.map((l) => <li key={l.to}><Link to={l.to} className="hover:text-white">{l.label}</Link></li>)}<li><Link to="/complain" className="font-semibold text-gold hover:text-white">📮 Make a complaint</Link></li></ul>
         </div>
         <div>
           <h3 className="mb-3 font-semibold text-white">Policies</h3>

@@ -86,7 +86,7 @@ function create_schema(): void {
     "CREATE INDEX {$ine}docs_k3 ON docs (coll, k3)",
     "CREATE INDEX {$ine}docs_upd ON docs (coll, updated)",
     "CREATE TABLE IF NOT EXISTS kv (k VARCHAR(64) NOT NULL PRIMARY KEY, v $txt NOT NULL, updated $big NOT NULL DEFAULT 0)$tail",
-    "CREATE TABLE IF NOT EXISTS admins (id $ai, email VARCHAR(190) NOT NULL UNIQUE, name VARCHAR(120) NOT NULL, pass VARCHAR(255) NOT NULL, created $big NOT NULL)$tail",
+    "CREATE TABLE IF NOT EXISTS admins (id $ai, email VARCHAR(190) NOT NULL UNIQUE, name VARCHAR(120) NOT NULL, pass VARCHAR(255) NOT NULL, created $big NOT NULL, role VARCHAR(20) NOT NULL DEFAULT 'admin', active TINYINT NOT NULL DEFAULT 1, last_login $big NOT NULL DEFAULT 0)$tail",
     "CREATE TABLE IF NOT EXISTS customers (id $ai, phone VARCHAR(20) NOT NULL UNIQUE, name VARCHAR(120) NOT NULL, pass VARCHAR(255) NOT NULL, address VARCHAR(500) NOT NULL DEFAULT '', email VARCHAR(190) NOT NULL DEFAULT '', created $big NOT NULL)$tail",
     "CREATE TABLE IF NOT EXISTS tokens (h CHAR(64) NOT NULL PRIMARY KEY, kind VARCHAR(10) NOT NULL, uid INT NOT NULL, exp $big NOT NULL)$tail",
     "CREATE TABLE IF NOT EXISTS rl (k VARCHAR(120) NOT NULL, at $big NOT NULL)$tail",
@@ -108,9 +108,9 @@ function kv_set(string $k, $v): void { q('REPLACE INTO kv (k, v, updated) VALUES
 function kv_updated(string $k): int { $r = q('SELECT updated FROM kv WHERE k = ?', [$k])->fetch(); return $r ? (int)$r['updated'] : 0; }
 
 /* ---------------- document collections ---------------- */
-const KEYS = ['products' => 'id', 'categories' => 'slug', 'coupons' => 'code', 'reviews' => 'id', 'landings' => 'id', 'chats' => 'id', 'messages' => 'id', 'incomplete' => 'id', 'orders' => 'id', 'smsLog' => 'id'];
+const KEYS = ['products' => 'id', 'categories' => 'slug', 'coupons' => 'code', 'reviews' => 'id', 'landings' => 'id', 'chats' => 'id', 'messages' => 'id', 'incomplete' => 'id', 'orders' => 'id', 'smsLog' => 'id', 'complaints' => 'id'];
 /** collections ordered by a field (newest first) instead of by seq */
-const SORT_BY = ['orders' => 'createdAt', 'incomplete' => 'at', 'chats' => 'updated', 'messages' => 'at', 'reviews' => 'at', 'smsLog' => 'at'];
+const SORT_BY = ['orders' => 'createdAt', 'incomplete' => 'at', 'chats' => 'updated', 'messages' => 'at', 'reviews' => 'at', 'smsLog' => 'at', 'complaints' => 'createdAt'];
 const DELTA = ['products' => ['stock', 'sold'], 'coupons' => ['used'], 'landings' => ['views', 'orders']];
 
 function doc_index(string $coll, array $d): array {
@@ -118,6 +118,7 @@ function doc_index(string $coll, array $d): array {
   if ($coll === 'products' || $coll === 'landings') return [(string)($d['slug'] ?? ''), null, null];
   if ($coll === 'coupons') return [strtolower((string)($d['code'] ?? '')), null, null];
   if ($coll === 'incomplete') return [(string)($d['phone'] ?? ''), null, null];
+  if ($coll === 'complaints') return [(string)($d['phone'] ?? ''), (string)($d['assignee']['id'] ?? ''), (string)($d['invoice'] ?? '')];
   return [null, null, null];
 }
 function doc_put(string $coll, array $d, ?int $seq = null): void {
@@ -169,10 +170,17 @@ function auth_user(string $kind): ?array {
   $r = q('SELECT uid, exp FROM tokens WHERE h = ? AND kind = ?', [hash('sha256', $t), $kind])->fetch();
   if (!$r || (int)$r['exp'] < time()) return null;
   $table = $kind === 'admin' ? 'admins' : 'customers';
+  if ($kind === 'admin') admin_migrate();
   $u = q("SELECT * FROM $table WHERE id = ?", [(int)$r['uid']])->fetch();
+  if ($u && $kind === 'admin' && (int)($u['active'] ?? 1) !== 1) return null; // disabled account
   return $u ?: null;
 }
-function require_admin(): array { $u = auth_user('admin'); if (!$u) fail(401, 'Admin login required'); return $u; }
+/** Logged-in admin; pass a permission name (see ADMIN_ROLES in team.php) to also require that the role allows it. */
+function require_admin(?string $perm = null): array {
+  $u = auth_user('admin'); if (!$u) fail(401, 'Admin login required');
+  if ($perm !== null && !admin_can($u, $perm)) fail(403, 'Your role does not allow this action');
+  return $u;
+}
 function drop_token(): void { $t = bearer(); if ($t) q('DELETE FROM tokens WHERE h = ?', [hash('sha256', $t)]); }
 
 /* ---------------- request helpers ---------------- */
@@ -208,7 +216,8 @@ function site_url(): string { return rtrim((string)cfg('site_url', ''), '/'); }
 
 /** Settings with secrets removed — safe for the public storefront. */
 function public_settings(array $st): array {
-  unset($st['courier']);
+  unset($st['courier'], $st['smsGateway']);
+  if (isset($st['complaints'])) { unset($st['complaints']['templates'], $st['complaints']['routing']); }
   if (isset($st['tracking'])) unset($st['tracking']['metaCapiToken']);
   if (isset($st['chat'])) { $st['chat']['apiKey'] = ''; $st['chat']['relayUrl'] = ''; }
   $st['sms'] = ['enabled' => false, 'relayUrl' => '', 'siteUrl' => '', 'events' => new stdClass(), 'templates' => new stdClass()];

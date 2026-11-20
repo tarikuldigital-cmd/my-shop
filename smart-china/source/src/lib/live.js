@@ -3,7 +3,7 @@
  *  - Storefront: GET /bootstrap fills the in-memory store (products, categories, home, pages, public settings).
  *  - Admin: GET /admin/state loads everything; every save() is diffed against the last server copy and sent to
  *    POST /admin/sync as field-level patches (stock/coupon counters as +/- deltas), so two admins or a customer
- *    ordering at the same moment never overwrite each other. A 15-second poll merges changes made elsewhere.
+ *    ordering at the same moment never overwrite each other. A 5-second poll merges changes made elsewhere.
  */
 import { S, DAY, refresh, liveHooks, resetState, defaultSettings, sendToCourier, COURIERS } from '../store/db'
 import { LIVE, API_BASE_URL } from '../config/env'
@@ -13,8 +13,8 @@ export const adminToken = () => { try { return localStorage.getItem(ADMIN_TOKEN_
 export const adminHeaders = () => (adminToken() ? { Authorization: `Bearer ${adminToken()}` } : {})
 const BOOT_CACHE = 'scg_boot_v1'
 
-const COLLS = { products: 'id', categories: 'slug', coupons: 'code', reviews: 'id', landings: 'id', chats: 'id', messages: 'id', incomplete: 'id', orders: 'id', smsLog: 'id' }
-const SORTED_BY_TIME = new Set(['orders', 'incomplete', 'chats', 'messages', 'reviews', 'smsLog'])
+const COLLS = { products: 'id', categories: 'slug', coupons: 'code', reviews: 'id', landings: 'id', chats: 'id', messages: 'id', incomplete: 'id', orders: 'id', smsLog: 'id', complaints: 'id' }
+const SORTED_BY_TIME = new Set(['orders', 'incomplete', 'chats', 'messages', 'reviews', 'smsLog', 'complaints'])
 const DELTA = { products: ['stock', 'sold'], coupons: ['used'], landings: ['views', 'orders'] }
 const KV = ['settings', 'home', 'pages', 'fraud']
 const OBJECT_KEYS = ['fraud', 'pages', 'home']
@@ -82,6 +82,7 @@ function snapshot() {
 export async function adminLogin(email, password) {
   const r = await call('admin/login', { method: 'POST', body: { email, password } })
   localStorage.setItem(ADMIN_TOKEN_KEY, r.token)
+  S.account = r.user
   await hydrateAdmin()
   return r.user
 }
@@ -104,8 +105,9 @@ export async function hydrateAdmin() {
   for (const k of KV) S[k] = d.kv[k]
   for (const k of OBJECT_KEYS) if (Array.isArray(S[k])) S[k] = {}
   const ds = defaultSettings()
-  S.settings = { ...ds, ...S.settings, tracking: { ...ds.tracking, ...S.settings.tracking }, seo: { ...ds.seo, ...S.settings.seo }, courier: { ...ds.courier, ...S.settings.courier }, chat: { ...ds.chat, ...S.settings.chat }, sms: { ...ds.sms, ...S.settings.sms, events: { ...ds.sms.events, ...S.settings.sms?.events }, templates: { ...ds.sms.templates, ...S.settings.sms?.templates } } }
+  S.settings = { ...ds, ...S.settings, tracking: { ...ds.tracking, ...S.settings.tracking }, seo: { ...ds.seo, ...S.settings.seo }, courier: { ...ds.courier, ...S.settings.courier }, chat: { ...ds.chat, ...S.settings.chat }, sms: { ...ds.sms, ...S.settings.sms, events: { ...ds.sms.events, ...S.settings.sms?.events }, templates: { ...ds.sms.templates, ...S.settings.sms?.templates } }, complaints: { ...ds.complaints, ...S.settings.complaints, events: { ...ds.complaints.events, ...S.settings.complaints?.events }, templates: { ...ds.complaints.templates, ...S.settings.complaints?.templates }, routing: { ...ds.complaints.routing, ...S.settings.complaints?.routing } } }
   S.nextInvoice = Math.max(d.kv.nextInvoice || 100101, S.nextInvoice || 0)
+  S.account = d.me
   S.lastSeen = Date.now()
   base = snapshot()
   base.kv.settings = JSON.stringify(S.settings) // the merged defaults are not a "change" to push
@@ -181,8 +183,10 @@ export async function flush() {
 
 function startPoll() {
   clearInterval(pollTimer)
-  pollTimer = setInterval(() => { if (!document.hidden && base && !inflight) poll() }, 15000)
+  pollTimer = setInterval(() => { if (base && !inflight) poll() }, 5000)   // also in a background tab (browser slows it, new orders still arrive)
+  if (!visHooked) { visHooked = true; document.addEventListener('visibilitychange', () => { if (!document.hidden && base && !inflight) poll() }) }
 }
+let visHooked = false
 const replaceInPlace = (target, src) => { for (const k of Object.keys(target)) delete target[k]; Object.assign(target, src) }
 export async function poll() {
   if (!base) return
@@ -190,6 +194,7 @@ export async function poll() {
   try { d = await call(`admin/poll?since=${since}`, { admin: true }) } catch (e) { if (e.status === 401) { localStorage.removeItem(ADMIN_TOKEN_KEY); location.reload() } return }
   if (!d || !base) return
   let changed = false
+  if (d.me && JSON.stringify(d.me) !== JSON.stringify(S.account)) { S.account = d.me; changed = true } // role changed by a Super Admin → menu updates by itself
   for (const [c, list] of Object.entries(d.docs || {})) {
     if (!COLLS[c]) continue
     for (const doc of list) {
@@ -200,7 +205,7 @@ export async function poll() {
         if (bs && JSON.stringify(local) !== bs.str) continue            // an unsaved local edit wins this round
         if (JSON.stringify(local) === JSON.stringify(doc)) { if (!bs) base.docs[c].set(id, { str: JSON.stringify(doc), obj: JSON.parse(JSON.stringify(doc)) }); continue }
         replaceInPlace(local, doc); changed = true
-      } else { S[c].unshift(doc); changed = true; if (c === 'orders' && doc.status === 'pending') window.dispatchEvent(new CustomEvent('scg:new-order', { detail: doc })) }
+      } else { S[c].unshift(doc); changed = true; if (c === 'orders' && doc.status === 'pending') window.dispatchEvent(new CustomEvent('scg:new-order', { detail: doc })); if (c === 'complaints' && doc.status === 'submitted') window.dispatchEvent(new CustomEvent('scg:new-complaint', { detail: doc })) }
       base.docs[c].set(id, { str: JSON.stringify(doc), obj: JSON.parse(JSON.stringify(doc)) })
     }
     base.orderIds[c] = S[c].map((x) => keyOf(c, x))
@@ -224,8 +229,8 @@ export const liveLandingView = (slug) => call('landing/view', { method: 'POST', 
 export const liveValidateCoupon = (code, subtotal) => call('coupons/validate', { method: 'POST', body: { code, subtotal } })
 
 /** Book a parcel with Steadfast through the server (the API keys never leave it). COD = order total unless already paid. */
-export async function bookSteadfast(order, note = '') {
-  return call('admin/courier/steadfast', { method: 'POST', admin: true, body: { orderId: order.id, note } })
+export async function bookSteadfast(order, note = '', rebook = false) {
+  return call('admin/courier/steadfast', { method: 'POST', admin: true, body: { orderId: order.id, note, rebook } })
 }
 
 /** Latest Steadfast status + full tracking history (rider notes) for one order; the server also moves the order status. */
@@ -246,15 +251,20 @@ export async function refreshAllCouriers() {
   since = 0; await poll()
   return r
 }
-export const courierBalance = () => call('admin/courier/balance', { method: 'POST', admin: true })
+export const courierBalance = () => call('admin/courier/balance', { method: 'POST', admin: true, body: {} })
+export const liveCourierRefresh = (o) => refreshCourier(o)
+export const liveCourierRefreshAll = async () => { const r = await call('admin/courier/refresh-all', { method: 'POST', admin: true, body: {} }); await poll(); return r }
+export const liveCourierBalance = courierBalance
+export const liveCourierHistory = (phone) => call('admin/courier/history', { method: 'POST', admin: true, body: { phone } })
 
 /** after the server rewrote image references, pull the fresh data */
 export async function refreshAfterMirror() { since = 0; await poll() }
 
 /** Live courier booking: Steadfast through the API; Pathao / RedX need the consignment ID typed in (booked in their panel). */
-export async function courierLive(o, c, by, { tracking: typed = '', note = '' } = {}) {
+export async function courierLive(o, c, by, opt = {}, rebook = false) {
+  const { tracking: typed = '', note = '' } = typeof opt === 'string' ? { note: opt } : (opt || {})
   if (c === 'steadfast') {
-    const r = await bookSteadfast(o, note)
+    const r = await bookSteadfast(o, note, rebook)
     sendToCourier(o, c, by, r.tracking, { consignmentId: r.consignmentId, courierLog: r.courierLog || [], courierStatus: r.courierStatus || '', codAmount: r.codAmount })
     return
   }
@@ -264,3 +274,23 @@ export async function courierLive(o, c, by, { tracking: typed = '', note = '' } 
 }
 
 export { DAY }
+
+/* ---------------- team & roles (Super Admin only on the server) ---------------- */
+export const liveTeamList = async () => (await call('admin/team', { admin: true })).members
+export const liveTeamAdd = async (m) => (await call('admin/team', { method: 'POST', admin: true, body: m })).member
+export const liveTeamUpdate = async (id, patch) => (await call(`admin/team/${id}`, { method: 'PUT', admin: true, body: patch })).member
+export const liveTeamDelete = (id) => call(`admin/team/${id}`, { method: 'DELETE', admin: true })
+
+/* ---------------- Complain Box (admin) ---------------- */
+/** every team change goes through the server (it sends the SMS and deletes media files); the saved complaint comes back */
+export async function liveComplaintAction(c, body) {
+  const r = await call('admin/complaints/action', { method: 'POST', admin: true, body: { id: c.id, ...body } })
+  if (r?.complaint) {
+    replaceInPlace(c, r.complaint)
+    if (base) base.docs.complaints.set(keyOf('complaints', c), { str: JSON.stringify(r.complaint), obj: JSON.parse(JSON.stringify(r.complaint)) })
+    refresh()
+  }
+  return r
+}
+export const liveComplaintStaff = () => call('admin/complaints/staff', { admin: true })
+export async function liveComplaintCleanup(days) { const r = await call('admin/complaints/cleanup', { method: 'POST', admin: true, body: { days } }); await poll(); return r }

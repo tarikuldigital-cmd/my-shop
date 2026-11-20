@@ -48,6 +48,22 @@ function routes(): array {
     ['POST', 'admin/mirror-images', 'h_mirror'],
     ['POST', 'sms/send', 'h_sms_send'],
     ['POST', 'webhook/steadfast', 'h_steadfast_hook'],
+    ['POST', 'admin/courier/history', 'h_courier_history'],
+    ['GET', 'admin/team', 'h_team_list'],
+    ['POST', 'admin/team', 'h_team_add'],
+    ['PUT', 'admin/team/(\d+)', 'h_team_update'],
+    ['DELETE', 'admin/team/(\d+)', 'h_team_delete'],
+    ['POST', 'presence', 'h_presence'],
+    ['GET', 'admin/live', 'h_admin_live'],
+    ['POST', 'complaints/upload', 'h_cmp_upload'],
+    ['POST', 'complaints', 'h_cmp_create'],
+    ['POST', 'complaints/track', 'h_cmp_track'],
+    ['POST', 'complaints/by-phone', 'h_cmp_by_phone'],
+    ['POST', 'complaints/reply', 'h_cmp_reply'],
+    ['POST', 'complaints/rate', 'h_cmp_rate'],
+    ['GET', 'admin/complaints/staff', 'h_cmp_staff'],
+    ['POST', 'admin/complaints/action', 'h_cmp_action'],
+    ['POST', 'admin/complaints/cleanup', 'h_cmp_cleanup'],
   ];
 }
 
@@ -297,14 +313,18 @@ function h_reset(): void {
 
 /* =============== admin =============== */
 function h_admin_login(): void {
+  admin_migrate();
   $b = body(); $email = strtolower(trim((string)($b['email'] ?? '')));
   $msg = 'Too many failed attempts. Please try again in 15 minutes.';
   if (rate_blocked('alogin:' . client_ip(), 20, 900) || rate_blocked("alogine:$email", 8, 900)) fail(429, $msg);
   $u = q('SELECT * FROM admins WHERE email = ?', [$email])->fetch();
   if (!$u || !password_verify((string)($b['password'] ?? ''), $u['pass'])) { rate_add('alogin:' . client_ip()); rate_add("alogine:$email"); fail(422, 'Wrong email or password'); }
-  out(['token' => new_token('admin', (int)$u['id'], 14), 'user' => ['name' => $u['name'], 'email' => $u['email']]]);
+  if ((int)$u['active'] !== 1) fail(403, 'This account is disabled — please contact the Super Admin');
+  q('UPDATE admins SET last_login = ? WHERE id = ?', [now_ms(), $u['id']]);
+  $u['last_login'] = now_ms();
+  out(['token' => new_token('admin', (int)$u['id'], 14), 'user' => admin_public($u)]);
 }
-function h_admin_me(): void { $u = require_admin(); out(['name' => $u['name'], 'email' => $u['email']]); }
+function h_admin_me(): void { out(admin_public(require_admin())); }
 function h_admin_logout(): void { drop_token(); out(['ok' => true]); }
 function h_admin_password(): void {
   $u = require_admin(); $b = body();
@@ -317,32 +337,39 @@ function h_admin_password(): void {
 
 const KV_KEYS = ['settings', 'home', 'pages', 'fraud'];
 function h_admin_state(): void {
-  require_admin();
+  $me = require_admin();
   $d = ['t' => now_ms(), 'docs' => new stdClass(), 'kv' => new stdClass()];
   $docs = []; foreach (array_keys(KEYS) as $c) $docs[$c] = doc_all($c);
   $kv = []; foreach (KV_KEYS as $k) $kv[$k] = objectify(kv_get($k, in_array($k, ['settings', 'home'], true) ? new stdClass() : []));
   $kv['nextInvoice'] = (int)kv_get('nextInvoice', 100101);
-  $d['docs'] = $docs; $d['kv'] = $kv;
+  $kv['settings'] = settings_for_admin($me, $kv['settings']);
+  $d['docs'] = $docs; $d['kv'] = $kv; $d['me'] = admin_public($me);
   out($d);
 }
 function h_admin_poll(): void {
-  require_admin();
+  $me = require_admin();
   $since = max(0, (int)($_GET['since'] ?? 0));
   $docs = []; foreach (array_keys(KEYS) as $c) { $l = doc_all($c, $since); if ($l) $docs[$c] = $l; }
   $kv = []; foreach (KV_KEYS as $k) if (kv_updated($k) > $since) $kv[$k] = objectify(kv_get($k, []));
   $kv['nextInvoice'] = (int)kv_get('nextInvoice', 100101);
-  out(['t' => now_ms(), 'docs' => $docs ?: new stdClass(), 'kv' => $kv]);
+  if (isset($kv['settings'])) $kv['settings'] = settings_for_admin($me, $kv['settings']);
+  out(['t' => now_ms(), 'docs' => $docs ?: new stdClass(), 'kv' => $kv, 'me' => admin_public($me)]);
 }
 
 /** Field-level patches from the admin panel — safe against two admins/customers writing at the same time. */
 function h_admin_sync(): void {
-  require_admin();
+  $me = require_admin();
   $b = body();
   $ops = array_slice((array)($b['ops'] ?? []), 0, 2000);
   $remap = [];
-  tx(function () use ($ops, $b, &$remap) {
+  tx(function () use ($ops, $b, &$remap, $me) {
     foreach ($ops as $op) {
       $c = (string)($op['c'] ?? ''); if (!isset(KEYS[$c])) continue;
+      if (!admin_can($me, COLL_PERM[$c])) {
+        // an order manager changing an order also moves stock / coupon / landing counters — allow those counter deltas only
+        $counterOnly = !empty($op['delta']) && empty($op['del']) && empty($op['create']) && empty($op['set']) && empty($op['unset']);
+        if (!($counterOnly && admin_can($me, 'orders'))) continue;
+      }
       $kf = KEYS[$c]; $id = (string)($op['id'] ?? ''); if ($id === '') continue;
       if (!empty($op['del'])) { doc_del($c, $id); continue; }
       if (isset($op['create']) && is_array($op['create'])) {
@@ -368,12 +395,12 @@ function h_admin_sync(): void {
       doc_put($c, $d);
     }
     foreach ((array)($b['order'] ?? []) as $c => $ids) {
-      if (!isset(KEYS[$c]) || isset(SORT_BY[$c]) || !is_array($ids)) continue;
+      if (!isset(KEYS[$c]) || isset(SORT_BY[$c]) || !is_array($ids) || !admin_can($me, COLL_PERM[$c])) continue;
       foreach (array_values($ids) as $i => $id) q('UPDATE docs SET seq = ?, updated = ? WHERE coll = ? AND id = ?', [$i, now_ms(), $c, (string)$id]);
     }
     foreach ((array)($b['kv'] ?? []) as $k => $v) {
-      if ($k === 'nextInvoice') { if ((int)$v > (int)kv_get('nextInvoice', 100101)) kv_set('nextInvoice', (int)$v); continue; }
-      if (in_array($k, KV_KEYS, true) && strlen(jenc($v)) < 2000000) kv_set($k, $v);
+      if ($k === 'nextInvoice') { if (admin_can($me, 'orders') && (int)$v > (int)kv_get('nextInvoice', 100101)) kv_set('nextInvoice', (int)$v); continue; }
+      if (in_array($k, KV_KEYS, true) && admin_can($me, KV_PERM[$k]) && strlen(jenc($v)) < 2000000) kv_set($k, $v);
     }
   });
   out(['ok' => true, 't' => now_ms(), 'remap' => $remap ?: new stdClass(), 'nextInvoice' => (int)kv_get('nextInvoice', 100101)]);
@@ -397,16 +424,25 @@ function h_upload(): void {
 }
 
 function h_steadfast(): void {
-  require_admin();
-  $b = body(); $id = (string)($b['orderId'] ?? ''); $note = s($b['note'] ?? '', 250);
-  $o = tx(function () use ($id, $note) {
+  require_admin('orders');
+  $b = body(); $id = (string)($b['orderId'] ?? ''); $note = s($b['note'] ?? '', 250); $rebook = !empty($b['rebook']);
+  $o = tx(function () use ($id, $note, $rebook) {
     $o = doc_get('orders', $id, true); if (!$o) fail(404, 'Order not found');
-    if (!empty($o['tracking']) && ($o['courier'] ?? '') === 'steadfast') return $o; // already booked — never create a duplicate parcel
-    if (in_array($o['status'], ['cancelled', 'delivered', 'returned', 'partial'], true)) fail(422, 'This order is ' . $o['status'] . ' and cannot be sent to the courier');
+    if (!empty($o['tracking']) && ($o['courier'] ?? '') === 'steadfast') {
+      if (!$rebook) return $o; // already booked — never create a duplicate parcel
+      // re-send: only when Steadfast itself says the old parcel is dead (cancelled / on hold / problem), never while it is live or delivered
+      if (!in_array((string)($o['courierStatus'] ?? ''), ['cancelled', 'cancelled_approval_pending', 'hold', 'exceptional'], true)) fail(422, 'The old parcel is still active at the courier — it must be cancelled or on hold first');
+      if (in_array($o['status'], ['delivered', 'returned', 'partial'], true)) fail(422, 'This order is ' . $o['status'] . ' and cannot be sent again');
+      $o['prevConsignments'] = array_merge($o['prevConsignments'] ?? [], [['tracking' => $o['tracking'], 'consignmentId' => $o['consignmentId'] ?? null, 'at' => (int)(microtime(true) * 1000)]]);
+      $o['rebookN'] = (int)($o['rebookN'] ?? 0) + 1;
+      unset($o['tracking']);
+    } elseif (in_array($o['status'], ['cancelled', 'delivered', 'returned', 'partial'], true)) fail(422, 'This order is ' . $o['status'] . ' and cannot be sent to the courier');
     if ($note !== '') $o['courierNote'] = $note;
     $r = steadfast_create($o);
-    $o['courier'] = 'steadfast'; $o['tracking'] = $r['tracking']; $o['consignmentId'] = $r['consignmentId']; $o['courierStatus'] = $r['status']; $o['codAmount'] = $r['cod'];
-    courier_log_add($o, $r['status'], 'Parcel booked with Steadfast · COD ৳' . $r['cod']);
+    $o['courier'] = 'steadfast'; $o['tracking'] = $r['tracking']; $o['consignmentId'] = $r['consignmentId']; $o['sfInvoice'] = $r['sfInvoice']; $o['courierStatus'] = $r['status'];
+    if (!empty($r['consignmentId'])) kv_set('sfcid:' . $r['consignmentId'], $o['id']);
+    $o['codAmount'] = $r['cod'];
+    courier_log_add($o, $r['status'], (!empty($o['rebookN']) ? 'New parcel booked for re-delivery' : 'Parcel booked with Steadfast') . ' · COD ৳' . $r['cod'] . ($note !== '' ? ' · Note: ' . $note : ''));
     doc_put('orders', $o);
     return $o;
   });
@@ -415,7 +451,7 @@ function h_steadfast(): void {
 
 /** Admin "Refresh courier status" on one order: latest status + full tracking history (rider notes). */
 function h_courier_refresh(): void {
-  require_admin();
+  require_admin('orders');
   $id = (string)(body()['orderId'] ?? '');
   $event = null;
   $o = tx(function () use ($id, &$event) {
@@ -431,7 +467,7 @@ function h_courier_refresh(): void {
 
 /** Refresh every open Steadfast parcel (ready / in transit / on hold), oldest check first, max 40 per call. */
 function h_courier_refresh_all(): void {
-  require_admin();
+  require_admin('orders');
   $open = array_values(array_filter(doc_all('orders'), fn($o) => ($o['courier'] ?? '') === 'steadfast' && !empty($o['tracking']) && in_array($o['status'], ['ready', 'transit', 'hold'], true)));
   usort($open, fn($a, $b) => (int)($a['courierCheckedAt'] ?? 0) <=> (int)($b['courierCheckedAt'] ?? 0));
   $done = 0; $changed = 0; $errors = [];
@@ -453,14 +489,24 @@ function h_courier_refresh_all(): void {
   out(['checked' => $done, 'statusChanged' => $changed, 'open' => count($open), 'errors' => $errors]);
 }
 
+/** Customer courier history from Steadfast (all merchants' record for this phone): GET /fraud_check/score/{phone}. */
+function h_courier_history(): void {
+  require_admin('orders');
+  $phone = norm_phone((string)(body()['phone'] ?? ''));
+  if (!valid_phone($phone)) fail(422, 'Enter a valid mobile number');
+  $j = steadfast_get('/fraud_check/score/' . rawurlencode($phone));
+  $keep = ['delivery_ratio', 'cancellation_ratio', 'volume_band', 'volume_range', 'delivered_count', 'cancelled_count', 'total_reports', 'fraud_categories', 'doubtful_reports'];
+  out(['phone' => $phone] + array_intersect_key($j, array_flip($keep)));
+}
+
 function h_courier_balance(): void {
-  require_admin();
+  require_admin('orders');
   $j = steadfast_get('/get_balance');
   out(['balance' => $j['current_balance'] ?? null]);
 }
 
 function h_sms_send(): void {
-  require_admin();
+  require_admin('sms');
   $b = body(); $text = trim((string)($b['message'] ?? ''));
   if (!valid_phone((string)($b['to'] ?? ''))) fail(400, 'Invalid Bangladeshi mobile number');
   if ($text === '' || mb_strlen($text) > 640) fail(400, 'Message must be 1–640 characters');
@@ -480,18 +526,23 @@ function h_steadfast_hook(): void {
   $b = body();
   $type = (string)($b['notification_type'] ?? '');
   $inv = (string)($b['invoice'] ?? '');
-  if (!in_array($type, ['delivery_status', 'tracking_update'], true) || !preg_match('/^[A-Z]{1,4}\d+$/', $inv)) out(['status' => 'success', 'message' => 'ignored']);
+  $cid = (string)($b['consignment_id'] ?? '');
+  $oid = $cid !== '' ? (string)(kv_get('sfcid:' . $cid, '') ?: '') : '';
+  if (!in_array($type, ['delivery_status', 'tracking_update'], true) || ($oid === '' && !preg_match('/^[A-Z]{1,4}\d+$/', $inv))) out(['status' => 'success', 'message' => 'ignored']);
   $event = null;
-  $o = tx(function () use ($inv, $type, $b, &$event) {
-    $o = doc_by('orders', 'k', $inv, true); if (!$o || ($o['courier'] ?? '') !== 'steadfast') return null;
+  $o = tx(function () use ($inv, $oid, $type, $b, &$event) {
+    $o = $oid !== '' ? doc_get('orders', $oid, true) : doc_by('orders', 'k', $inv, true); if (!$o || ($o['courier'] ?? '') !== 'steadfast') return null;
     $msg = s($b['tracking_message'] ?? '', 500); $at = ts_ms($b['updated_at'] ?? null);
+    // rider details, if Steadfast sends them (key names vary) — shown in the admin pop-up alert
+    $pick = function (array $keys) use ($b): string { foreach ($keys as $k) if (!empty($b[$k]) && is_scalar($b[$k])) return s((string)$b[$k], 80); foreach (['rider', 'delivery_man', 'deliveryman'] as $g) if (is_array($b[$g] ?? null)) foreach ($keys as $k) if (!empty($b[$g][$k]) && is_scalar($b[$g][$k])) return s((string)$b[$g][$k], 80); return ''; };
+    $extra = ['riderName' => $pick(['rider_name', 'delivery_man_name', 'deliveryman_name', 'name']), 'riderPhone' => $pick(['rider_phone', 'rider_mobile', 'delivery_man_phone', 'deliveryman_phone', 'phone', 'mobile'])];
     if ($type === 'delivery_status') {
       $st = strtolower((string)($b['status'] ?? ''));
       if (isset($b['cod_amount'])) $o['codCollected'] = (float)$b['cod_amount'];
       if (isset($b['delivery_charge'])) $o['courierCharge'] = (float)$b['delivery_charge'];
-      $event = apply_courier_status($o, $st, $msg !== '' ? $msg : (SF_STATUS_TEXT[$st] ?? $st), 'Steadfast', $at);
+      $event = apply_courier_status($o, $st, $msg !== '' ? $msg : (SF_STATUS_TEXT[$st] ?? $st), 'Steadfast', $at, $extra);
     } else {
-      $event = apply_courier_status($o, '', $msg, 'Steadfast', $at);
+      $event = apply_courier_status($o, '', $msg, 'Steadfast', $at, $extra);
     }
     doc_put('orders', $o);
     return $o;

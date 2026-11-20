@@ -5,6 +5,8 @@
  */
 import { S, save, normPhone } from '../store/db'
 
+import { LIVE } from '../config/env'
+import { liveCourierHistory } from '../lib/live'
 const KEY_LS = 'scg_bdc_key'
 const TTL = 12 * 3600 * 1000
 export const busy = new Set()
@@ -39,6 +41,7 @@ export async function fraudCheck(phone, force = false, onChange = () => {}) {
   const p = normPhone(phone)
   const cached = S.fraud[p]
   if (!force && cached && Date.now() - cached.at < TTL) return cached
+  if (LIVE) return steadfastCheck(p, onChange)
   const key = getKey()
   if (!key) throw new Error('Add your BD Courier API key in Settings → Courier first')
   busy.add(p); onChange()
@@ -57,3 +60,32 @@ export async function fraudCheck(phone, force = false, onChange = () => {}) {
   } finally { busy.delete(p); onChange() }
 }
 export const ratioTone = (r) => (r >= 80 ? 'green' : r >= 60 ? 'amber' : 'red')
+
+/** Live site: Steadfast's own customer record (server-side, with the Steadfast keys saved in Settings → Courier). */
+export const REPORT_TEXT = { no_response: 'No response', refused: 'Refused parcel', fake_order: 'Fake order', wrong_address: 'Wrong address', fraud: 'Fraud' }
+async function steadfastCheck(p, onChange) {
+  busy.add(p); onChange()
+  try {
+    const j = await liveCourierHistory(p)
+    const ok = j.delivered_count, cancel = j.cancelled_count
+    const known = j.delivery_ratio != null
+    const res = {
+      at: Date.now(), source: 'steadfast',
+      sum: { total: known ? (ok != null && cancel != null ? ok + cancel : -1) : 0, ok: ok ?? null, cancel: cancel ?? null, ratio: j.delivery_ratio ?? 0 },
+      sf: { delivery: j.delivery_ratio, cancel: j.cancellation_ratio, band: j.volume_band, range: j.volume_range, reports: j.total_reports || 0, categories: j.fraud_categories || {}, doubtful: !!j.doubtful_reports },
+      rows: [],
+    }
+    S.fraud[p] = res
+    save()
+    return res
+  } finally { busy.delete(p); onChange() }
+}
+/** One-line text for a check result (Steadfast or BD Courier). */
+export function fraudText(c) {
+  if (c.sf) {
+    if (c.sf.delivery == null) return 'New customer — no parcel history at Steadfast'
+    const reps = c.sf.reports ? ` · ⚠ ${c.sf.reports} report(s)${Object.keys(c.sf.categories).length ? ' (' + Object.entries(c.sf.categories).map(([k, n]) => `${REPORT_TEXT[k] || k} ${n}`).join(', ') + ')' : ''}` : ''
+    return `Steadfast: ${c.sf.delivery}% delivered, ${c.sf.cancel ?? 0}% cancelled · ${c.sf.range ?? ''} parcels${c.sum.ok != null ? ` (${c.sum.ok} delivered / ${c.sum.cancel} cancelled)` : ''}${reps}`
+  }
+  return c.sum.total ? `${Math.round(c.sum.ratio)}% success · ${c.sum.ok} delivered / ${c.sum.cancel} cancelled of ${c.sum.total}` : 'New customer (no parcels with any courier)'
+}

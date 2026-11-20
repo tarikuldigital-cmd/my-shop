@@ -106,6 +106,7 @@ function MobileMenu({ open, onClose, categories }) {
         <div className="space-y-1 border-t border-line p-4 text-sm">
           <Link to="/customer/order-track" onClick={onClose} className="block py-1.5 font-bold text-accent">Track your order</Link>
           <Link to="/site/contact-us" onClick={onClose} className="block py-1.5">Contact us</Link>
+          <Link to="/complain" onClick={onClose} className="block py-1.5">📮 Make a complaint</Link>
           {user
             ? <Link to="/customer/account" onClick={onClose} className="block py-1.5">My Account</Link>
             : <Link to="/customer/login" onClick={onClose} className="block py-1.5">Login / Sign Up</Link>}

@@ -19,7 +19,18 @@ function sms_gateway(string $to, string $msg): array {
   $num = preg_replace('/\D/', '', $to);
   if (str_starts_with($num, '0')) $num = '88' . $num;
   if (!preg_match('/^8801[3-9]\d{8}$/', $num)) return [false, 'Invalid Bangladeshi mobile number'];
-  if ($p === '' || $p === 'off') return [false, 'SMS gateway is not configured (api/config.php)'];
+  // not set in api/config.php → use the gateway saved in Admin → SMS → Settings
+  if ($p === '' || $p === 'off') {
+    $g = kv_get('settings', [])['smsGateway'] ?? [];
+    if (is_array($g) && !empty($g['provider']) && $g['provider'] !== 'off') {
+      $c = ['provider' => (string)$g['provider'], 'api_key' => (string)($g['apiKey'] ?? ''), 'sender_id' => (string)($g['senderId'] ?? '')];
+      $p = strtolower($c['provider']);
+    }
+  }
+  $num = preg_replace('/\D/', '', $to);
+  if (str_starts_with($num, '0')) $num = '88' . $num;
+  if (!preg_match('/^8801[3-9]\d{8}$/', $num)) return [false, 'Invalid Bangladeshi mobile number'];
+  if ($p === '' || $p === 'off') return [false, 'SMS gateway is not configured (Admin → SMS → Settings)'];
   $key = trim((string)($c['api_key'] ?? ''));
   if ($p === 'muthofun') {
     if ($key === '') return [false, 'SMS API key is empty'];
@@ -28,18 +39,18 @@ function sms_gateway(string $to, string $msg): array {
     if (!empty($c['sender_id'])) $payload['sender_id'] = $c['sender_id'];
     [$code, $b, $err] = http_call('https://sysadmin.muthobarta.com/api/v1/send-sms', [CURLOPT_POST => true, CURLOPT_HTTPHEADER => ["Authorization: $key", 'Content-Type: application/json'], CURLOPT_POSTFIELDS => jenc($payload)]);
     $j = json_decode($b, true) ?: [];
-    return [$code < 300 && (!isset($j['code']) || (int)$j['code'] === 200), $err ?: ($j['message'] ?? substr($b, 0, 200))];
+    return [$code >= 200 && $code < 300 && (!isset($j['code']) || (int)$j['code'] === 200), $err ?: ($j['message'] ?? substr($b, 0, 200))];
   }
   if ($p === 'bulksmsbd') {
     [$code, $b, $err] = http_call('http://bulksmsbd.net/api/smsapi', [CURLOPT_POST => true, CURLOPT_POSTFIELDS => http_build_query(['api_key' => $key, 'type' => 'text', 'number' => $num, 'senderid' => $c['sender_id'] ?? '', 'message' => $msg])]);
     $j = json_decode($b, true) ?: [];
-    return [$code < 300 && ((($j['response_code'] ?? 0) == 202) || preg_match('/202|success/i', $b)), $err ?: ($j['success_message'] ?? $j['error_message'] ?? substr($b, 0, 200))];
+    return [$code >= 200 && $code < 300 && ((($j['response_code'] ?? 0) == 202) || preg_match('/202|success/i', $b)), $err ?: ($j['success_message'] ?? $j['error_message'] ?? substr($b, 0, 200))];
   }
   if ($p === 'template') {
     $u = str_replace(['{number}', '{message}'], [urlencode($num), urlencode($msg)], (string)($c['url_template'] ?? ''));
     if (!preg_match('#^https?://#', $u)) return [false, 'url_template must start with http(s)://'];
     [$code, $b, $err] = http_call($u);
-    return [$code < 300, $err ?: substr($b, 0, 200)];
+    return [$code >= 200 && $code < 300, $err ?: substr($b, 0, 200)];
   }
   return [false, 'Unknown SMS provider'];
 }

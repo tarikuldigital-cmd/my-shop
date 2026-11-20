@@ -23,6 +23,8 @@ import { Spinner } from './components/common/ui'
 
 // Admin is split into its own chunk so customers never download it
 const AdminApp = lazy(() => import('./admin/AdminApp'))
+const ComplainNew = lazy(() => import('./pages/complain/Complain').then((m) => ({ default: m.ComplainNew })))
+const ComplainTrack = lazy(() => import('./pages/complain/Complain').then((m) => ({ default: m.ComplainTrack })))
 
 // Routes mirror the live Laravel URLs so existing links, ads and SEO keep working.
 export default function App() {
@@ -30,6 +32,10 @@ export default function App() {
     <Routes>
       <Route path="admin/*" element={<Suspense fallback={<Spinner className="py-24" />}><AdminApp /></Suspense>} />
       <Route path="lp/:slug" element={<LandingPage />} />
+      <Route path="complain" element={<Suspense fallback={<Spinner className="py-24" />}><ComplainNew /></Suspense>} />
+      <Route path="complain/track" element={<Suspense fallback={<Spinner className="py-24" />}><ComplainTrack /></Suspense>} />
+      <Route path="complain/track/:ref" element={<Suspense fallback={<Spinner className="py-24" />}><ComplainTrack key="ref" /></Suspense>} />
+      <Route path="c/:ref" element={<Suspense fallback={<Spinner className="py-24" />}><ComplainTrack key="short" /></Suspense>} />
       <Route element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="category/:slug" element={<ProductList mode="category" />} />

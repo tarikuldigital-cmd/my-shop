@@ -1,5 +1,6 @@
 /* Pure defaults — no browser APIs, so scripts/export-seed.mjs can run it in Node to build the server seed. */
 import { defaultChat } from '../lib/chatDefaults.js'
+import { cmpDefaults } from './complaintsConfig.js'
 import seedSettings from '../mocks/settings.json' with { type: 'json' }
 
 /** Fields every product has (variants: options = [{ name, values }], variants = [{ key, price, oldPrice, stock, sku }]) */
@@ -34,6 +35,7 @@ export function defaultSettings() {
       },
     },
     chat: defaultChat(),
+    complaints: cmpDefaults(),
     staff: ['Admin', 'Moderator 1', 'Moderator 2'],
   }
 }

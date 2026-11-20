@@ -10,6 +10,7 @@ import seedCategories from '../mocks/categories.json'
 import seedHome from '../mocks/home.json'
 import seedPages from '../mocks/pages.json'
 import { PRODUCT_FIELDS, defaultSettings } from './defaults'
+import { demoComplaints } from './complaintsDemo'
 import { LIVE } from '../config/env'
 export { defaultSettings }
 
@@ -38,7 +39,8 @@ export const RETURN_REASONS = ['Customer refused the parcel', 'Did not match the
 export const INC_ST = { new: 'New, follow-up pending', contacted: 'Contacted', converted: 'Converted to order', dropped: 'Dropped' }
 export const SOURCES = ['Website', 'Landing page', 'Facebook', 'Phone', 'WhatsApp', 'Messenger', 'TikTok']
 
-export const meName = () => S.settings.staff[S.me ?? 0] || 'Admin'
+/** who is acting (shown in the order timeline) — the logged-in team member */
+export const meName = () => S.account?.name || S.settings.staff[S.me ?? 0] || 'Admin'
 export const normPhone = (p = '') => String(p).replace(/[^\d]/g, '').replace(/^88/, '')
 export const validPhone = (p) => /^01[3-9]\d{8}$/.test(normPhone(p))
 
@@ -93,9 +95,17 @@ function demoIncomplete(products, now) {
   })
 }
 
+/** demo mode only: sample team so roles can be tried without a server (the live site keeps the team in the database) */
+export const demoTeam = () => [
+  { id: 1, name: 'Admin', email: 'admin@demo.com', phone: '01700000001', pass: '123456', role: 'super_admin', active: true, created: Date.now() - 30 * DAY, lastLogin: Date.now() },
+  { id: 2, name: 'Rafi (Order Manager)', email: 'rafi@demo.com', phone: '01811000000', pass: '123456', role: 'order_manager', active: true, created: Date.now() - 10 * DAY, lastLogin: 0 },
+  { id: 3, name: 'Lina (Content)', email: 'lina@demo.com', pass: '123456', role: 'content', active: true, created: Date.now() - 5 * DAY, lastLogin: 0 },
+]
+
 function seed() {
   const now = Date.now()
   const products = seedProducts.map((p) => ({ ...PRODUCT_FIELDS, ...p }))
+  const orders0 = LIVE ? [] : demoOrders(products, now)
   return {
     version: 1,
     products: LIVE ? [] : products,
@@ -103,7 +113,7 @@ function seed() {
     home: { ...seedHome, flash: { on: true, title: 'Flash Sale', endsAt: now + 3 * DAY }, sections: { flashSale: true, hotDeal: true, allProducts: true, categories: true, reviews: true, recentlyViewed: true } },
     pages: Object.fromEntries(Object.entries(seedPages).filter(([k]) => !k.startsWith('_'))),
     settings: defaultSettings(),
-    orders: LIVE ? [] : demoOrders(products, now),
+    orders: orders0,
     incomplete: LIVE ? [] : demoIncomplete(products, now),
     coupons: [{ code: 'WELCOME10', type: 'percent', value: 10, min: 1000, active: true, used: 0, expires: '' }, { code: 'SAVE200', type: 'flat', value: 200, min: 2500, active: true, used: 0, expires: '' }],
     reviews: [],
@@ -113,6 +123,8 @@ function seed() {
     nextInvoice: 100101,
     fraud: {},
     smsLog: [],
+    complaints: LIVE ? [] : demoComplaints(orders0, now),
+    team: LIVE ? [] : demoTeam(),
     lastSeen: now,
   }
 }
@@ -127,6 +139,9 @@ function load() {
       const d = defaultSettings()
       raw.settings = { ...d, ...raw.settings, tracking: { ...d.tracking, ...raw.settings?.tracking }, seo: { ...d.seo, ...raw.settings?.seo }, courier: { ...d.courier, ...raw.settings?.courier }, chat: { ...d.chat, ...raw.settings?.chat }, sms: { ...d.sms, ...raw.settings?.sms, events: { ...d.sms.events, ...raw.settings?.sms?.events }, templates: { ...d.sms.templates, ...raw.settings?.sms?.templates } } }
       raw.smsLog ||= []
+      raw.complaints ||= demoComplaints(raw.orders || [], Date.now())
+      raw.team ||= demoTeam()
+      raw.settings.complaints = { ...d.complaints, ...raw.settings.complaints, events: { ...d.complaints.events, ...raw.settings.complaints?.events }, templates: { ...d.complaints.templates, ...raw.settings.complaints?.templates }, routing: { ...d.complaints.routing, ...raw.settings.complaints?.routing } }
       raw.landings ||= []
       raw.chats ||= []
       raw.orders.forEach((o) => { o.courierLog ||= [] })
@@ -225,7 +240,7 @@ function adjustStock(items, sign) {
   }
 }
 
-export function createOrder({ name, phone, address, location, shippingArea, items, couponCode, note, source = 'Website', by = 'Customer', status = 'pending', payment, customerPhone }) {
+export function createOrder({ name, phone, address, location, shippingArea, items, couponCode, note, source = 'Website', by = 'Customer', status = 'pending', payment, customerPhone, adminDiscount = 0 }) {
   const subtotal = items.reduce((s, x) => s + x.price * x.quantity, 0)
   const shippingCharge = shippingFor(shippingArea, subtotal)
   const cc = couponCalc(couponCode, subtotal)
@@ -239,6 +254,8 @@ export function createOrder({ name, phone, address, location, shippingArea, item
     status: 'pending', courier: '', tracking: '', courierLog: [], source, note: note || '', customerPhone: customerPhone || null,
     createdAt: now, history: [{ s: 'pending', by, at: now, note: source !== 'Website' ? `${source} order` : '' }],
   }
+  const extra = Math.min(Math.max(0, Math.round(+adminDiscount || 0)), o.total)
+  if (extra) { o.adminDiscount = extra; o.total -= extra }
   if (cc.coupon) cc.coupon.used = (cc.coupon.used || 0) + 1
   adjustStock(items, -1)
   if (status !== 'pending') { o.status = status; o.history.push({ s: status, by, at: now + 1, note: '' }) }
@@ -269,6 +286,11 @@ export function setStatus(o, s, by, note = '') {
   o.history.push({ s, by, at: Date.now(), note })
   if (['confirmed', 'delivered', 'cancelled'].includes(s)) emitOrderEvent(o, s)
 }
+
+/* Same number both in Incomplete (still open) and in Pending orders → "Duplicate" on both lists. */
+const pKey = (p) => String(p || '').replace(/\D/g, '').slice(-10)
+export const pendingOrdersFor = (phone) => { const k = pKey(phone); return k ? S.orders.filter((o) => o.status === 'pending' && pKey(o.phone) === k) : [] }
+export const openIncompleteFor = (phone) => { const k = pKey(phone); return k ? S.incomplete.filter((x) => ['new', 'contacted'].includes(x.status) && pKey(x.phone) === k) : [] }
 
 export function sendToCourier(o, c, by, tracking = '', fromServer = null) {
   // Demo: generates a tracking code. Live: the PHP backend calls the courier API (lib/live.js → bookCourier).
@@ -310,6 +332,9 @@ export function riskOf(o) {
   const bad = same.filter((x) => ['cancelled', 'returned'].includes(x.status)).length
   if (bad) out.push(`${bad} earlier order(s) from this number were cancelled or returned`)
   if (same.some((x) => Math.abs(x.createdAt - o.createdAt) < DAY && ['pending', 'confirmed', 'hold'].includes(x.status))) out.push('Another open order from this number within 24 hours — possible duplicate')
+  const sf = S.fraud?.[o.phone]?.sf
+  if (sf?.reports) out.push(`Steadfast: ${sf.reports} merchant report(s) against this number`)
+  if (sf && sf.delivery != null && sf.delivery < 60) out.push(`Steadfast: only ${sf.delivery}% of this customer's parcels were delivered (${sf.cancel}% cancelled)`)
   if (!same.length && o.shippingArea === 'outside_dhaka' && o.total >= 3000) out.push('Large first order from outside Dhaka')
   return out
 }

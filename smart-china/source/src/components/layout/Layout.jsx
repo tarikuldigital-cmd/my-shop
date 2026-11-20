@@ -5,6 +5,7 @@ import Footer from './Footer'
 import { MessengerIcon, WhatsAppIcon } from '../common/Icon'
 import { useSite } from '../../context/SiteContext'
 import { track } from '../../lib/tracking'
+import { usePresence } from '../../lib/presence'
 import LiveChat from '../chat/LiveChat'
 
 function FloatingContact() {
@@ -24,6 +25,7 @@ export default function Layout() {
     const t = setTimeout(() => track('PageView', { path: pathname + search, title: document.title }), 50)
     return () => clearTimeout(t)
   }, [pathname, search])
+  usePresence(pathname + search)
   return (
     <div className="flex min-h-screen flex-col">
       <Header />

@@ -229,8 +229,9 @@ function item_summary(array $o): string {
 }
 
 function steadfast_create(array $o): array {
+  $sfInv = (string)$o['invoice'] . (!empty($o['rebookN']) ? '-R' . (int)$o['rebookN'] : ''); // Steadfast needs a unique invoice on a re-send
   $payload = [
-    'invoice' => $o['invoice'], 'recipient_name' => sf_clean((string)$o['name'], 100), 'recipient_phone' => norm_phone((string)$o['phone']),
+    'invoice' => $sfInv, 'recipient_name' => sf_clean((string)$o['name'], 100), 'recipient_phone' => norm_phone((string)$o['phone']),
     'recipient_address' => sf_clean((string)$o['address'], 250), 'cod_amount' => cod_amount($o),
     'note' => sf_clean((string)($o['courierNote'] ?? $o['note'] ?? ''), 250), 'item_description' => sf_clean(item_summary($o), 250),
     'total_lot' => array_sum(array_map(fn($i) => (int)$i['quantity'], $o['items'] ?? [])),
@@ -242,7 +243,7 @@ function steadfast_create(array $o): array {
     $msg = $j['message'] ?? (is_array($j['errors'] ?? null) ? implode(', ', array_map(fn($e) => is_array($e) ? implode(' ', $e) : (string)$e, $j['errors'])) : substr($b, 0, 160));
     fail(502, 'Steadfast: ' . $msg);
   }
-  return ['tracking' => (string)$j['consignment']['tracking_code'], 'consignmentId' => $j['consignment']['consignment_id'] ?? null, 'cod' => $payload['cod_amount'], 'status' => (string)($j['consignment']['status'] ?? 'in_review')];
+  return ['tracking' => (string)$j['consignment']['tracking_code'], 'consignmentId' => $j['consignment']['consignment_id'] ?? null, 'cod' => $payload['cod_amount'], 'status' => (string)($j['consignment']['status'] ?? 'in_review'), 'sfInvoice' => (string)$payload['invoice']];
 }
 
 /** Steadfast status → our order status (null = no change) */
@@ -256,12 +257,15 @@ function steadfast_status_map(string $st): ?string {
 }
 
 /** add one courier event (rider note / status) unless the same text is already there */
-function courier_log_add(array &$o, string $status, string $message, int $at = 0): bool {
+function courier_log_add(array &$o, string $status, string $message, int $at = 0, array $extra = []): bool {
   $message = trim($message); $status = trim($status);
   if ($message === '' && $status === '') return false;
   $o['courierLog'] ??= [];
   foreach ($o['courierLog'] as $e) if (($e['message'] ?? '') === $message && ($e['status'] ?? '') === $status) return false;
-  $o['courierLog'][] = ['at' => $at ?: now_ms(), 'status' => $status, 'message' => $message !== '' ? $message : (SF_STATUS_TEXT[$status] ?? $status)];
+  $ev = ['at' => $at ?: now_ms(), 'status' => $status, 'message' => $message !== '' ? $message : (SF_STATUS_TEXT[$status] ?? $status)];
+  if (($extra['riderName'] ?? '') !== '') $ev['riderName'] = $extra['riderName'];
+  if (($extra['riderPhone'] ?? '') !== '') $ev['riderPhone'] = $extra['riderPhone'];
+  $o['courierLog'][] = $ev;
   usort($o['courierLog'], fn($a, $b) => ($a['at'] ?? 0) <=> ($b['at'] ?? 0));
   return true;
 }
@@ -277,10 +281,10 @@ function ts_ms(?string $s): int {
  * Apply a courier status to an order: logs it, moves the order (ready → in transit → delivered / returned)
  * and returns the SMS event to send (or null).
  */
-function apply_courier_status(array &$o, string $st, string $message, string $by, int $at = 0): ?string {
+function apply_courier_status(array &$o, string $st, string $message, string $by, int $at = 0, array $extra = []): ?string {
   $st = strtolower(trim($st));
   if ($st !== '') $o['courierStatus'] = $st;
-  courier_log_add($o, $st, $message, $at);
+  courier_log_add($o, $st, $message, $at, $extra);
   if (in_array($o['status'], ['delivered', 'cancelled', 'returned', 'partial'], true)) return null;
   $to = steadfast_status_map($st);
   // picked up: Steadfast moves "in_review" → "pending" once the rider has the parcel; any rider/hub note means the same
@@ -292,7 +296,7 @@ function apply_courier_status(array &$o, string $st, string $message, string $by
 
 /** Pull the latest status + full tracking history (rider notes) from Steadfast. */
 function steadfast_refresh(array &$o): ?string {
-  $inv = rawurlencode((string)$o['invoice']);
+  $inv = rawurlencode((string)($o['sfInvoice'] ?? $o['invoice']));
   $st = steadfast_get(!empty($o['consignmentId']) ? '/status_by_cid/' . rawurlencode((string)$o['consignmentId']) : "/status_by_invoice/$inv");
   $status = (string)($st['delivery_status'] ?? '');
   // tracking steps: [{ tracking_type, text, created_at }] — wrapped differently in some API versions

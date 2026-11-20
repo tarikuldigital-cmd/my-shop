@@ -13,6 +13,9 @@ export default function Sms() {
   const [filter, setFilter] = useState('all')
   const [cfg, setCfg] = useState(() => structuredClone(S.settings.sms))
   const [secret, setSecret] = useState(getSmsSecret())
+  const [gw, setGw] = useState(() => ({ provider: 'muthofun', apiKey: '', senderId: '', ...(S.settings.smsGateway || {}) }))
+  const [showKey, setShowKey] = useState(false)
+  const saveGw = () => { S.settings.smsGateway = { provider: gw.provider, apiKey: gw.apiKey.trim(), senderId: gw.senderId.trim() }; save(); toast('SMS gateway saved') }
   const [test, setTest] = useState({ to: '', text: 'Test SMS from Smart China Gallery. Everything works ✓' })
   const log = S.smsLog.filter((x) => filter === 'all' || x.status === filter || (filter === 'failed' && x.status === 'not_configured'))
   const count = (k) => S.smsLog.filter((x) => x.status === k).length
@@ -73,7 +76,18 @@ export default function Sms() {
           <Panel title="SMS server (gateway)">
             <div className="space-y-3 text-sm">
               <label className="flex items-center gap-2"><input type="checkbox" checked={cfg.enabled} onChange={(e) => setCfg({ ...cfg, enabled: e.target.checked })} />Send order SMS automatically</label>
-              {LIVE && <p className="rounded-md bg-green-50 p-2 text-xs text-green-800">✓ SMS is sent directly by your backend. The gateway (Muthofun / BulkSMSBD) and API key go in the <code>sms</code> section of <b>api/config.php</b> — nothing to enter here.</p>}
+              {LIVE && (
+                <div className="space-y-3 rounded-lg border border-line p-3">
+                  <p className="font-semibold">SMS gateway (Order SMS + Complain Box)</p>
+                  <Field label="Provider"><select className="field" value={gw.provider} onChange={(e) => setGw({ ...gw, provider: e.target.value })}><option value="muthofun">Muthofun (MuthoBarta)</option><option value="bulksmsbd">BulkSMSBD</option><option value="off">Off</option></select></Field>
+                  <Field label="API key / token" hint={gw.provider === 'muthofun' ? 'Muthofun panel → API / Developer → copy the API token' : 'From your SMS provider panel'}>
+                    <div className="flex gap-2"><input type={showKey ? 'text' : 'password'} className="field font-mono" value={gw.apiKey} onChange={(e) => setGw({ ...gw, apiKey: e.target.value })} autoComplete="off" placeholder="Paste the API key here" /><button type="button" className="btn-outline shrink-0" onClick={() => setShowKey(!showKey)}>{showKey ? 'Hide' : 'Show'}</button></div>
+                  </Field>
+                  <Field label="Sender ID (optional)" hint="Only if your provider gave you an approved sender ID / masking name"><input className="field" value={gw.senderId} onChange={(e) => setGw({ ...gw, senderId: e.target.value })} /></Field>
+                  <button className="btn-brand" onClick={saveGw}>Save gateway</button>
+                  <p className="text-xs text-muted">The key is stored on the server and only visible to roles that can open Settings. If api/config.php already has an SMS gateway, that one is used instead.</p>
+                </div>
+              )}
               {!LIVE && <><Field label="SMS server URL" hint="The relay from server/ on your hosting, e.g. https://sms.yourdomain.com — it holds the Muthofun / BulkSMSBD key in its .env (same gateway setup as Bachelor Home).">
                 <input className="field" value={cfg.relayUrl} onChange={(e) => setCfg({ ...cfg, relayUrl: e.target.value.trim() })} placeholder="https://…" />
               </Field>

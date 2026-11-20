@@ -9,10 +9,13 @@ ini_set('display_errors', '0');
 ini_set('log_errors', '1');
 
 require __DIR__ . '/lib/core.php';
+require __DIR__ . '/lib/team.php';
 require __DIR__ . '/lib/sms.php';
 require __DIR__ . '/lib/orders.php';
 require __DIR__ . '/lib/handlers.php';
 require __DIR__ . '/lib/mirror.php';
+require __DIR__ . '/lib/presence.php';
+require __DIR__ . '/lib/complaints.php';
 
 // CORS (same-origin on cPanel; list extra origins in config.php → 'cors' for testing from another domain)
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';

@@ -10,7 +10,8 @@
   --color-accent: #ef4444;       /* light red: buttons, badges, prices */
   --color-accent-dark: #dc2626;
   --color-sale: #e11d48;
-  --color-accent-soft: #fee2e2;  /* light red tint: badges, highlights */         /* discount badge */
+  --color-accent-soft: #fee2e2;  /* light red tint: badges, highlights */
+  --color-gold: #fca5a5;         /* soft light-red highlight (admin avatars, links on dark green) */
   --color-surface: #f5f6f8;      /* page background */
   --color-ink: #1f2937;
   --color-muted: #6b7280;
