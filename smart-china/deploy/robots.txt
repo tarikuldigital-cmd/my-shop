@@ -5,4 +5,4 @@ Disallow: /track/
 Disallow: /t/
 Allow: /
 
-Sitemap: /api/v1/sitemap
+Sitemap: https://smartchina.store/api/v1/sitemap
