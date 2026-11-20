@@ -65,7 +65,7 @@ async function fromOsm(lat, lng) {
   return addressFromOsm(j)
 }
 
-export default function LocationButton({ onPick, className = '' }) {
+export default function LocationButton({ onPick, className = '', labels = {} }) {
   const [state, setState] = useState('idle') // idle | busy | done | error
   const [msg, setMsg] = useState('')
   const [found, setFound] = useState(null)
@@ -109,8 +109,8 @@ export default function LocationButton({ onPick, className = '' }) {
       <button type="button" onClick={share} disabled={state === 'busy'}
         className={`flex w-full items-center gap-2 rounded-md border px-3 py-2.5 text-left text-sm transition ${state === 'done' ? 'border-brand bg-brand/5' : 'border-line bg-white hover:border-brand'}`}>
         <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0 text-brand" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z" /></svg>
-        <span className="font-semibold">{state === 'busy' ? 'Finding your exact location…' : state === 'done' ? 'Location added ✓ · Update' : 'Share my location'}</span>
-        {state === 'idle' && <span className="text-xs text-muted">(optional)</span>}
+        <span className="font-semibold">{state === 'busy' ? (labels.busy || 'Finding your exact location…') : state === 'done' ? (labels.done || 'Location added ✓ · Update') : (labels.idle || 'Share my location')}</span>
+        {state === 'idle' && <span className="text-xs text-muted">{labels.optional || '(optional)'}</span>}
       </button>
       {msg && <p className={`mt-1 text-xs ${state === 'error' ? 'text-red-600' : 'text-green-700'}`}>{msg}</p>}
     </div>

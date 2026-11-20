@@ -1,57 +1,277 @@
 {
-  "version": 1,
-  "products": [{
-    "id": 90001, "slug": "desktop-heating-fan", "name": "Desktop Heating Fan – Instant Warm Air",
-    "sku": "DHF-1300", "brand": "", "price": 1300, "oldPrice": 0, "stock": null,
-    "shortDescription": "Compact desk heater that warms the air around you in seconds. Quiet, safe and easy to carry.",
-    "description": "<p>Cold hands at your desk? Cold feet in bed? This compact desktop heating fan blows warm air within seconds of switching on.</p><ul><li>Instant warm air after switching on</li><li>Compact – fits on a desk, table or bedside</li><li>Quiet fan, so it will not disturb work or sleep</li><li>Overheat-safe ceramic heating element</li><li>Easy plug-in use, no installation</li></ul>",
-    "specs": [{"k": "Type", "v": "Desktop heating fan"}, {"k": "Colour", "v": "Pink"}, {"k": "Use", "v": "Desk, bedside, small room"}, {"k": "Power", "v": "Plug-in (mains)"}],
-    "options": [], "variants": [],
-    "images": ["/heater/heater-glow.jpg", "/heater/heater-pink.jpg", "/heater/heater-closeup.jpg", "/heater/heater-warm.jpg", "/heater/heater-box.jpg"],
-    "categories": ["home-appliances"], "subcategories": [], "productType": "Physical", "source": "manual",
-    "featured": true, "isNew": true, "seoTitle": "Desktop Heating Fan – Instant Warmth | Smart China Gallery", "seoDescription": "Compact desktop heating fan with instant warm air. Cash on delivery all over Bangladesh.", "active": true, "sold": 0
-  }],
-  "landings": [{
-    "id": "lp-heater-1", "slug": "desktop-heating-fan", "productId": 90001, "active": true, "views": 0, "orders": 0, "endsAt": null,
-    "headline": "Winter Is Here. Keep Warm Right At Your Desk.",
-    "subheadline": "A tiny heating fan that gives you warm air in seconds — quiet, safe and easy to carry anywhere.",
-    "badge": "WINTER OFFER", "theme": "red", "ctaText": "Order now – Cash on delivery", "formTitle": "Order your heating fan today",
-    "urgencyText": "Winter offer – limited stock, order today", "stickyCta": true, "showSpecs": true, "showCombo": false, "videoUrl": "",
-    "bullets": ["Warm air within seconds of switching on", "Small enough for your desk, bedside or kitchen", "Quiet fan – no noise while you work or sleep", "Overheat-safe ceramic heating element", "Plug in and use – no installation", "Cash on delivery, check before you pay"],
-    "features": [
-      {"icon": "🔥", "title": "Instant warmth", "text": "Feel warm air in seconds"},
-      {"icon": "🚚", "title": "Delivery all over Bangladesh", "text": "Inside and outside Dhaka"},
-      {"icon": "💵", "title": "Cash on delivery", "text": "Check the product, then pay"}
+ "version": 2,
+ "products": [
+  {
+   "id": 90001,
+   "slug": "desktop-heating-fan",
+   "name": "Desktop Heating Fan (ডেস্কটপ হিটিং ফ্যান)",
+   "sku": "DHF-1300",
+   "brand": "",
+   "price": 1300,
+   "oldPrice": 0,
+   "stock": null,
+   "shortDescription": "ছোট্ট ডেস্কটপ হিটিং ফ্যান — দ্রুত গরম বাতাস, কম শব্দ, শক্তিশালী বাতাস প্রবাহ। অফিস, পড়ার টেবিল ও বাসায় ব্যবহারের জন্য।",
+   "description": "<p>শীতে কাজ বা পড়াশোনার সময় হাত-পা ঠান্ডা হয়ে যায়? এই ছোট্ট ডেস্কটপ হিটিং ফ্যান অন করার সঙ্গে সঙ্গে গরম বাতাস দেয়।</p><ul><li>দ্রুত গরম বাতাস</li><li>কম শব্দে পরিচালনা</li><li>শক্তিশালী বাতাস প্রবাহ</li><li>কমপ্যাক্ট ডেস্কটপ ডিজাইন</li><li>অফিস, পড়ার টেবিল ও বাসায় ব্যবহারযোগ্য</li></ul>",
+   "specs": [
+    {
+     "k": "ধরন",
+     "v": "ডেস্কটপ হিটিং ফ্যান"
+    },
+    {
+     "k": "রঙ",
+     "v": "পিংক"
+    },
+    {
+     "k": "ব্যবহার",
+     "v": "ডেস্ক, বিছানার পাশে, ছোট রুম"
+    },
+    {
+     "k": "পাওয়ার",
+     "v": "প্লাগ-ইন (বিদ্যুৎ সংযোগ)"
+    }
+   ],
+   "options": [],
+   "variants": [],
+   "images": [
+    "/heater/heater-glow.jpg",
+    "/heater/heater-pink.jpg",
+    "/heater/heater-closeup.jpg",
+    "/heater/heater-warm.jpg",
+    "/heater/heater-box.jpg"
+   ],
+   "categories": [
+    "home-appliances"
+   ],
+   "subcategories": [],
+   "productType": "Physical",
+   "source": "manual",
+   "featured": true,
+   "isNew": true,
+   "seoTitle": "Desktop Heating Fan – শীতের দ্রুত গরম বাতাস | Smart China Gallery",
+   "seoDescription": "দ্রুত গরম বাতাস, কম শব্দ — ডেস্কটপ হিটিং ফ্যান। সারা বাংলাদেশে ক্যাশ অন ডেলিভারি।",
+   "active": true,
+   "sold": 0,
+   "replace": true
+  }
+ ],
+ "landings": [
+  {
+   "id": "lp-heater-1",
+   "slug": "desktop-heating-fan",
+   "productId": 90001,
+   "active": true,
+   "views": 0,
+   "orders": 0,
+   "endsAt": null,
+   "headline": "শীতে অফিস, বাসা বা পড়ার টেবিলে আরামদায়ক গরম বাতাস — ছোট্ট Desktop Heating Fan",
+   "subheadline": "Instant Heat · Silent Operation · Strong Airflow — হাতের কাছেই গরম বাতাসের সুবিধা।",
+   "badge": "শীতের দিনের বিশেষ আয়োজন",
+   "theme": "red",
+   "ctaText": "অর্ডার করতে চাই",
+   "formTitle": "অর্ডার করতে নিচের ফর্মটি পূরণ করুন",
+   "urgencyText": "শীতের দিনের বিশেষ আয়োজন",
+   "stickyCta": true,
+   "showSpecs": false,
+   "showCombo": false,
+   "videoUrl": "",
+   "bullets": [
+    "দ্রুত গরম বাতাস",
+    "কম শব্দে পরিচালনা",
+    "বাসা ও অফিসে ব্যবহার",
+    "শক্তিশালী বাতাস প্রবাহ",
+    "Compact Desktop Design",
+    "পণ্য হাতে পেয়ে মূল্য পরিশোধ"
+   ],
+   "features": [
+    {
+     "icon": "🔥",
+     "title": "দ্রুত গরম বাতাস",
+     "text": "অন করলেই উষ্ণতা"
+    },
+    {
+     "icon": "🚚",
+     "title": "সারা বাংলাদেশে ডেলিভারি",
+     "text": "ঢাকার ভিতরে ও বাহিরে"
+    },
+    {
+     "icon": "💵",
+     "title": "ক্যাশ অন ডেলিভারি",
+     "text": "পণ্য হাতে পেয়ে টাকা দিন"
+    }
+   ],
+   "painTitle": "🥶 শীতের কারণে কি আপনার কাজের স্বাভাবিক গতি কমে যাচ্ছে?",
+   "painTitleSub": "",
+   "painPoints": [
+    {
+     "icon": "🥶",
+     "title": "প্রচণ্ড ঠান্ডা",
+     "text": "সকাল-রাতের কনকনে ঠান্ডায় হাত-পা জমে যায়, কিছুই ভালো লাগে না।"
+    },
+    {
+     "icon": "📚",
+     "title": "পড়াশোনায় অস্বস্তি",
+     "text": "ঠান্ডায় পড়ার টেবিলে বসে মনোযোগ ধরে রাখা কঠিন হয়ে যায়।"
+    },
+    {
+     "icon": "💻",
+     "title": "অফিসে কাজের সময়",
+     "text": "ঠান্ডা আঙুলে টাইপ করা বা কাজ করা অস্বস্তিকর ও ধীর হয়ে যায়।"
+    }
+   ],
+   "cardsTitle": "কেন পছন্দ করবেন এই Desktop Heating Fan?",
+   "cardsSub": "⭐ Product Features",
+   "featureCards": [
+    {
+     "icon": "🔇",
+     "title": "Silent Operation",
+     "text": "কম শব্দে চলে, তাই কাজ, পড়া বা ঘুমের সময় বিরক্ত করে না।",
+     "image": "/heater/heater-closeup.jpg"
+    },
+    {
+     "icon": "💨",
+     "title": "Speed Wind Force",
+     "text": "শক্তিশালী বাতাস প্রবাহে দ্রুত উষ্ণতা ছড়িয়ে দেয়।",
+     "image": "/heater/heater-pink.jpg"
+    },
+    {
+     "icon": "🔥",
+     "title": "Instant Heat",
+     "text": "অন করার সঙ্গে সঙ্গে গরম বাতাসের অনুভূতি।",
+     "image": "/heater/heater-glow.jpg"
+    },
+    {
+     "icon": "🛡️",
+     "title": "Automatic Power Off",
+     "text": "অতিরিক্ত গরম হলে নিরাপত্তার জন্য সুরক্ষা ব্যবস্থা।",
+     "image": "/heater/heater-warm.jpg"
+    },
+    {
+     "icon": "🏠",
+     "title": "Multiple Scenarios",
+     "text": "অফিস, বাসা, পড়ার টেবিল — বিভিন্ন জায়গায় সহজে ব্যবহার করা যায়।",
+     "image": "/heater/heater-pink.jpg"
+    },
+    {
+     "icon": "🌬️",
+     "title": "Air Outlet Surface",
+     "text": "হানিকম্ব গ্রিলের বড় আউটলেট দিয়ে সমানভাবে গরম বাতাস বের হয়।",
+     "image": "/heater/heater-box.jpg"
+    }
+   ],
+   "useTitle": "ব্যবহার করতে পারবেন বিভিন্ন জায়গায়",
+   "useSub": "🏠 Where To Use",
+   "useCases": [
+    {
+     "icon": "💼",
+     "title": "অফিস ডেস্কে"
+    },
+    {
+     "icon": "📚",
+     "title": "পড়ার টেবিলে"
+    },
+    {
+     "icon": "🏠",
+     "title": "বাসায়"
+    },
+    {
+     "icon": "👨‍👩‍👧",
+     "title": "বাবা-মায়ের জন্য"
+    },
+    {
+     "icon": "🖥️",
+     "title": "Work Station"
+    },
+    {
+     "icon": "🎁",
+     "title": "উপহার হিসেবে"
+    }
+   ],
+   "gift": {
+    "kicker": "🎁 উপহার হিসেবে সেরা",
+    "title": "প্রিয় বাবা-মায়ের জন্য হোক একটু বাড়তি যত্ন!",
+    "text": "শীতের সকালে বাবা-মায়ের জন্য একটু উষ্ণতা — ছোট্ট এই হিটিং ফ্যান প্রতিদিন কাজে লাগবে। প্রবাসে থাকলেও অর্ডার করুন, আমরা আপনার পরিবারের কাছে পৌঁছে দেব।",
+    "cta": "অর্ডার করতে চাই →",
+    "image": "/heater/heater-warm.jpg"
+   },
+   "offerBox": {
+    "kicker": "🔥 বিশেষ শীতকালীন অফার 🔥",
+    "title": "প্রচণ্ড শীতে উপভোগ করুন আরামদায়ক গরম বাতাস!",
+    "priceLabel": "আজকের বিশেষ অফার প্রাইস",
+    "lines": [
+     "Desktop Heating Fan",
+     "ক্যাশ অন ডেলিভারি",
+     "📦 পণ্য হাতে পেয়ে মূল্য পরিশোধ করুন",
+     "৩ দিনের মধ্যে সমস্যা জানালে রিপ্লেসমেন্ট"
     ],
-    "painTitle": "Sound familiar?", "painTitleSub": "Winter makes small things hard.",
-    "painPoints": [
-      {"icon": "🥶", "title": "Cold hands at work", "text": "Typing, studying or working is hard when your fingers are freezing."},
-      {"icon": "🛏️", "title": "Cold mornings", "text": "Getting out of a warm blanket on a winter morning feels impossible."},
-      {"icon": "⚡", "title": "Big heaters are a hassle", "text": "Large room heaters are heavy, costly to run and take space."}
-    ],
-    "cardsTitle": "Small body. Big comfort.", "cardsSub": "Everything you need from a winter heater",
-    "featureCards": [
-      {"icon": "🔥", "title": "Quick warm air", "text": "Switch on and feel the warmth almost at once — no long wait.", "image": "/heater/heater-glow.jpg"},
-      {"icon": "🎀", "title": "Cute, modern design", "text": "Soft rounded shape that looks good on any desk or shelf.", "image": "/heater/heater-pink.jpg"},
-      {"icon": "🌬️", "title": "Quiet fan", "text": "Runs gently so you can work, read or sleep in peace.", "image": "/heater/heater-closeup.jpg"},
-      {"icon": "🛡️", "title": "Safer heating", "text": "Honeycomb guard and overheat protection for everyday peace of mind.", "image": "/heater/heater-warm.jpg"},
-      {"icon": "📦", "title": "Ready in the box", "text": "Open the box, plug in, enjoy. No tools, no setup.", "image": "/heater/heater-box.jpg"}
-    ],
-    "useTitle": "Use it anywhere", "useSub": "One small heater, many places",
-    "useCases": [
-      {"icon": "💻", "title": "Office desk"}, {"icon": "🛏️", "title": "Bedside"}, {"icon": "📚", "title": "Study table"},
-      {"icon": "🚿", "title": "Near the bathroom"}, {"icon": "🍳", "title": "Kitchen corner"}, {"icon": "👶", "title": "Small rooms"}
-    ],
-    "gift": {"kicker": "A gift that is used every day", "title": "Send warmth to your parents this winter", "text": "Living abroad? Order from overseas and we deliver to your family in Bangladesh. Tick “Ordering from abroad” in the form and add your own number so we can reach you.", "cta": "Order as a gift", "image": "/heater/heater-warm.jpg"},
-    "offerBox": {"kicker": "Winter offer price", "lines": ["Desktop heating fan", "Cash on delivery", "Check the product before you pay", "3-day replacement if anything is wrong"]},
-    "testimonials": [],
-    "faq": [
-      {"q": "How fast does it heat?", "a": "You feel warm air within a few seconds of switching it on. It suits a desk, bedside or small room."},
-      {"q": "Can it heat a whole big room?", "a": "No. It is a personal desktop heater for the space around you, not a large room heater."},
-      {"q": "Is it noisy?", "a": "The fan is quiet, so it will not disturb work or sleep."},
-      {"q": "How do I order?", "a": "Fill in your name, mobile number and address, then press the order button. Our team will call you to confirm."},
-      {"q": "Can I pay on delivery?", "a": "Yes. Cash on delivery — check the product in front of the rider, then pay."},
-      {"q": "I live abroad. Can I order for my family?", "a": "Yes. Tick “Ordering from abroad”, enter your overseas number, and use your family's Bangladesh number and address."}
-    ]
-  }]
+    "note": "বিশেষ অনুরোধ: পণ্য ডেলিভারির সময় রাইডারের সামনেই চেক করে নিন। কোনো সমস্যা থাকলে সঙ্গে সঙ্গে আমাদের জানান।"
+   },
+   "testimonials": [],
+   "faq": [
+    {
+     "q": "কত দ্রুত গরম হয়?",
+     "a": "অন করার কিছুক্ষণের মধ্যেই গরম বাতাস পাওয়া যায়। এটি ডেস্ক, বিছানার পাশে বা ছোট জায়গার জন্য উপযোগী।"
+    },
+    {
+     "q": "বড় রুম গরম করতে পারবে?",
+     "a": "না। এটি আপনার আশেপাশের জায়গার জন্য ছোট ডেস্কটপ হিটার, বড় রুম হিটার নয়।"
+    },
+    {
+     "q": "শব্দ করে কি?",
+     "a": "কম শব্দে চলে, তাই কাজ বা পড়াশোনায় বিরক্ত করে না।"
+    },
+    {
+     "q": "কীভাবে অর্ডার করব?",
+     "a": "নিচের ফর্মে নাম, মোবাইল নম্বর ও ঠিকানা দিয়ে অর্ডার বাটনে চাপ দিন। আমাদের টিম ফোন করে কনফার্ম করবে।"
+    },
+    {
+     "q": "টাকা কীভাবে দেব?",
+     "a": "ক্যাশ অন ডেলিভারি — পণ্য হাতে পেয়ে রাইডারকে টাকা দিন।"
+    },
+    {
+     "q": "প্রবাস থেকে পরিবারের জন্য অর্ডার করা যাবে?",
+     "a": "হ্যাঁ। “প্রবাস থেকে অর্ডার করছেন?” টিক দিন, নিজের বিদেশি নম্বর দিন এবং পরিবারের বাংলাদেশি নম্বর ও ঠিকানা লিখুন।"
+    }
+   ],
+   "replace": true,
+   "ui": {
+    "errName": "আপনার নাম লিখুন",
+    "errPhone": "১১ ডিজিটের সঠিক মোবাইল নম্বর দিন",
+    "errAddress": "পূর্ণ ঠিকানা লিখুন (বাসা/রোড, এলাকা, থানা, জেলা)",
+    "errAbroad": "দেশের কোড সহ বিদেশি ফোন/হোয়াটসঅ্যাপ নম্বর দিন (যেমন +9665XXXXXXXX)",
+    "benefitsTitle": "কেন ভালো লাগবে",
+    "faqTitle": "সাধারণ প্রশ্ন ও উত্তর",
+    "formSub": "ফর্ম পূরণ করুন — আমরা ফোন করে অর্ডার কনফার্ম করব",
+    "soldOut": "দুঃখিত, এখন স্টকে নেই। বিস্তারিত জানতে কল করুন:",
+    "phName": "আপনার নাম",
+    "phAddress": "বাসা/রোড, এলাকা, থানা, জেলা",
+    "lName": "আপনার নাম *",
+    "lPhone": "আপনার মোবাইল নাম্বার *",
+    "lAddress": "আপনার পূর্ণ ঠিকানা *",
+    "lArea": "ডেলিভারি এলাকা",
+    "lQty": "পরিমাণ",
+    "lSub": "সাবটোটাল",
+    "lDel": "ডেলিভারি চার্জ",
+    "lTotal": "মোট",
+    "free": "ফ্রি",
+    "codNote": "ক্যাশ অন ডেলিভারি — পণ্য হাতে পেয়ে মূল্য পরিশোধ করুন",
+    "placing": "অর্ডার হচ্ছে…",
+    "confirm": "অর্ডার কনফার্ম করুন",
+    "abroadTitle": "প্রবাস থেকে অর্ডার করছেন?",
+    "abroadText": "দেশে পরিবারের জন্য উপহার পাঠাতে চাইলে টিক দিন — উপরে পরিবারের বাংলাদেশি নম্বর ও ঠিকানা দিন, এখানে আপনার নিজের নম্বর দিন।",
+    "abroadLabel": "আপনার বিদেশি ফোন / হোয়াটসঅ্যাপ নম্বর *",
+    "call": "কল করুন:",
+    "allProducts": "সব পণ্য দেখুন",
+    "only": "মাত্র",
+    "inside": "ঢাকা সিটির ভিতরে",
+    "outside": "ঢাকা সিটির বাহিরে",
+    "regular": "রেগুলার প্রাইস",
+    "loc": {
+     "idle": "আমার লোকেশন শেয়ার করুন",
+     "busy": "সঠিক লোকেশন খুঁজছি…",
+     "done": "লোকেশন যোগ হয়েছে ✓ · আবার আপডেট",
+     "optional": "(ঐচ্ছিক)"
+    }
+   }
+  }
+ ]
 }

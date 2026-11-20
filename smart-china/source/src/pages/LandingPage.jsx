@@ -74,6 +74,7 @@ export default function LandingPage() {
   const [formSeen, setFormSeen] = useState(false)
   const cd = useCountdown(lp?.endsAt)
   const th = THEMES[lp?.theme] || THEMES.green
+  const u = (k, d) => lp?.ui?.[k] ?? d // optional per-page wording (e.g. Bangla)
 
   useSeo({
     title: lp?.headline, description: lp?.subheadline, image: product?.images?.[0], noindex: !lp || lp.active === false || undefined,
@@ -128,10 +129,10 @@ export default function LandingPage() {
   const submit = async (e) => {
     e.preventDefault()
     const errs = {}
-    if (!form.name.trim()) errs.name = 'Please enter your name'
-    if (!validPhone(form.phone)) errs.phone = 'Enter a valid 11-digit mobile number'
-    if (form.address.trim().length < 10) errs.address = 'Enter your full address (house/road, area, thana, district)'
-    if (form.abroad && !/^\+?\d{8,15}$/.test(form.abroadPhone.replace(/[\s()-]/g, ''))) errs.abroadPhone = 'Enter your overseas phone / WhatsApp number with country code (e.g. +9665XXXXXXXX)'
+    if (!form.name.trim()) errs.name = u('errName', 'Please enter your name')
+    if (!validPhone(form.phone)) errs.phone = u('errPhone', 'Enter a valid 11-digit mobile number')
+    if (form.address.trim().length < 10) errs.address = u('errAddress', 'Enter your full address (house/road, area, thana, district)')
+    if (form.abroad && !/^\+?\d{8,15}$/.test(form.abroadPhone.replace(/[\s()-]/g, ''))) errs.abroadPhone = u('errAbroad', 'Enter your overseas phone / WhatsApp number with country code (e.g. +9665XXXXXXXX)')
     setErrors(errs)
     if (Object.keys(errs).length) return
     setBusy(true); setServerError('')
@@ -265,8 +266,12 @@ export default function LandingPage() {
         <section className="mx-auto max-w-2xl px-4 py-12">
           <div className="rounded-3xl border-2 border-dashed p-6 text-center shadow-lg" style={{ borderColor: th.c, background: th.soft }}>
             <p className="text-sm font-extrabold uppercase tracking-widest" style={{ color: th.c }}>{lp.offerBox.kicker || 'Special offer'}</p>
-            <p className="mt-2 text-5xl font-extrabold" style={{ color: th.c }}>{formatPrice(product.price)}</p>
+            {lp.offerBox.title && <h3 className="mt-2 text-xl font-extrabold text-gray-900">{lp.offerBox.title}</h3>}
+            {product.oldPrice > product.price && <p className="mt-3 text-sm text-gray-500">{u('regular', 'Regular price')}: <s>{formatPrice(product.oldPrice)}</s></p>}
+            {lp.offerBox.priceLabel && <p className="mt-2 text-sm font-semibold text-gray-600">{lp.offerBox.priceLabel}</p>}
+            <p className="text-5xl font-extrabold" style={{ color: th.c }}>{formatPrice(product.price)}</p>
             {lp.offerBox.lines?.length > 0 && <ul className="mx-auto mt-4 max-w-xs space-y-1.5 text-left text-sm font-semibold">{lp.offerBox.lines.map((l, i) => <li key={i} className="flex gap-2"><span style={{ color: th.c }}>✔</span>{l}</li>)}</ul>}
+            {lp.offerBox.note && <p className="mx-auto mt-4 max-w-md rounded-lg bg-white/70 p-3 text-xs leading-relaxed text-gray-600">{lp.offerBox.note}</p>}
             <div className="mt-5"><Cta /></div>
           </div>
         </section>
@@ -275,7 +280,7 @@ export default function LandingPage() {
       {/* benefits */}
       {lp.bullets?.length > 0 && (
         <section className="mx-auto max-w-3xl px-4 py-12">
-          <H>Why you will love it</H>
+          <H>{u('benefitsTitle', 'Why you will love it')}</H>
           <ul className="grid gap-3 sm:grid-cols-2">
             {lp.bullets.map((b, i) => (
               <li key={i} className="flex gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
@@ -291,7 +296,7 @@ export default function LandingPage() {
       {/* video */}
       {video && (
         <section className="bg-gray-50 px-4 py-12">
-          <div className="mx-auto max-w-3xl"><H>Watch the video</H>
+          <div className="mx-auto max-w-3xl"><H>{u('videoTitle', 'Watch the video')}</H>
             <div className="aspect-video overflow-hidden rounded-2xl shadow-lg"><iframe src={video} title="Video" className="h-full w-full" loading="lazy" allowFullScreen /></div>
           </div>
         </section>
@@ -301,7 +306,7 @@ export default function LandingPage() {
       {lp.showSpecs && specs.length > 0 && (
         <section className="mx-auto max-w-3xl px-4 py-12">
           <div className="rounded-2xl border border-gray-200 p-5">
-            <h3 className="mb-3 text-lg font-extrabold">Specifications</h3>
+            <h3 className="mb-3 text-lg font-extrabold">{u('specsTitle', 'Specifications')}</h3>
             <dl className="divide-y divide-gray-100 text-sm">{specs.map(([k, x]) => <div key={k} className="flex justify-between gap-4 py-2"><dt className="text-gray-500">{k}</dt><dd className="text-right font-semibold">{x}</dd></div>)}</dl>
           </div>
         </section>
@@ -310,7 +315,7 @@ export default function LandingPage() {
       {/* testimonials */}
       {lp.testimonials?.length > 0 && (
         <section className="px-4 py-12" style={{ background: th.soft }}>
-          <div className="mx-auto max-w-5xl"><H>What customers say</H>
+          <div className="mx-auto max-w-5xl"><H>{u('reviewsTitle', 'What customers say')}</H>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {lp.testimonials.map((t, i) => (
                 <figure key={i} className="rounded-2xl bg-white p-5 shadow-sm">
@@ -326,24 +331,24 @@ export default function LandingPage() {
 
       {/* order form */}
       <section id="order" ref={formRef} className="px-4 py-12" style={{ background: `linear-gradient(180deg, #fff, ${th.soft})` }}>
-        <div className="mx-auto max-w-4xl"><H sub={available ? 'Fill in the form — we will call you to confirm the order' : undefined}>{lp.formTitle}</H>
-          {!available ? <p className="rounded-xl bg-red-50 p-6 text-center font-semibold text-red-600">Sorry, this is out of stock right now. Call us for details: {settings.phone}</p> : (
+        <div className="mx-auto max-w-4xl"><H sub={available ? u('formSub', 'Fill in the form — we will call you to confirm the order') : undefined}>{lp.formTitle}</H>
+          {!available ? <p className="rounded-xl bg-red-50 p-6 text-center font-semibold text-red-600">{u('soldOut', 'Sorry, this is out of stock right now. Call us for details:')} {settings.phone}</p> : (
             <form onSubmit={submit} noValidate className="grid gap-6 rounded-2xl bg-white p-5 shadow-xl md:grid-cols-[1.2fr_1fr] md:p-8">
               <div className="space-y-4">
-                <label className="block"><span className="mb-1 block text-sm font-semibold">Your name *</span><input className="field" value={form.name} onChange={set('name')} autoComplete="name" placeholder="Full name" />{err('name')}</label>
-                <label className="block"><span className="mb-1 block text-sm font-semibold">Mobile number *</span><input className="field" inputMode="tel" value={form.phone} onChange={set('phone')} autoComplete="tel" placeholder="01XXXXXXXXX" />{err('phone')}</label>
-                <label className="block"><span className="mb-1 block text-sm font-semibold">Full address *</span><textarea rows={3} className="field" value={form.address} onChange={set('address')} autoComplete="street-address" placeholder="House / road, area, thana, district" />{err('address')}</label>
-                <LocationButton onPick={onLocation} />
+                <label className="block"><span className="mb-1 block text-sm font-semibold">{u('lName', 'Your name *')}</span><input className="field" value={form.name} onChange={set('name')} autoComplete="name" placeholder={u("phName", "Full name")} />{err('name')}</label>
+                <label className="block"><span className="mb-1 block text-sm font-semibold">{u('lPhone', 'Mobile number *')}</span><input className="field" inputMode="tel" value={form.phone} onChange={set('phone')} autoComplete="tel" placeholder="01XXXXXXXXX" />{err('phone')}</label>
+                <label className="block"><span className="mb-1 block text-sm font-semibold">{u('lAddress', 'Full address *')}</span><textarea rows={3} className="field" value={form.address} onChange={set('address')} autoComplete="street-address" placeholder={u("phAddress", "House / road, area, thana, district")} />{err('address')}</label>
+                <LocationButton onPick={onLocation} labels={lp.ui?.loc} />
                 <div className={`rounded-lg border-2 p-3 ${form.abroad ? 'bg-[var(--lp-soft)]' : 'border-dashed border-gray-300'}`} style={form.abroad ? { borderColor: th.c } : undefined}>
                   <label className="flex cursor-pointer items-start gap-2 text-sm"><input type="checkbox" className="mt-1 h-4 w-4" checked={form.abroad} onChange={(e) => setForm((f) => ({ ...f, abroad: e.target.checked }))} />
-                    <span><b>🌍 Ordering from abroad?</b><span className="block text-xs text-gray-500">Send it as a gift to your family in Bangladesh — put their Bangladesh number and address above, and your own number here.</span></span></label>
-                  {form.abroad && <div className="mt-3"><span className="mb-1 block text-sm font-semibold">Your overseas phone / WhatsApp *</span><input className="field" inputMode="tel" value={form.abroadPhone} onChange={set('abroadPhone')} placeholder="+966 5X XXX XXXX" />{err('abroadPhone')}</div>}
+                    <span><b>🌍 {u('abroadTitle', 'Ordering from abroad?')}</b><span className="block text-xs text-gray-500">{u('abroadText', 'Send it as a gift to your family in Bangladesh — put their Bangladesh number and address above, and your own number here.')}</span></span></label>
+                  {form.abroad && <div className="mt-3"><span className="mb-1 block text-sm font-semibold">{u('abroadLabel', 'Your overseas phone / WhatsApp *')}</span><input className="field" inputMode="tel" value={form.abroadPhone} onChange={set('abroadPhone')} placeholder="+966 5X XXX XXXX" />{err('abroadPhone')}</div>}
                 </div>
-                <fieldset><legend className="mb-1 text-sm font-semibold">Delivery area</legend>
+                <fieldset><legend className="mb-1 text-sm font-semibold">{u('lArea', 'Delivery area')}</legend>
                   <div className="grid gap-2 sm:grid-cols-2">{settings.shipping.map((a) => (
                     <label key={a.id} className={`flex cursor-pointer items-center gap-2 rounded-lg border-2 p-3 text-sm ${form.shippingArea === a.id ? 'bg-[var(--lp-soft)]' : 'border-gray-200'}`} style={form.shippingArea === a.id ? { borderColor: th.c } : undefined}>
                       <input type="radio" name="area" checked={form.shippingArea === a.id} onChange={() => setForm((f) => ({ ...f, shippingArea: a.id }))} />
-                      <span className="flex-1">{a.label}<small className="block text-xs text-gray-500">{a.eta}</small></span><b>{formatPrice(shippingFor(a.id, subtotal))}</b>
+                      <span className="flex-1">{/inside/i.test(a.id) ? u('inside', a.label) : /outside/i.test(a.id) ? u('outside', a.label) : a.label}<small className="block text-xs text-gray-500">{a.eta}</small></span><b>{formatPrice(shippingFor(a.id, subtotal))}</b>
                     </label>))}</div>
                 </fieldset>
               </div>
@@ -360,18 +365,18 @@ export default function LandingPage() {
                     <select className="field" value={vkey} onChange={(e) => setVkey(e.target.value)}>{product.variants.map((x) => <option key={x.key} value={x.key} disabled={!variantInStock(x)}>{x.key} — {formatPrice(x.price)}{variantInStock(x) ? '' : ' (out of stock)'}</option>)}</select>
                   </label>
                 )}
-                <div className="mt-3 flex items-center justify-between text-sm"><span>Quantity</span>
+                <div className="mt-3 flex items-center justify-between text-sm"><span>{u('lQty', 'Quantity')}</span>
                   <div className="flex items-center rounded-full border border-gray-300 bg-white">
                     <button type="button" className="h-8 w-8 text-lg" onClick={() => setQty(Math.max(1, qty - 1))} aria-label="Decrease">−</button><span className="w-8 text-center font-bold">{qty}</span><button type="button" className="h-8 w-8 text-lg" onClick={() => setQty(Math.min(10, qty + 1))} aria-label="Increase">+</button>
                   </div></div>
                 <dl className="mt-3 space-y-1.5 border-t border-gray-200 pt-3 text-sm">
-                  <div className="flex justify-between"><dt>Subtotal</dt><dd>{formatPrice(subtotal)}</dd></div>
-                  <div className="flex justify-between"><dt>Delivery</dt><dd>{shipping ? formatPrice(shipping) : 'Free'}</dd></div>
-                  <div className="flex justify-between border-t border-gray-200 pt-2 text-lg font-extrabold"><dt>Total</dt><dd style={{ color: th.c }}>{formatPrice(total)}</dd></div>
+                  <div className="flex justify-between"><dt>{u('lSub', 'Subtotal')}</dt><dd>{formatPrice(subtotal)}</dd></div>
+                  <div className="flex justify-between"><dt>{u('lDel', 'Delivery')}</dt><dd>{shipping ? formatPrice(shipping) : u('free', 'Free')}</dd></div>
+                  <div className="flex justify-between border-t border-gray-200 pt-2 text-lg font-extrabold"><dt>{u('lTotal', 'Total')}</dt><dd style={{ color: th.c }}>{formatPrice(total)}</dd></div>
                 </dl>
-                <p className="mt-2 text-xs text-gray-500">💵 Cash on delivery — pay when the parcel arrives</p>
+                <p className="mt-2 text-xs text-gray-500">💵 {u('codNote', 'Cash on delivery — pay when the parcel arrives')}</p>
                 {serverError && <p className="mt-2 text-sm text-red-600">{serverError}</p>}
-                <button disabled={busy} className="mt-4 w-full rounded-full bg-accent py-3.5 text-base font-extrabold text-white shadow-lg transition hover:brightness-110 disabled:opacity-60">{busy ? 'Placing order…' : `✅ Confirm order — ${formatPrice(total)}`}</button>
+                <button disabled={busy} className="mt-4 w-full rounded-full bg-accent py-3.5 text-base font-extrabold text-white shadow-lg transition hover:brightness-110 disabled:opacity-60">{busy ? u('placing', 'Placing order…') : `✅ ${u('confirm', 'Confirm order')} — ${formatPrice(total)}`}</button>
               </aside>
             </form>
           )}
@@ -379,18 +384,18 @@ export default function LandingPage() {
       </section>
 
       {/* FAQ */}
-      {lp.faq?.length > 0 && <section className="mx-auto max-w-3xl px-4 py-12"><H>Frequently asked questions</H><Faq items={lp.faq} /></section>}
+      {lp.faq?.length > 0 && <section className="mx-auto max-w-3xl px-4 py-12"><H>{u('faqTitle', 'Frequently asked questions')}</H><Faq items={lp.faq} /></section>}
 
       <footer className="px-4 pb-24 pt-8 text-center text-sm text-white md:pb-8" style={{ background: th.d }}>
         <p className="font-bold">{settings.siteName}</p>
-        <p className="mt-1 opacity-80">Call: <a href={`tel:${settings.phone}`} className="underline">{settings.phone}</a>{settings.whatsappUrl && <> · <a href={settings.whatsappUrl} className="underline" target="_blank" rel="noreferrer">WhatsApp</a></>}</p>
-        <Link to="/" className="mt-2 inline-block underline opacity-80">See all products</Link>
+        <p className="mt-1 opacity-80">{u('call', 'Call:')} <a href={`tel:${settings.phone}`} className="underline">{settings.phone}</a>{settings.whatsappUrl && <> · <a href={settings.whatsappUrl} className="underline" target="_blank" rel="noreferrer">WhatsApp</a></>}</p>
+        <Link to="/" className="mt-2 inline-block underline opacity-80">{u('allProducts', 'See all products')}</Link>
       </footer>
 
       {/* sticky mobile CTA */}
       {lp.stickyCta && available && !formSeen && (
         <div className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-between gap-3 border-t border-gray-200 bg-white/95 px-4 py-2.5 shadow-[0_-4px_16px_rgba(0,0,0,.1)] backdrop-blur md:hidden">
-          <div><p className="text-xs text-gray-500">Only</p><p className="text-lg font-extrabold leading-none" style={{ color: th.c }}>{formatPrice(unit)}</p></div>
+          <div><p className="text-xs text-gray-500">{u('only', 'Only')}</p><p className="text-lg font-extrabold leading-none" style={{ color: th.c }}>{formatPrice(unit)}</p></div>
           <Cta className="!px-6 !py-2.5 !text-sm" />
         </div>
       )}

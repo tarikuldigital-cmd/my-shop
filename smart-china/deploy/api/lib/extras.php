@@ -11,7 +11,10 @@ function ensure_extras(): void {
     if (kv_get($key)) return;
     tx(function () use ($x, $key) {
       foreach (['products', 'landings'] as $coll) foreach (($x[$coll] ?? []) as $d) {
-        if (doc_get($coll, (string)$d[KEYS[$coll]]) === null) { if ($coll === 'landings') $d['createdAt'] = now_ms(); doc_put($coll, $d); }
+        $old = doc_get($coll, (string)$d[KEYS[$coll]]);
+        $replace = !empty($d['replace']); unset($d['replace']);
+        if ($old === null) { if ($coll === 'landings') $d['createdAt'] = now_ms(); doc_put($coll, $d); }
+        elseif ($replace) { foreach (['views', 'orders', 'createdAt', 'sold', 'stock'] as $keep) if (isset($old[$keep])) $d[$keep] = $old[$keep]; doc_put($coll, $d); }
       }
       kv_set($key, 1);
     });
