@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { S, STATUS, ST_KEYS, COURIERS, DAY, HOUR, riskOf, useDb, clearDemoData } from '../store/db'
-import { Chips, HBars, Kpi, Panel, tk, startOfDay, toast } from './ui'
+import { Chips, HBars, Kpi, Panel, Pill, tk, startOfDay, toast, fdate } from './ui'
 import { LiveVisitorsPanel } from './LiveVisitors'
 
 const RANGES = [['today', 'Today'], ['yesterday', 'Yesterday'], ['7', '7 days'], ['30', '30 days'], ['all', 'All time']]
@@ -12,15 +12,22 @@ function bounds(r) {
   if (r === 'all') return [0, Infinity]
   return [t0 - (+r - 1) * DAY, Infinity]
 }
+const pct = (cur, prev) => (prev ? Math.round(((cur - prev) / prev) * 100) : cur ? 100 : 0)
+function Delta({ cur, prev, invert = false }) {
+  const d = pct(cur, prev)
+  if (!d) return <span className="text-muted">no change vs previous period</span>
+  const good = invert ? d < 0 : d > 0
+  return <span className={good ? 'text-green-600' : 'text-red-600'}>{d > 0 ? '▲' : '▼'} {Math.abs(d)}% <span className="text-muted">vs previous period</span></span>
+}
 const isLive = (o) => !['cancelled', 'returned'].includes(o.status)
 
-function BarChart({ data }) {
-  const max = Math.max(1, ...data.map((d) => d.v))
+function BarChart({ data, metric = 'v' }) {
+  const max = Math.max(1, ...data.map((d) => d[metric]))
   return (
     <div className="flex h-44 items-end gap-0.5 sm:gap-1" role="img" aria-label="Orders per day">
       {data.map((d, i) => (
         <div key={i} className="group flex min-w-0 flex-1 flex-col items-center gap-1">
-          <div className="relative w-full rounded-t bg-brand/80 transition group-hover:bg-accent" style={{ height: `${Math.max(2, (d.v / max) * 150)}px` }} title={`${d.label}: ${d.v} orders, ${tk(d.s)}`} />
+          <div className="relative w-full rounded-t bg-brand/80 transition group-hover:bg-accent" style={{ height: `${Math.max(2, (d[metric] / max) * 150)}px` }} title={`${d.label}: ${d.v} orders, ${tk(d.s)}`} />
           {(i % Math.ceil(data.length / 10) === 0 || i === data.length - 1) && <span className="text-[10px] text-muted">{d.label}</span>}
         </div>
       ))}
@@ -31,11 +38,23 @@ function BarChart({ data }) {
 export default function Dashboard() {
   useDb()
   const [range, setRange] = useState('30')
+  const [metric, setMetric] = useState('v')
   const [a, b] = bounds(range)
   const L = S.orders.filter((o) => o.createdAt >= a && o.createdAt < b)
   const live = L.filter(isLive)
   const sales = live.reduce((s, o) => s + o.total, 0)
   const by = (st) => L.filter((o) => o.status === st)
+  // previous period of equal length, for growth indicators
+  const span = range === 'all' ? 0 : b === Infinity ? Date.now() - a : b - a
+  const P = span ? S.orders.filter((o) => o.createdAt >= a - span && o.createdAt < a) : []
+  const pLive = P.filter(isLive)
+  const pSales = pLive.reduce((s, o) => s + o.total, 0)
+  // new vs returning customers (by phone)
+  const seenBefore = new Set(S.orders.filter((o) => o.createdAt < a).map((o) => o.phone))
+  const buyers = [...new Set(L.map((o) => o.phone))]
+  const returning = buyers.filter((ph) => seenBefore.has(ph)).length
+  const newCust = buyers.length - returning
+  const recent = [...S.orders].sort((x, y) => y.createdAt - x.createdAt).slice(0, 8)
   const rate = (x, y) => (y ? Math.round((x / y) * 100) : 0)
 
   const days = range === 'all' ? 30 : ['today', 'yesterday'].includes(range) ? 7 : +range
@@ -92,9 +111,16 @@ export default function Dashboard() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <Chips items={RANGES} value={range} onChange={setRange} />
+        <LiveVisitorsPanel />
       </div>
-      <LiveVisitorsPanel />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Chips items={RANGES} value={range} onChange={setRange} />
+        <div className="flex flex-wrap gap-2 text-sm">
+          <Link to="/admin/orders" className="btn-outline">Orders{by('pending').length ? ` (${by('pending').length} pending)` : ''}</Link>
+          <Link to="/admin/products" className="btn-outline">Products</Link>
+          <Link to="/admin/incomplete" className="btn-outline">Incomplete{inc.length ? ` (${inc.length})` : ''}</Link>
+        </div>
+      </div>
       {hasDemo && (
         <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
           <span>The dashboard shows <b>sample orders</b> so you can try every feature. Real orders from the website appear here too.</span>
@@ -102,16 +128,43 @@ export default function Dashboard() {
         </div>
       )}
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
-        <Kpi label="Total orders" value={L.length} sub={`${by('pending').length} pending`} />
-        <Kpi label="Total sales" value={tk(sales)} sub="excl. cancelled/returned" tone="border-accent" />
-        <Kpi label="Delivered" value={by('delivered').length} sub={tk(by('delivered').reduce((s, o) => s + o.total, 0))} tone="border-green-500" />
+        <Kpi label="Total sales" value={tk(sales)} sub={range === 'all' ? 'excl. cancelled/returned' : <Delta cur={sales} prev={pSales} />} tone="border-accent" />
+        <Kpi label="Total orders" value={L.length} sub={range === 'all' ? `${by('pending').length} pending` : <Delta cur={L.length} prev={P.length} />} />
+        <Kpi label="Avg. order value" value={tk(live.length ? sales / live.length : 0)} sub={range === 'all' ? undefined : <Delta cur={live.length ? sales / live.length : 0} prev={pLive.length ? pSales / pLive.length : 0} />} tone="border-sky-500" />
+        <Kpi label="Delivered" value={by('delivered').length} sub={`${tk(by('delivered').reduce((s, o) => s + o.total, 0))} · ${rate(by('delivered').length, L.length)}% of orders`} tone="border-green-500" />
         <Kpi label="Cancelled" value={by('cancelled').length} sub={`Cancel rate ${rate(by('cancelled').length, L.length)}%`} tone="border-red-500" />
-        <Kpi label="Avg. order value" value={tk(live.length ? sales / live.length : 0)} tone="border-sky-500" />
         <Kpi label="Returned" value={by('returned').length} sub={`Return rate ${rate(by('returned').length, by('delivered').length + by('returned').length)}%`} tone="border-rose-500" />
       </div>
       <div className="grid gap-4 xl:grid-cols-3">
-        <Panel title="Order trend" sub={`last ${days} days`} className="xl:col-span-2"><BarChart data={trend} /></Panel>
+        <Panel title="Sales overview" sub={`last ${days} days`} className="xl:col-span-2" action={<Chips items={[['v', 'Orders'], ['s', 'Revenue']]} value={metric} onChange={setMetric} />}><BarChart data={trend} metric={metric} /></Panel>
         <Panel title="Orders by status"><HBars rows={ST_KEYS.map((k) => [STATUS[k].t, by(k).length]).filter((r) => r[1])} /></Panel>
+        <Panel title="Recent orders" className="xl:col-span-2" action={<Link to="/admin/orders" className="text-sm font-semibold text-brand">View all →</Link>}>
+          {recent.length ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="text-left text-xs text-muted"><tr><th className="py-1">Order</th><th>Customer</th><th>Total</th><th>Status</th><th className="text-right">Placed</th></tr></thead>
+                <tbody>{recent.map((o) => (
+                  <tr key={o.id || o.invoice} className="border-t border-line">
+                    <td className="py-1.5 font-medium">{o.invoice}</td><td className="max-w-[9rem] truncate">{o.name}</td><td>{tk(o.total)}</td><td><Pill s={o.status} /></td><td className="text-right text-xs text-muted">{fdate(o.createdAt)}</td>
+                  </tr>))}</tbody>
+              </table>
+            </div>
+          ) : <p className="text-sm text-muted">No orders yet.</p>}
+        </Panel>
+        <Panel title="Customers" sub="this period">
+          <div className="grid grid-cols-3 gap-2 text-center text-xs">
+            <div className="rounded-md bg-surface p-3"><p className="text-2xl font-bold">{buyers.length}</p>Buyers</div>
+            <div className="rounded-md bg-surface p-3"><p className="text-2xl font-bold">{newCust}</p>New</div>
+            <div className="rounded-md bg-surface p-3"><p className="text-2xl font-bold">{returning}</p>Returning</div>
+          </div>
+        </Panel>
+        <Panel title="Low stock" sub="3 or fewer left" action={<Link to="/admin/products" className="text-sm font-semibold text-brand">Manage →</Link>}>
+          {low.length ? (
+            <ul className="divide-y divide-line text-sm">
+              {low.slice(0, 6).map((p) => <li key={p.id} className="flex items-center justify-between gap-2 py-1.5"><span className="truncate">{p.name}</span><span className={`shrink-0 font-semibold ${p.stock === 0 ? 'text-red-600' : 'text-amber-600'}`}>{p.stock === 0 ? 'Out of stock' : `${p.stock} left`}</span></li>)}
+            </ul>
+          ) : <p className="text-sm text-muted">All products are well stocked.</p>}
+        </Panel>
         <Panel title="Smart insights" className="xl:col-span-2">
           {insights.length ? (
             <ul className="space-y-2">

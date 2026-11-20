@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { LIVE } from '../config/env'
 import { liveApi } from '../lib/live'
-import { Panel, Empty } from './ui'
+import { Empty } from './ui'
 import { flag, countryName as country } from './country'
 
 const POLL = 10000
@@ -68,30 +68,33 @@ export function LiveBadge() {
   )
 }
 
-/** Full panel for the Dashboard. */
+/** Compact live-visitors box for the Dashboard header (details open in a small popover). */
 export function LiveVisitorsPanel() {
   const { data, err } = useLive()
+  const [open, setOpen] = useState(() => typeof window !== 'undefined' && window.location.hash === '#live')
   const n = data?.now ?? 0
   return (
-    <div id="live">
-      <Panel title="🟢 Live visitors" sub={LIVE ? 'Updates every 10 seconds' : 'Demo — sample data; the live site shows real visitors'}>
-        {err && !data && <p className="text-sm text-red-600">Could not load: {err}</p>}
-        <div className="grid gap-3 sm:grid-cols-3">
-          <div className="rounded-lg bg-green-50 p-4 text-center">
-            <p className="flex items-center justify-center gap-2 text-4xl font-extrabold text-green-700">
-              <span className="relative flex h-3.5 w-3.5">{n > 0 && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-60" />}<span className={`relative inline-flex h-3.5 w-3.5 rounded-full ${n > 0 ? 'bg-green-600' : 'bg-gray-400'}`} /></span>{n}
-            </p>
-            <p className="mt-1 text-xs font-medium text-green-800">on the site right now</p>
+    <div id="live" className="relative">
+      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} title="Visitors on the website"
+        className="flex items-center gap-2.5 rounded-lg border border-green-200 bg-green-50 px-3 py-1.5 text-xs text-green-900 shadow-sm hover:bg-green-100">
+        <span className="relative flex h-2.5 w-2.5">{n > 0 && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-60" />}<span className={`relative inline-flex h-2.5 w-2.5 rounded-full ${n > 0 ? 'bg-green-600' : 'bg-gray-400'}`} /></span>
+        <b className="text-sm">{n}</b> live
+        <span className="text-green-300">|</span>
+        <span>{data?.last30 ?? 0} <span className="text-green-700">in 30 min</span></span>
+        <span className="text-green-300">|</span>
+        <span>{data?.today ?? 0} <span className="text-green-700">today</span></span>
+        <span className="text-green-700">{open ? '▴' : '▾'}</span>
+      </button>
+      {open && (
+        <div className="absolute right-0 z-30 mt-2 max-h-[70vh] w-[min(92vw,26rem)] overflow-auto rounded-lg border border-line bg-white p-4 shadow-xl">
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-sm font-semibold">Live visitors</h3>
+            <span className="text-xs text-muted">{LIVE ? 'Updates every 10 seconds' : 'Demo data'}</span>
           </div>
-          <div className="rounded-lg bg-surface p-4 text-center"><p className="text-3xl font-bold">{data?.last30 ?? 0}</p><p className="mt-1 text-xs text-muted">visitors in the last 30 minutes</p></div>
-          <div className="rounded-lg bg-surface p-4 text-center"><p className="text-3xl font-bold">{data?.today ?? 0}</p><p className="mt-1 text-xs text-muted">visitors today</p></div>
-        </div>
-
-        {n === 0 ? <div className="mt-4"><Empty>No one is on the site right now</Empty></div> : (
-          <div className="mt-4 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-            <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">Who is on which page</p>
-              <ul className="divide-y divide-line rounded-md border border-line text-sm">
+          {err && !data && <p className="text-sm text-red-600">Could not load: {err}</p>}
+          {n === 0 ? <Empty>No one is on the site right now</Empty> : (
+            <div className="space-y-4 text-sm">
+              <ul className="divide-y divide-line rounded-md border border-line">
                 {data.visitors.map((v, i) => (
                   <li key={i} className="flex items-center justify-between gap-2 px-3 py-2">
                     <span className="min-w-0">
@@ -102,28 +105,20 @@ export function LiveVisitorsPanel() {
                   </li>
                 ))}
               </ul>
-            </div>
-            <div className="space-y-4 text-sm">
-              <div>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">By country</p>
-                {Object.entries(data.countries || {}).map(([cc, c]) => <div key={cc} className="flex justify-between gap-2 py-0.5"><span className="truncate">{flag(cc)} {country(cc)}</span><b>{c}</b></div>)}
-              </div>
-              <div>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">By page</p>
-                {data.pages.map((p) => <div key={p.path} className="flex justify-between gap-2 py-0.5"><span className="truncate">{PAGE_NAME(p.path)}{p.path.startsWith('/product/') && clean(p.title) ? ` · ${clean(p.title)}` : ''}</span><b>{p.count}</b></div>)}
-              </div>
-              <div>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">Devices</p>
-                {Object.entries(data.devices).filter(([, c]) => c).map(([d, c]) => <div key={d} className="flex justify-between py-0.5"><span>{DEV[d] || d}</span><b>{c}</b></div>)}
-              </div>
-              <div>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">Where they came from</p>
-                {Object.entries(data.sources).map(([s, c]) => <div key={s} className="flex justify-between py-0.5"><span className="truncate">{SRC(s)}</span><b>{c}</b></div>)}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">Countries</p>
+                  {Object.entries(data.countries || {}).map(([cc, c]) => <div key={cc} className="flex justify-between gap-2 py-0.5"><span className="truncate">{flag(cc)} {country(cc)}</span><b>{c}</b></div>)}
+                </div>
+                <div>
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">Sources</p>
+                  {Object.entries(data.sources).map(([s, c]) => <div key={s} className="flex justify-between gap-2 py-0.5"><span className="truncate">{SRC(s)}</span><b>{c}</b></div>)}
+                </div>
               </div>
             </div>
-          </div>
-        )}
-      </Panel>
+          )}
+        </div>
+      )}
     </div>
   )
 }
