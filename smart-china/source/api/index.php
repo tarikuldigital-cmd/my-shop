@@ -12,6 +12,7 @@ require __DIR__ . '/lib/core.php';
 require __DIR__ . '/lib/team.php';
 require __DIR__ . '/lib/sms.php';
 require __DIR__ . '/lib/orders.php';
+require __DIR__ . '/lib/blog.php';
 require __DIR__ . '/lib/handlers.php';
 require __DIR__ . '/lib/mirror.php';
 require __DIR__ . '/lib/presence.php';

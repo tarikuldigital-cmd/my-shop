@@ -16,6 +16,17 @@ import { track, customerData } from '../lib/tracking'
 import { useSeo } from '../lib/seo'
 import { formatPrice } from '../utils/format'
 
+/** Overseas / WhatsApp number: optional +, 8–15 digits (spaces, dashes allowed). */
+const cleanIntl = (v = '') => v.trim().replace(/[\s()-]/g, '')
+const validIntl = (v) => /^\+?\d{8,15}$/.test(cleanIntl(v))
+
+/** Delivery details remembered on this device after an order, so the next checkout opens already filled in. */
+const SAVED_KEY = 'scg_checkout_info'
+const loadSaved = () => { try { return JSON.parse(localStorage.getItem(SAVED_KEY) || 'null') || {} } catch { return {} } }
+const storeSaved = (f) => { try { localStorage.setItem(SAVED_KEY, JSON.stringify({ name: f.name, phone: f.phone, address: f.address, shippingArea: f.shippingArea, abroad: f.abroad, abroadPhone: f.abroadPhone })) } catch { /* private mode */ } }
+const forgetSaved = () => { try { localStorage.removeItem(SAVED_KEY) } catch { /* ignore */ } }
+const browserTz = () => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || '' } catch { return '' } }
+
 // Checkout: name, mobile, one full-address box (no district field) and Inside / Outside Dhaka (sets the delivery charge).
 export default function Checkout() {
   const { items, subtotal, setQty, remove, clear } = useCart()
@@ -24,7 +35,15 @@ export default function Checkout() {
   const navigate = useNavigate()
   useSeo({ title: 'Checkout', noindex: true })
 
-  const [form, setForm] = useState({ name: user?.name || '', phone: user?.phone || '', address: user?.address || '', shippingArea: settings.shipping[0].id, paymentMethod: 'cod', trx: '', sender: '', note: '' })
+  const [saved] = useState(loadSaved)
+  const [form, setForm] = useState(() => ({
+    name: user?.name || saved.name || '', phone: user?.phone || saved.phone || '', address: user?.address || saved.address || '',
+    shippingArea: settings.shipping.some((s) => s.id === saved.shippingArea) ? saved.shippingArea : settings.shipping[0].id,
+    paymentMethod: 'cod', trx: '', sender: '', note: '', abroad: !!saved.abroad, abroadPhone: saved.abroadPhone || '',
+  }))
+  const [prefilled, setPrefilled] = useState(!!(saved.name || saved.phone || saved.address))
+  // logged-in customer data can arrive after the first render
+  useEffect(() => { if (user) setForm((f) => ({ ...f, name: f.name || user.name || '', phone: f.phone || user.phone || '', address: f.address || user.address || '' })) }, [user])
   const [couponInput, setCouponInput] = useState('')
   const [coupon, setCoupon] = useState('')
   const [couponMsg, setCouponMsg] = useState(null)
@@ -43,11 +62,11 @@ export default function Checkout() {
   useEffect(() => {
     if (done.current || !validPhone(form.phone) || !items.length) return
     const t = setTimeout(() => saveCheckoutDraft(draftId.current, {
-      name: form.name.trim(), phone: form.phone, address: form.address.trim(), shippingArea: form.shippingArea,
+      name: form.name.trim(), phone: form.phone, address: form.address.trim(), shippingArea: form.shippingArea, abroadPhone: form.abroad ? cleanIntl(form.abroadPhone) : '',
       items: items.map(({ productId, slug, name, variant, price, quantity }) => ({ productId, slug, name, variant, price, quantity })), subtotal,
     }), 800)
     return () => clearTimeout(t)
-  }, [form.name, form.phone, form.address, form.shippingArea, items, subtotal])
+  }, [form.name, form.phone, form.address, form.shippingArea, form.abroad, form.abroadPhone, items, subtotal])
 
   // "Share my location": fill the address from GPS and pick Inside / Outside Dhaka (customer can still edit both)
   const onLocation = ({ address, location, insideDhaka }) => setForm((f) => ({
@@ -83,6 +102,7 @@ export default function Checkout() {
     if (!form.name.trim()) errs.name = 'Please enter your name'
     if (!validPhone(form.phone)) errs.phone = 'Enter a valid 11-digit mobile number (01XXXXXXXXX)'
     if (form.address.trim().length < 10) errs.address = 'Enter your full address (house/road, area, thana, district)'
+    if (form.abroad && !validIntl(form.abroadPhone)) errs.abroadPhone = 'Enter the overseas phone / WhatsApp number with its country code (e.g. +9665XXXXXXXX)'
     if (form.paymentMethod !== 'cod' && (!validPhone(form.sender) || form.trx.trim().length < 6)) errs.trx = 'Enter the number you paid from and a valid TrxID'
     setErrors(errs)
     if (Object.keys(errs).length) return
@@ -91,9 +111,10 @@ export default function Checkout() {
       done.current = true
       const eventId = `${Date.now()}.${Math.random().toString(36).slice(2, 9)}` // shared with Meta CAPI for deduplication
       const order = await placeOrder({
-        ...form, couponCode: coupon, eventId,
+        ...form, abroadPhone: form.abroad ? cleanIntl(form.abroadPhone) : '', tz: browserTz(), couponCode: coupon, eventId,
         items: items.map(({ productId, slug, name, variant, price, quantity }) => ({ productId, slug, name, variant, price, quantity })),
       })
+      storeSaved(form)
       await discardCheckoutDraft(draftId.current)
       track('Purchase', { items: order.items.map((i) => { const c = items.find((x) => x.productId === i.productId && (x.variant || '') === (i.variant || '')); return { ...i, sku: i.sku || c?.sku, category: c?.category } }), value: order.total, orderId: order.invoice, eventId, customer: customerData(form, settings.shipping.find((x) => x.id === form.shippingArea)?.label, user?.email) })
       clear()
@@ -124,7 +145,8 @@ export default function Checkout() {
       <form onSubmit={submit} className="grid gap-6 lg:grid-cols-[1.2fr_1fr]" noValidate>
         <section className="card p-5">
           <h2 className="mb-1 font-bold">Delivery details</h2>
-          <p className="mb-4 text-xs text-muted">Enter your name, mobile number and full address to place the order.</p>
+          <p className="mb-3 text-xs text-muted">Enter your name, mobile number and full address to place the order.</p>
+          {prefilled && <p className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-md bg-green-50 px-3 py-2 text-xs text-green-800">✓ Your details from the last order are filled in — check them and order.<button type="button" className="font-semibold underline" onClick={() => { forgetSaved(); setPrefilled(false); setForm((f) => ({ ...f, name: user?.name || '', phone: user?.phone || '', address: user?.address || '', abroad: false, abroadPhone: '' })) }}>Clear and start fresh</button></p>}
           <div className="space-y-4">
             <div>
               <label className="field-label" htmlFor="name">Your name *</label>
@@ -132,9 +154,23 @@ export default function Checkout() {
               {err('name')}
             </div>
             <div>
-              <label className="field-label" htmlFor="phone">Mobile number *</label>
+              <label className="field-label" htmlFor="phone">{form.abroad ? 'Bangladesh mobile number (of the person who will receive the parcel) *' : 'Mobile number *'}</label>
               <input id="phone" className="field" value={form.phone} onChange={set('phone')} inputMode="tel" placeholder="01XXXXXXXXX" autoComplete="tel" />
               {err('phone')}
+            </div>
+            <div className={`rounded-lg border-2 p-3 transition ${form.abroad ? 'border-accent bg-accent/5' : 'border-dashed border-line'}`}>
+              <label className="flex cursor-pointer items-start gap-2 text-sm">
+                <input type="checkbox" className="mt-1 h-4 w-4 accent-[var(--color-accent)]" checked={form.abroad} onChange={(e) => setForm((f) => ({ ...f, abroad: e.target.checked }))} />
+                <span><b>🌍 Are you ordering from abroad?</b><span className="block text-xs text-muted">Tick this if you are ordering from overseas for family in Bangladesh — put their Bangladesh number above and your own overseas number below.</span></span>
+              </label>
+              {form.abroad && (
+                <div className="mt-3">
+                  <label className="field-label" htmlFor="abroadPhone">Your overseas phone or WhatsApp number *</label>
+                  <input id="abroadPhone" name="abroadPhone" type="tel" className="field" value={form.abroadPhone} onChange={set('abroadPhone')} inputMode="tel" placeholder="+966 5X XXX XXXX" autoComplete="section-abroad tel" />
+                  <p className="mt-1 text-xs text-muted">Include the country code (e.g. Saudi +966, UAE +971, Oman +968, Malaysia +60, UK +44).</p>
+                  {err('abroadPhone')}
+                </div>
+              )}
             </div>
             <div>
               <label className="field-label" htmlFor="address">Full address *</label>

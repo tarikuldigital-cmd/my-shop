@@ -101,7 +101,7 @@ async function printInvoices(orders) {
         <div><h2 style="margin:0">${esc(st.siteName)}</h2><div>${esc(st.address)}</div><div>Hotline: ${esc(st.phone)}</div></div>
         <div style="text-align:right"><h3 style="margin:0">INVOICE</h3><div><b>${o.invoice}</b></div><div>${new Date(o.createdAt).toLocaleDateString('en-GB')}</div>${o.tracking ? `<div>${COURIERS[o.courier]?.t || ''}: ${esc(o.tracking)}</div>` : ''}</div>
       </div>
-      <hr/><div><b>Bill to:</b> ${esc(o.name)} · ${esc(o.phone)}<br/>${esc(o.address)}</div>
+      <hr/><div><b>Bill to:</b> ${esc(o.name)} · ${esc(o.phone)}${o.abroadPhone ? ` · Overseas: ${esc(o.abroadPhone)}` : ''}<br/>${esc(o.address)}</div>
       <table style="width:100%;border-collapse:collapse;margin-top:12px" border="1" cellpadding="6">
         <thead><tr style="background:#f3f4f6"><th style="text-align:left">Product</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>${rows(o)}</tbody>
       </table>
@@ -115,8 +115,8 @@ async function printInvoices(orders) {
 }
 
 function exportCSV(list) {
-  const head = ['Invoice', 'Date', 'Name', 'Phone', 'Address', 'Area', 'Products', 'Subtotal', 'Delivery', 'Discount', 'Total', 'Status', 'Payment', 'Payment status', 'TrxID', 'Courier', 'Tracking', 'Source', 'Country (IP)']
-  const rows = list.map((o) => [o.invoice, new Date(o.createdAt).toISOString().slice(0, 16).replace('T', ' '), o.name, o.phone, o.address, o.shippingArea, o.items.map((i) => `${i.name}${i.variant ? ` (${i.variant})` : ''} x${i.quantity}`).join('; '), o.subtotal, o.shippingCharge, (o.discount || 0) + (o.adminDiscount || 0), o.total, STATUS[o.status].t, PAY[o.payment?.method || 'cod'], PAY_ST[o.payment?.status || 'unpaid'], o.payment?.trx || '', o.courier ? COURIERS[o.courier].t : '', o.tracking, o.source, o.country ? countryName(o.country) : ''])
+  const head = ['Invoice', 'Date', 'Name', 'Phone', 'Address', 'Area', 'Products', 'Subtotal', 'Delivery', 'Discount', 'Total', 'Status', 'Payment', 'Payment status', 'TrxID', 'Courier', 'Tracking', 'Source', 'Overseas phone/WhatsApp', 'Country (IP)']
+  const rows = list.map((o) => [o.invoice, new Date(o.createdAt).toISOString().slice(0, 16).replace('T', ' '), o.name, o.phone, o.address, o.shippingArea, o.items.map((i) => `${i.name}${i.variant ? ` (${i.variant})` : ''} x${i.quantity}`).join('; '), o.subtotal, o.shippingCharge, (o.discount || 0) + (o.adminDiscount || 0), o.total, STATUS[o.status].t, PAY[o.payment?.method || 'cod'], PAY_ST[o.payment?.status || 'unpaid'], o.payment?.trx || '', o.courier ? COURIERS[o.courier].t : '', o.tracking, o.source, o.abroadPhone || '', o.country ? countryName(o.country) : ''])
   const csv = '﻿' + [head, ...rows].map((r) => r.map((v) => { v = String(v ?? ''); return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v }).join(',')).join('\n')
   const a = document.createElement('a')
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
@@ -178,7 +178,7 @@ function DetailRow({ label, children }) {
 export const orderTotal = (o) => Math.max(0, (o.subtotal || 0) + (o.shippingCharge || 0) - (o.discount || 0) - (o.adminDiscount || 0))
 
 function OrderEdit({ o, focus, onClose }) {
-  const [f, setF] = useState({ name: o.name || '', phone: o.phone || '', address: o.address || '', shippingArea: o.shippingArea || 'inside_dhaka', note: o.note || '', shippingCharge: o.shippingCharge ?? 0, disc: o.adminDiscount || 0, discType: 'tk' })
+  const [f, setF] = useState({ name: o.name || '', phone: o.phone || '', address: o.address || '', shippingArea: o.shippingArea || 'inside_dhaka', abroadPhone: o.abroadPhone || '', note: o.note || '', shippingCharge: o.shippingCharge ?? 0, disc: o.adminDiscount || 0, discType: 'tk' })
   const [err, setErr] = useState('')
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value })
   const base = (o.subtotal || 0) + (+f.shippingCharge || 0) - (o.discount || 0)
@@ -190,11 +190,14 @@ function OrderEdit({ o, focus, onClose }) {
     if (!f.name.trim()) return setErr('Enter the name')
     if (!validPhone(f.phone)) return setErr('Enter a valid 11-digit mobile number')
     if (f.address.trim().length < 5) return setErr('Enter the address')
+    const ab = f.abroadPhone.replace(/[\s()-]/g, '')
+    if (ab && !/^\+?\d{8,15}$/.test(ab)) return setErr('Enter the overseas number with its country code')
     const changes = []
     const upd = (k, v, label) => { if ((o[k] ?? '') !== v) { o[k] = v; changes.push(label) } }
     upd('name', f.name.trim(), 'Name')
     upd('phone', normPhone(f.phone), 'Phone')
     upd('address', f.address.trim(), 'Address')
+    upd('abroadPhone', ab, 'Overseas number')
     upd('note', f.note.trim(), 'Note')
     if (o.shippingArea !== f.shippingArea) { o.shippingArea = f.shippingArea; changes.push('Delivery area') }
     if ((o.shippingCharge ?? 0) !== Math.max(0, +f.shippingCharge || 0)) { o.shippingCharge = Math.max(0, +f.shippingCharge || 0); changes.push(`Delivery charge ৳${o.shippingCharge}`) }
@@ -215,6 +218,7 @@ function OrderEdit({ o, focus, onClose }) {
         <Field label="Delivery area"><select className="field" value={f.shippingArea} onChange={(e) => { const a = e.target.value; setF({ ...f, shippingArea: a, shippingCharge: shippingFor(a, o.subtotal) }) }}>{S.settings.shipping.map((x) => <option key={x.id} value={x.id}>{x.labelEn} (৳{x.charge})</option>)}</select></Field>
         <Field label="Delivery charge (৳)"><input className="field" type="number" min={0} value={f.shippingCharge} onChange={set('shippingCharge')} /></Field>
       </div>
+      <Field label="Overseas phone / WhatsApp (optional)"><input className="field" type="tel" value={f.abroadPhone} onChange={set('abroadPhone')} placeholder="+966…" /></Field>
       <Field label="Customer note"><input className="field" value={f.note} onChange={set('note')} /></Field>
 
       <div className={`rounded-lg border-2 p-3 ${focus === 'discount' ? 'border-accent bg-accent/5' : 'border-line bg-surface/60'}`}>
@@ -291,7 +295,13 @@ function OrderDrawer({ order: o, onClose }) {
             <button type="button" className="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-bold text-brand shadow hover:bg-gold" onClick={() => setEditing('info')}>✏️ Edit</button>
           </div>
           <div className="space-y-3 p-4">
-            <ContactRow label="Phone" phone={o.phone} wa={waNum(o.phone)} msg={confirmMsg} />
+            <ContactRow label={o.abroadPhone ? 'Phone (receiver in Bangladesh)' : 'Phone'} phone={o.phone} wa={waNum(o.phone)} msg={confirmMsg} />
+            {o.abroadPhone && (
+              <div>
+                <ContactRow label="🌍 Overseas buyer" phone={o.abroadPhone} wa={o.abroadPhone.replace(/\D/g, '')} msg={confirmMsg} highlight />
+                <p className="mt-1 px-1 text-xs text-muted">Ordered from abroad — the phone above is the receiver in Bangladesh</p>
+              </div>
+            )}
             <div className="flex items-start gap-3 rounded-lg border border-line bg-surface/60 px-3 py-2.5">
               <Icon name="location" className="mt-0.5 h-5 w-5 shrink-0 text-brand" />
               <div className="min-w-0 flex-1">
@@ -610,7 +620,7 @@ export default function Orders() {
                 <tr key={o.id} className={`cursor-pointer hover:bg-surface ${sel.has(o.id) ? 'bg-brand/5' : ''}`} onClick={() => setOpenId(o.id)}>
                   <td className="p-3" onClick={(e) => e.stopPropagation()}><input type="checkbox" checked={sel.has(o.id)} onChange={(e) => { const s = new Set(sel); e.target.checked ? s.add(o.id) : s.delete(o.id); setSel(s) }} aria-label={`Select ${o.invoice}`} /></td>
                   <td className="p-3"><b>{o.invoice}</b> {risk.length > 0 && <Pill tone="red">Risk</Pill>}{o.demo && <Pill tone="gray">sample</Pill>}<div className="text-xs text-muted">{fdate(o.createdAt)}</div></td>
-                  <td className="p-3"><span className="flex items-center gap-1.5">{o.name}<span onClick={(e) => e.stopPropagation()}><CopyBtn text={parcelText(o)} label="Name, phone, address & COD copied" title="Copy name, phone, address & COD" /></span></span>{o.country && <span className={`ml-1 inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-semibold ${o.country === 'BD' ? 'border-line text-muted' : 'border-accent/40 bg-accent/10 text-accent'}`} title={`Order placed from: ${countryName(o.country)} (by IP)`}>{flag(o.country)} {countryName(o.country)}</span>}<div className="max-w-52 truncate text-xs text-muted">{o.address} · {o.items.reduce((n, i) => n + i.quantity, 0)} products</div></td>
+                  <td className="p-3"><span className="flex items-center gap-1.5">{o.name}<span onClick={(e) => e.stopPropagation()}><CopyBtn text={parcelText(o)} label="Name, phone, address & COD copied" title="Copy name, phone, address & COD" /></span></span>{o.abroadPhone && <span className="ml-1 rounded bg-accent/15 px-1.5 py-0.5 text-[10px] font-semibold text-accent" title={`Overseas: ${o.abroadPhone}`}>🌍 Abroad</span>}{o.country && <span className={`ml-1 inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-semibold ${o.country === 'BD' ? 'border-line text-muted' : 'border-accent/40 bg-accent/10 text-accent'}`} title={`Order placed from: ${countryName(o.country)} (by IP)`}>{flag(o.country)} {countryName(o.country)}</span>}<div className="max-w-52 truncate text-xs text-muted">{o.address} · {o.items.reduce((n, i) => n + i.quantity, 0)} products</div></td>
                   <td className="whitespace-nowrap p-3">{o.phone} <a href={`https://wa.me/${waNum(o.phone)}`} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="inline-block align-middle text-green-600" aria-label="WhatsApp"><WhatsAppIcon className="h-4 w-4" /></a>{o.status === 'pending' && openIncompleteFor(o.phone).length > 0 && <div className="mt-1"><span className="rounded bg-red-600 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white" title="This number is also in Incomplete orders">Duplicate</span> <span className="text-xs text-muted">Also in Incomplete</span></div>}</td>
                   <td className="p-3" onClick={(e) => e.stopPropagation()}><FraudBadge phone={o.phone} /></td>
                   <td className="p-3"><Pill s={o.status} /></td>

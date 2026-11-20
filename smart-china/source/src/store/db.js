@@ -118,6 +118,7 @@ function seed() {
     coupons: [{ code: 'WELCOME10', type: 'percent', value: 10, min: 1000, active: true, used: 0, expires: '' }, { code: 'SAVE200', type: 'flat', value: 200, min: 2500, active: true, used: 0, expires: '' }],
     reviews: [],
     landings: [],
+    posts: [],
     chats: [],
     messages: [],
     nextInvoice: 100101,
@@ -143,6 +144,7 @@ function load() {
       raw.team ||= demoTeam()
       raw.settings.complaints = { ...d.complaints, ...raw.settings.complaints, events: { ...d.complaints.events, ...raw.settings.complaints?.events }, templates: { ...d.complaints.templates, ...raw.settings.complaints?.templates }, routing: { ...d.complaints.routing, ...raw.settings.complaints?.routing } }
       raw.landings ||= []
+      raw.posts ||= []
       raw.chats ||= []
       raw.orders.forEach((o) => { o.courierLog ||= [] })
       return raw
@@ -240,7 +242,7 @@ function adjustStock(items, sign) {
   }
 }
 
-export function createOrder({ name, phone, address, location, shippingArea, items, couponCode, note, source = 'Website', by = 'Customer', status = 'pending', payment, customerPhone, adminDiscount = 0 }) {
+export function createOrder({ name, phone, address, location, shippingArea, items, couponCode, note, abroadPhone, source = 'Website', by = 'Customer', status = 'pending', payment, customerPhone, adminDiscount = 0 }) {
   const subtotal = items.reduce((s, x) => s + x.price * x.quantity, 0)
   const shippingCharge = shippingFor(shippingArea, subtotal)
   const cc = couponCalc(couponCode, subtotal)
@@ -251,7 +253,7 @@ export function createOrder({ name, phone, address, location, shippingArea, item
     name, phone: normPhone(phone), address, ...(location ? { location } : {}), shippingArea, items, subtotal, shippingCharge,
     discount: cc.discount || 0, coupon: cc.coupon?.code || '', total: subtotal + shippingCharge - (cc.discount || 0),
     payment: payment || { method: 'cod', status: 'unpaid' },
-    status: 'pending', courier: '', tracking: '', courierLog: [], source, note: note || '', customerPhone: customerPhone || null,
+    status: 'pending', courier: '', tracking: '', courierLog: [], source, note: note || '', abroadPhone: String(abroadPhone || '').slice(0, 20), customerPhone: customerPhone || null,
     createdAt: now, history: [{ s: 'pending', by, at: now, note: source !== 'Website' ? `${source} order` : '' }],
   }
   const extra = Math.min(Math.max(0, Math.round(+adminDiscount || 0)), o.total)

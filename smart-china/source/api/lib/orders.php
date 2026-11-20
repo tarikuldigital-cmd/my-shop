@@ -89,10 +89,14 @@ function create_order_public(array $in): array {
   $phone = norm_phone((string)($in['phone'] ?? ''));
   $address = s($in['address'] ?? '', 500);
   $note = s($in['note'] ?? '', 500);
+  $abroad = preg_replace('/[\s()-]/', '', (string)($in['abroadPhone'] ?? ''));
+  if ($abroad !== '' && !preg_match('/^\+?\d{8,15}$/', $abroad)) fail(422, 'Enter the overseas phone / WhatsApp number with its country code');
   if ($name === '') fail(422, 'Please enter your name');
   if (!valid_phone($phone)) fail(422, 'Enter a valid 11-digit mobile number');
   if (mb_strlen($address) < 10) fail(422, 'Enter your full address (house/road, area, thana, district)');
   $reqItems = $in['items'] ?? [];
+  // Where the customer ordered from (by IP; falls back to browser time zone). Looked up before the DB transaction.
+  $country = function_exists('visitor_country') ? visitor_country(s((string)($in['tz'] ?? ''), 60)) : '';
   if (!is_array($reqItems) || !$reqItems || count($reqItems) > 40) fail(422, 'Your cart is empty');
 
   $ip = client_ip();
@@ -113,7 +117,7 @@ function create_order_public(array $in): array {
   $landing = $source === 'Landing page' && preg_match('/^[a-z0-9-]{1,80}$/', (string)($in['landing'] ?? '')) ? (string)$in['landing'] : '';
   $cust = auth_user('customer');
 
-  $order = tx(function () use ($reqItems, $settings, $in, $name, $phone, $address, $note, $payment, $source, $landing, $cust) {
+  $order = tx(function () use ($reqItems, $settings, $in, $name, $phone, $address, $note, $abroad, $country, $payment, $source, $landing, $cust) {
     $items = []; $subtotal = 0; $touched = [];
     foreach ($reqItems as $it) {
       $qty = (int)($it['quantity'] ?? 1);
@@ -144,7 +148,7 @@ function create_order_public(array $in): array {
       ...(($loc = clean_location($in['location'] ?? null)) ? ['location' => $loc] : []),
       'shippingArea' => $areaId, 'items' => $items, 'subtotal' => $subtotal, 'shippingCharge' => $ship, 'discount' => $disc,
       'coupon' => $cc['coupon']['code'] ?? '', 'total' => $subtotal + $ship - $disc, 'payment' => $payment, 'status' => 'pending',
-      'courier' => '', 'tracking' => '', 'courierLog' => [], 'source' => $source, 'note' => $note, 'customerPhone' => $cust['phone'] ?? null,
+      'courier' => '', 'tracking' => '', 'courierLog' => [], 'source' => $source, 'note' => $note, 'abroadPhone' => $abroad, 'country' => $country, 'customerPhone' => $cust['phone'] ?? null,
       'createdAt' => $now, 'history' => [['s' => 'pending', 'by' => 'Customer', 'at' => $now, 'note' => $source !== 'Website' ? "$source order" : '']],
       'trackCode' => make_track_code($inv),
     ];
@@ -229,11 +233,13 @@ function item_summary(array $o): string {
 }
 
 function steadfast_create(array $o): array {
+  $sfNote = trim((string)($o['courierNote'] ?? $o['note'] ?? ''));
+  if (!empty($o['abroadPhone'])) $sfNote = trim($sfNote . ' | Ordered from abroad: ' . $o['abroadPhone']);
   $sfInv = (string)$o['invoice'] . (!empty($o['rebookN']) ? '-R' . (int)$o['rebookN'] : ''); // Steadfast needs a unique invoice on a re-send
   $payload = [
     'invoice' => $sfInv, 'recipient_name' => sf_clean((string)$o['name'], 100), 'recipient_phone' => norm_phone((string)$o['phone']),
     'recipient_address' => sf_clean((string)$o['address'], 250), 'cod_amount' => cod_amount($o),
-    'note' => sf_clean((string)($o['courierNote'] ?? $o['note'] ?? ''), 250), 'item_description' => sf_clean(item_summary($o), 250),
+    'note' => sf_clean($sfNote, 250), 'item_description' => sf_clean(item_summary($o), 250),
     'total_lot' => array_sum(array_map(fn($i) => (int)$i['quantity'], $o['items'] ?? [])),
   ];
   [$code, $b, $err] = http_call(sf_base() . '/create_order', [CURLOPT_POST => true, CURLOPT_HTTPHEADER => steadfast_keys(), CURLOPT_POSTFIELDS => jenc($payload)]);

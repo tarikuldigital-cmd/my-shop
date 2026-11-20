@@ -9,6 +9,7 @@ function routes(): array {
     ['GET', 'health', fn() => out(['ok' => true, 'time' => time(), 'db' => (bool)q('SELECT 1')->fetch()])],
     ['GET', 'bootstrap', 'h_bootstrap'],
     ['GET', 'sitemap', 'h_sitemap'],
+    ...blog_routes(),
     ['GET', 'geo/reverse', 'h_geo_reverse'],
     ['GET', 'products/([a-zA-Z0-9%._-]{1,200})/details', 'h_product_details'],
     ['POST', 'orders', 'h_place_order'],
@@ -151,7 +152,7 @@ function h_draft(): void {
   }
   if (!$items) out(['ok' => false]);
   $d = doc_get('incomplete', $id) ?? ['id' => $id, 'at' => now_ms(), 'status' => 'new', 'log' => []];
-  $d = array_merge($d, ['name' => s($b['name'] ?? '', 120), 'phone' => $phone, 'address' => s($b['address'] ?? '', 500), 'shippingArea' => s($b['shippingArea'] ?? '', 40),
+  $d = array_merge($d, ['name' => s($b['name'] ?? '', 120), 'phone' => $phone, 'address' => s($b['address'] ?? '', 500), 'shippingArea' => s($b['shippingArea'] ?? '', 40), 'abroadPhone' => preg_replace('/[^\d+]/', '', s($b['abroadPhone'] ?? '', 20)),
     'items' => $items, 'subtotal' => array_sum(array_map(fn($i) => $i['price'] * $i['quantity'], $items)), 'updated' => now_ms()]);
   doc_put('incomplete', $d);
   out(['ok' => true]);
@@ -411,7 +412,7 @@ function h_upload(): void {
   $f = $_FILES['file'] ?? null;
   if (!$f || $f['error'] !== UPLOAD_ERR_OK) fail(422, 'Upload failed (size limit: ' . ini_get('upload_max_filesize') . ')');
   if ($f['size'] > 10 * 1024 * 1024) fail(422, 'Images must be smaller than 10MB');
-  $kind = (string)($_POST['kind'] ?? 'product'); if (!in_array($kind, ['product', 'page', 'banner', 'category', 'landing', 'settings'], true)) $kind = 'product';
+  $kind = (string)($_POST['kind'] ?? 'product'); if (!in_array($kind, ['product', 'page', 'banner', 'category', 'landing', 'settings', 'blog'], true)) $kind = 'product';
   $info = @getimagesize($f['tmp_name']);
   $ext = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp', 'image/gif' => 'gif'][$info['mime'] ?? ''] ?? null;
   if (!$ext) fail(422, 'Only JPG, PNG, WebP or GIF images are allowed');
@@ -616,6 +617,8 @@ function h_sitemap(): void {
   foreach (doc_all('categories') as $c) if (!empty($c['slug'])) $u[] = [$base . '/category/' . rawurlencode($c['slug']), 'weekly', '0.7'];
   foreach (doc_all('products') as $p) if (($p['active'] ?? true) !== false && !empty($p['slug'])) $u[] = [$base . '/product/' . rawurlencode($p['slug']), 'weekly', '0.8'];
   foreach (doc_all('landings') as $l) if (($l['active'] ?? true) !== false && !empty($l['slug'])) $u[] = [$base . '/lp/' . rawurlencode($l['slug']), 'weekly', '0.6'];
+  $u[] = [$base . '/blog', 'daily', '0.6'];
+  foreach (posts_all() as $p) if (post_live($p)) $u[] = [$base . '/blog/' . rawurlencode($p['slug']), 'weekly', '0.6'];
   header('Content-Type: application/xml; charset=utf-8');
   header('Cache-Control: public, max-age=600');
   echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n" . '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";

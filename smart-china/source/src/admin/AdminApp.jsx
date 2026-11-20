@@ -24,6 +24,7 @@ import Complaints from './Complaints'
 import { ROLES, ROUTE_PERM, can, homePath, initials, permsOf } from './roles'
 import Sms from './Sms'
 import Landings from './Landings'
+import Blog from './Blog'
 import LiveChat from './LiveChat'
 import { storeUrl, LIVE } from '../config/env'
 import { adminLogin, adminLogout, resumeAdmin, syncState, onSyncState, flush } from '../lib/live'
@@ -71,7 +72,7 @@ function Login({ onOk }) {
 const NAV = [
   ['Orders', [['', 'Dashboard'], ['orders', 'Orders', () => S.orders.filter((o) => o.status === 'pending').length], ['incomplete', 'Incomplete orders', () => S.incomplete.filter((x) => x.status === 'new').length]]],
   ['Customers', [['customers', 'Customers'], ['complaints', 'Complain Box', () => (S.complaints || []).filter((c) => c.unread || c.status === 'submitted').length], ['chat', 'Live chat', () => S.chats.filter((c) => Date.now() - (c.updated || c.at) < 864e5).length], ['sms', 'SMS', () => S.smsLog.filter((x) => x.status !== 'sent' && Date.now() - x.at < 864e5).length], ['messages', 'Messages', () => S.messages.filter((m) => !m.read).length], ['reviews', 'Reviews', () => S.reviews.filter((r) => !r.approved).length]]],
-  ['Catalogue', [['products', 'Products'], ['categories', 'Categories'], ['landing-pages', 'Landing pages'], ['homepage', 'Homepage & banners'], ['coupons', 'Coupons'], ['pages', 'Info pages']]],
+  ['Catalogue', [['products', 'Products'], ['categories', 'Categories'], ['landing-pages', 'Landing pages'], ['homepage', 'Homepage & banners'], ['coupons', 'Coupons'], ['pages', 'Info pages'], ['blog', 'Blog']]],
   ['Store', [['settings', 'Settings, Pixel & SEO'], ['team', 'Team & roles']]],
 ]
 
@@ -184,7 +185,7 @@ export default function AdminApp() {
             {[
               [undefined, '', <Dashboard />], ['orders', 'orders', <Orders />], ['incomplete', 'incomplete', <Incomplete />], ['customers', 'customers', <Customers />], ['complaints', 'complaints', <Complaints />], ['messages', 'messages', <Messages />],
               ['sms', 'sms', <Sms />], ['chat', 'chat', <LiveChat />], ['reviews', 'reviews', <Reviews />], ['products', 'products', <Products />], ['categories', 'categories', <Categories />],
-              ['landing-pages', 'landing-pages', <Landings />], ['homepage', 'homepage', <HomeEditor />], ['coupons', 'coupons', <Coupons />], ['pages', 'pages', <Pages />], ['settings', 'settings', <Settings />], ['team', 'team', <Team />],
+              ['landing-pages', 'landing-pages', <Landings />], ['homepage', 'homepage', <HomeEditor />], ['coupons', 'coupons', <Coupons />], ['pages', 'pages', <Pages />], ['blog', 'blog', <Blog />], ['settings', 'settings', <Settings />], ['team', 'team', <Team />],
             ].map(([path, key, el]) => {
               const ok = can(S.account, ROUTE_PERM[key])
               const view = ok ? el : permsOf(S.account).length ? <Navigate to={homePath(S.account)} replace /> : <p className="p-10 text-center text-muted">This account has no section permissions — contact the Super Admin.</p>
