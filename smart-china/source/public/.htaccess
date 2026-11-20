@@ -1,3 +1,6 @@
+# Serve the React app before any host placeholder (e.g. Hostinger default.php)
+DirectoryIndex index.html index.php
+
 # Bookshelf — React single-page app on Apache / cPanel shared hosting.
 # Upload the contents of dist/ (including this file) to public_html/.
 <IfModule mod_rewrite.c>
