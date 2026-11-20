@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "products": [{
+    "id": 90001, "slug": "desktop-heating-fan", "name": "Desktop Heating Fan – Instant Warm Air",
+    "sku": "DHF-1300", "brand": "", "price": 1300, "oldPrice": 0, "stock": null,
+    "shortDescription": "Compact desk heater that warms the air around you in seconds. Quiet, safe and easy to carry.",
+    "description": "<p>Cold hands at your desk? Cold feet in bed? This compact desktop heating fan blows warm air within seconds of switching on.</p><ul><li>Instant warm air after switching on</li><li>Compact – fits on a desk, table or bedside</li><li>Quiet fan, so it will not disturb work or sleep</li><li>Overheat-safe ceramic heating element</li><li>Easy plug-in use, no installation</li></ul>",
+    "specs": [{"k": "Type", "v": "Desktop heating fan"}, {"k": "Colour", "v": "Pink"}, {"k": "Use", "v": "Desk, bedside, small room"}, {"k": "Power", "v": "Plug-in (mains)"}],
+    "options": [], "variants": [],
+    "images": ["/heater/heater-glow.jpg", "/heater/heater-pink.jpg", "/heater/heater-closeup.jpg", "/heater/heater-warm.jpg", "/heater/heater-box.jpg"],
+    "categories": ["home-appliances"], "subcategories": [], "productType": "Physical", "source": "manual",
+    "featured": true, "isNew": true, "seoTitle": "Desktop Heating Fan – Instant Warmth | Smart China Gallery", "seoDescription": "Compact desktop heating fan with instant warm air. Cash on delivery all over Bangladesh.", "active": true, "sold": 0
+  }],
+  "landings": [{
+    "id": "lp-heater-1", "slug": "desktop-heating-fan", "productId": 90001, "active": true, "views": 0, "orders": 0, "endsAt": null,
+    "headline": "Winter Is Here. Keep Warm Right At Your Desk.",
+    "subheadline": "A tiny heating fan that gives you warm air in seconds — quiet, safe and easy to carry anywhere.",
+    "badge": "WINTER OFFER", "theme": "red", "ctaText": "Order now – Cash on delivery", "formTitle": "Order your heating fan today",
+    "urgencyText": "Winter offer – limited stock, order today", "stickyCta": true, "showSpecs": true, "showCombo": false, "videoUrl": "",
+    "bullets": ["Warm air within seconds of switching on", "Small enough for your desk, bedside or kitchen", "Quiet fan – no noise while you work or sleep", "Overheat-safe ceramic heating element", "Plug in and use – no installation", "Cash on delivery, check before you pay"],
+    "features": [
+      {"icon": "🔥", "title": "Instant warmth", "text": "Feel warm air in seconds"},
+      {"icon": "🚚", "title": "Delivery all over Bangladesh", "text": "Inside and outside Dhaka"},
+      {"icon": "💵", "title": "Cash on delivery", "text": "Check the product, then pay"}
+    ],
+    "painTitle": "Sound familiar?", "painTitleSub": "Winter makes small things hard.",
+    "painPoints": [
+      {"icon": "🥶", "title": "Cold hands at work", "text": "Typing, studying or working is hard when your fingers are freezing."},
+      {"icon": "🛏️", "title": "Cold mornings", "text": "Getting out of a warm blanket on a winter morning feels impossible."},
+      {"icon": "⚡", "title": "Big heaters are a hassle", "text": "Large room heaters are heavy, costly to run and take space."}
+    ],
+    "cardsTitle": "Small body. Big comfort.", "cardsSub": "Everything you need from a winter heater",
+    "featureCards": [
+      {"icon": "🔥", "title": "Quick warm air", "text": "Switch on and feel the warmth almost at once — no long wait.", "image": "/heater/heater-glow.jpg"},
+      {"icon": "🎀", "title": "Cute, modern design", "text": "Soft rounded shape that looks good on any desk or shelf.", "image": "/heater/heater-pink.jpg"},
+      {"icon": "🌬️", "title": "Quiet fan", "text": "Runs gently so you can work, read or sleep in peace.", "image": "/heater/heater-closeup.jpg"},
+      {"icon": "🛡️", "title": "Safer heating", "text": "Honeycomb guard and overheat protection for everyday peace of mind.", "image": "/heater/heater-warm.jpg"},
+      {"icon": "📦", "title": "Ready in the box", "text": "Open the box, plug in, enjoy. No tools, no setup.", "image": "/heater/heater-box.jpg"}
+    ],
+    "useTitle": "Use it anywhere", "useSub": "One small heater, many places",
+    "useCases": [
+      {"icon": "💻", "title": "Office desk"}, {"icon": "🛏️", "title": "Bedside"}, {"icon": "📚", "title": "Study table"},
+      {"icon": "🚿", "title": "Near the bathroom"}, {"icon": "🍳", "title": "Kitchen corner"}, {"icon": "👶", "title": "Small rooms"}
+    ],
+    "gift": {"kicker": "A gift that is used every day", "title": "Send warmth to your parents this winter", "text": "Living abroad? Order from overseas and we deliver to your family in Bangladesh. Tick “Ordering from abroad” in the form and add your own number so we can reach you.", "cta": "Order as a gift", "image": "/heater/heater-warm.jpg"},
+    "offerBox": {"kicker": "Winter offer price", "lines": ["Desktop heating fan", "Cash on delivery", "Check the product before you pay", "3-day replacement if anything is wrong"]},
+    "testimonials": [],
+    "faq": [
+      {"q": "How fast does it heat?", "a": "You feel warm air within a few seconds of switching it on. It suits a desk, bedside or small room."},
+      {"q": "Can it heat a whole big room?", "a": "No. It is a personal desktop heater for the space around you, not a large room heater."},
+      {"q": "Is it noisy?", "a": "The fan is quiet, so it will not disturb work or sleep."},
+      {"q": "How do I order?", "a": "Fill in your name, mobile number and address, then press the order button. Our team will call you to confirm."},
+      {"q": "Can I pay on delivery?", "a": "Yes. Cash on delivery — check the product in front of the rider, then pay."},
+      {"q": "I live abroad. Can I order for my family?", "a": "Yes. Tick “Ordering from abroad”, enter your overseas number, and use your family's Bangladesh number and address."}
+    ]
+  }]
+}

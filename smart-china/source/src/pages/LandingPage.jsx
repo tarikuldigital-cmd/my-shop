@@ -61,7 +61,8 @@ export default function LandingPage() {
   const settings = S.settings
   const [qty, setQty] = useState(1)
   const [vkey, setVkey] = useState('')
-  const [form, setForm] = useState({ name: '', phone: '', address: '', shippingArea: settings.shipping[0].id })
+  const [form, setForm] = useState({ name: '', phone: '', address: '', shippingArea: settings.shipping[0].id, abroad: false, abroadPhone: '' })
+  const [pic, setPic] = useState(0)
   // "Share my location": fill the address from GPS and pick Inside / Outside Dhaka (customer can still edit both)
   const onLocation = ({ address, location, insideDhaka }) => setForm((f) => ({
     ...f, location, address: address || f.address,
@@ -130,6 +131,7 @@ export default function LandingPage() {
     if (!form.name.trim()) errs.name = 'Please enter your name'
     if (!validPhone(form.phone)) errs.phone = 'Enter a valid 11-digit mobile number'
     if (form.address.trim().length < 10) errs.address = 'Enter your full address (house/road, area, thana, district)'
+    if (form.abroad && !/^\+?\d{8,15}$/.test(form.abroadPhone.replace(/[\s()-]/g, ''))) errs.abroadPhone = 'Enter your overseas phone / WhatsApp number with country code (e.g. +9665XXXXXXXX)'
     setErrors(errs)
     if (Object.keys(errs).length) return
     setBusy(true); setServerError('')
@@ -137,7 +139,7 @@ export default function LandingPage() {
       done.current = true
       track('InitiateCheckout', { items: [item], value: subtotal })
       const eventId = `${Date.now()}.${Math.random().toString(36).slice(2, 9)}`
-      const order = await placeOrder({ ...form, paymentMethod: 'cod', eventId, source: 'Landing page', landing: lp.slug, note: `Landing page: /lp/${lp.slug}`, items: [item] })
+      const order = await placeOrder({ ...form, abroadPhone: form.abroad ? form.abroadPhone.replace(/[\s()-]/g, '') : '', tz: (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || '' } catch { return '' } })(), paymentMethod: 'cod', eventId, source: 'Landing page', landing: lp.slug, note: `Landing page: /lp/${lp.slug}`, items: [item] })
       await discardCheckoutDraft(draftId.current)
       if (!LIVE) { lp.orders = (lp.orders || 0) + 1; save() }
       track('Purchase', { items: order.items.map((i) => ({ ...i, sku: i.sku || v?.sku || product.sku, category: product.categories[0] })), value: order.total, orderId: order.invoice, eventId, customer: customerData(form, settings.shipping.find((x) => x.id === form.shippingArea)?.label) })
@@ -186,7 +188,8 @@ export default function LandingPage() {
           <div className="order-1 md:order-2">
             <div className="relative mx-auto max-w-sm">
               <div className="absolute -inset-4 rounded-[2rem] opacity-20 blur-2xl" style={{ background: th.c }} />
-              <Img src={product.images[0]} alt={product.name} className="relative mx-auto max-h-[420px] w-full rounded-2xl bg-white object-contain p-3 shadow-2xl" />
+              <Img src={product.images[pic] || product.images[0]} alt={product.name} className="relative mx-auto max-h-[420px] w-full rounded-2xl bg-white object-contain p-3 shadow-2xl" />
+              {product.images.length > 1 && <div className="relative mt-3 flex justify-center gap-2">{product.images.slice(0, 6).map((im, i) => <button key={i} type="button" onClick={() => setPic(i)} aria-label={`Photo ${i + 1}`} className={`h-14 w-14 overflow-hidden rounded-lg border-2 bg-white ${pic === i ? '' : 'border-transparent opacity-70'}`} style={pic === i ? { borderColor: th.c } : undefined}><Img src={im} alt="" className="h-full w-full object-cover" /></button>)}</div>}
             </div>
           </div>
         </div>
@@ -202,6 +205,69 @@ export default function LandingPage() {
                 <div><p className="font-bold leading-snug">{f.title}</p><p className="text-sm text-gray-600">{f.text}</p></div>
               </div>
             ))}
+          </div>
+        </section>
+      )}
+
+
+      {/* pain points */}
+      {lp.painPoints?.length > 0 && (
+        <section className="mx-auto max-w-5xl px-4 py-12">
+          <H sub={lp.painTitleSub}>{lp.painTitle || 'Sound familiar?'}</H>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {lp.painPoints.map((x, i) => (
+              <div key={i} className="rounded-2xl border border-gray-200 bg-white p-5 text-center shadow-sm"><div className="text-4xl">{x.icon}</div><h3 className="mt-2 font-extrabold">{x.title}</h3><p className="mt-1 text-sm leading-relaxed text-gray-600">{x.text}</p></div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* feature cards with photos */}
+      {lp.featureCards?.length > 0 && (
+        <section className="px-4 py-12" style={{ background: th.soft }}>
+          <div className="mx-auto max-w-5xl"><H sub={lp.cardsSub}>{lp.cardsTitle || 'Why this heater'}</H>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {lp.featureCards.map((x, i) => (
+                <div key={i} className="overflow-hidden rounded-2xl bg-white shadow-sm">
+                  {x.image && <Img src={x.image} alt={x.title} className="aspect-square w-full object-cover" />}
+                  <div className="p-4"><h3 className="font-extrabold"><span className="mr-1">{x.icon}</span>{x.title}</h3><p className="mt-1 text-sm leading-relaxed text-gray-600">{x.text}</p></div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-8 text-center"><Cta /></div>
+          </div>
+        </section>
+      )}
+
+      {/* use cases */}
+      {lp.useCases?.length > 0 && (
+        <section className="mx-auto max-w-4xl px-4 py-12">
+          <H sub={lp.useSub}>{lp.useTitle || 'Where to use it'}</H>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {lp.useCases.map((x, i) => <div key={i} className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-4"><span className="text-3xl">{x.icon}</span><span className="font-bold leading-snug">{x.title}</span></div>)}
+          </div>
+        </section>
+      )}
+
+      {/* gift */}
+      {lp.gift && (
+        <section className="px-4 py-12" style={{ background: `linear-gradient(135deg, ${th.d}, ${th.c})` }}>
+          <div className="mx-auto grid max-w-4xl items-center gap-6 text-white md:grid-cols-[1.1fr_1fr]">
+            <div><p className="text-sm font-bold uppercase tracking-wider opacity-80">{lp.gift.kicker}</p><h2 className="mt-1 text-2xl font-extrabold sm:text-3xl">{lp.gift.title}</h2><p className="mt-3 leading-relaxed opacity-90">{lp.gift.text}</p>
+              <button onClick={toForm} className="mt-5 rounded-full bg-white px-7 py-3 font-extrabold shadow-lg" style={{ color: th.d }}>🎁 {lp.gift.cta || 'Order as a gift'}</button></div>
+            {lp.gift.image && <Img src={lp.gift.image} alt="" className="mx-auto max-h-72 rounded-2xl object-cover shadow-2xl" />}
+          </div>
+        </section>
+      )}
+
+      {/* offer box */}
+      {lp.offerBox && (
+        <section className="mx-auto max-w-2xl px-4 py-12">
+          <div className="rounded-3xl border-2 border-dashed p-6 text-center shadow-lg" style={{ borderColor: th.c, background: th.soft }}>
+            <p className="text-sm font-extrabold uppercase tracking-widest" style={{ color: th.c }}>{lp.offerBox.kicker || 'Special offer'}</p>
+            <p className="mt-2 text-5xl font-extrabold" style={{ color: th.c }}>{formatPrice(product.price)}</p>
+            {lp.offerBox.lines?.length > 0 && <ul className="mx-auto mt-4 max-w-xs space-y-1.5 text-left text-sm font-semibold">{lp.offerBox.lines.map((l, i) => <li key={i} className="flex gap-2"><span style={{ color: th.c }}>✔</span>{l}</li>)}</ul>}
+            <div className="mt-5"><Cta /></div>
           </div>
         </section>
       )}
@@ -268,6 +334,11 @@ export default function LandingPage() {
                 <label className="block"><span className="mb-1 block text-sm font-semibold">Mobile number *</span><input className="field" inputMode="tel" value={form.phone} onChange={set('phone')} autoComplete="tel" placeholder="01XXXXXXXXX" />{err('phone')}</label>
                 <label className="block"><span className="mb-1 block text-sm font-semibold">Full address *</span><textarea rows={3} className="field" value={form.address} onChange={set('address')} autoComplete="street-address" placeholder="House / road, area, thana, district" />{err('address')}</label>
                 <LocationButton onPick={onLocation} />
+                <div className={`rounded-lg border-2 p-3 ${form.abroad ? 'bg-[var(--lp-soft)]' : 'border-dashed border-gray-300'}`} style={form.abroad ? { borderColor: th.c } : undefined}>
+                  <label className="flex cursor-pointer items-start gap-2 text-sm"><input type="checkbox" className="mt-1 h-4 w-4" checked={form.abroad} onChange={(e) => setForm((f) => ({ ...f, abroad: e.target.checked }))} />
+                    <span><b>🌍 Ordering from abroad?</b><span className="block text-xs text-gray-500">Send it as a gift to your family in Bangladesh — put their Bangladesh number and address above, and your own number here.</span></span></label>
+                  {form.abroad && <div className="mt-3"><span className="mb-1 block text-sm font-semibold">Your overseas phone / WhatsApp *</span><input className="field" inputMode="tel" value={form.abroadPhone} onChange={set('abroadPhone')} placeholder="+966 5X XXX XXXX" />{err('abroadPhone')}</div>}
+                </div>
                 <fieldset><legend className="mb-1 text-sm font-semibold">Delivery area</legend>
                   <div className="grid gap-2 sm:grid-cols-2">{settings.shipping.map((a) => (
                     <label key={a.id} className={`flex cursor-pointer items-center gap-2 rounded-lg border-2 p-3 text-sm ${form.shippingArea === a.id ? 'bg-[var(--lp-soft)]' : 'border-gray-200'}`} style={form.shippingArea === a.id ? { borderColor: th.c } : undefined}>

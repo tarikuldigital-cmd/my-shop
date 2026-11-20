@@ -69,6 +69,7 @@ function routes(): array {
 
 /* =============== public storefront =============== */
 function h_bootstrap(): void {
+  ensure_extras();
   // long descriptions are left out of the catalogue download; the product page loads them from products/{slug}/details
   $products = array_map(function ($p) { unset($p['description']); return $p; }, array_values(array_filter(doc_all('products'), fn($p) => ($p['active'] ?? true) !== false)));
   $reviews = array_map(function ($r) { unset($r['phone']); return $r; }, array_values(array_filter(doc_all('reviews'), fn($r) => !empty($r['approved']))));
