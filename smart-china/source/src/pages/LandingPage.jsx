@@ -150,11 +150,11 @@ export default function LandingPage() {
 
   const Cta = ({ className = '' }) => (
     <button onClick={toForm} className={`inline-flex items-center justify-center gap-2 rounded-full bg-accent px-8 py-3.5 text-base font-bold text-white shadow-lg shadow-black/20 transition hover:scale-[1.03] active:scale-95 ${className}`}>
-      🛒 {lp.ctaText}
+      {lp.ctaText}
     </button>
   )
   const H = ({ children, sub }) => (
-    <div className="mb-7 text-center"><h2 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">{children}</h2><div className="mx-auto mt-2 h-1 w-14 rounded-full" style={{ background: th.c }} />{sub && <p className="mt-3 text-gray-500">{sub}</p>}</div>
+    <div className="mb-4 text-center"><h2 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">{children}</h2><div className="mx-auto mt-1.5 h-1 w-12 rounded-full" style={{ background: th.c }} />{sub && <p className="mt-3 text-gray-500">{sub}</p>}</div>
   )
   const err = (k) => errors[k] && <p className="mt-1 text-xs text-red-600">{errors[k]}</p>
 
@@ -173,7 +173,7 @@ export default function LandingPage() {
 
       {/* hero */}
       <section style={{ background: `linear-gradient(180deg, ${th.soft}, #fff)` }}>
-        <div className="mx-auto grid max-w-5xl items-center gap-8 px-4 py-10 md:grid-cols-2 md:py-16">
+        <div className="mx-auto grid max-w-5xl items-center gap-8 px-4 py-6 md:grid-cols-2 md:py-10">
           <div className="order-2 text-center md:order-1 md:text-left">
             {lp.badge && <span className="inline-block rounded-full px-4 py-1 text-sm font-bold text-white" style={{ background: th.c }}>{lp.badge}</span>}
             <h1 className="mt-3 text-3xl font-extrabold leading-tight text-gray-900 sm:text-4xl">{lp.headline}</h1>
@@ -199,10 +199,9 @@ export default function LandingPage() {
       {/* features */}
       {lp.features?.length > 0 && (
         <section className="border-y border-gray-100 bg-white">
-          <div className="mx-auto grid max-w-5xl gap-4 px-4 py-6 sm:grid-cols-3">
+          <div className="mx-auto grid max-w-5xl gap-2 px-4 py-4 sm:grid-cols-3">
             {lp.features.map((f, i) => (
               <div key={i} className="flex items-center gap-3 rounded-xl p-3" style={{ background: th.soft }}>
-                <span className="text-3xl">{f.icon}</span>
                 <div><p className="font-bold leading-snug">{f.title}</p><p className="text-sm text-gray-600">{f.text}</p></div>
               </div>
             ))}
@@ -213,11 +212,11 @@ export default function LandingPage() {
 
       {/* pain points */}
       {lp.painPoints?.length > 0 && (
-        <section className="mx-auto max-w-5xl px-4 py-12">
+        <section className="mx-auto max-w-5xl px-4 py-6 md:py-8">
           <H sub={lp.painTitleSub}>{lp.painTitle || 'Sound familiar?'}</H>
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-3">
             {lp.painPoints.map((x, i) => (
-              <div key={i} className="rounded-2xl border border-gray-200 bg-white p-5 text-center shadow-sm"><div className="text-4xl">{x.icon}</div><h3 className="mt-2 font-extrabold">{x.title}</h3><p className="mt-1 text-sm leading-relaxed text-gray-600">{x.text}</p></div>
+              <div key={i} className="rounded-xl border border-gray-200 border-l-4 bg-white p-4 shadow-sm" style={{ borderLeftColor: th.c }}><h3 className="font-extrabold text-gray-900">{x.title}</h3><p className="mt-1 text-sm leading-relaxed text-gray-600">{x.text}</p></div>
             ))}
           </div>
         </section>
@@ -225,9 +224,9 @@ export default function LandingPage() {
 
       {/* photo story, in order */}
       {lp.gallery?.length > 0 && (
-        <section className="mx-auto max-w-3xl px-4 py-12">
+        <section className="mx-auto max-w-3xl px-4 py-6 md:py-8">
           <H sub={lp.gallerySub}>{lp.galleryTitle}</H>
-          <div className="space-y-8">
+          <div className="space-y-4">
             {lp.gallery.map((g, i) => (
               <figure key={i} className="overflow-hidden rounded-3xl bg-white shadow-xl ring-1 ring-black/5">
                 <Img src={g.image} alt={g.caption || ''} className="w-full" />
@@ -235,43 +234,43 @@ export default function LandingPage() {
               </figure>
             ))}
           </div>
-          <div className="mt-8 text-center"><Cta /></div>
+          <div className="mt-5 text-center"><Cta /></div>
         </section>
       )}
 
       {/* feature cards with photos */}
       {lp.featureCards?.length > 0 && (
-        <section className="px-4 py-12" style={{ background: th.soft }}>
+        <section className="px-4 py-6 md:py-8" style={{ background: th.soft }}>
           <div className="mx-auto max-w-5xl"><H sub={lp.cardsSub}>{lp.cardsTitle || 'Why this heater'}</H>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {lp.featureCards.map((x, i) => (
                 <div key={i} className="overflow-hidden rounded-2xl bg-white shadow-sm">
                   {x.image && <Img src={x.image} alt={x.title} className="aspect-square w-full object-cover" />}
-                  <div className="p-4"><h3 className="font-extrabold"><span className="mr-1">{x.icon}</span>{x.title}</h3><p className="mt-1 text-sm leading-relaxed text-gray-600">{x.text}</p></div>
+                  <div className="p-4"><h3 className="font-extrabold text-gray-900">{x.title}</h3><p className="mt-1 text-sm leading-relaxed text-gray-600">{x.text}</p></div>
                 </div>
               ))}
             </div>
-            <div className="mt-8 text-center"><Cta /></div>
+            <div className="mt-5 text-center"><Cta /></div>
           </div>
         </section>
       )}
 
       {/* use cases */}
       {lp.useCases?.length > 0 && (
-        <section className="mx-auto max-w-4xl px-4 py-12">
+        <section className="mx-auto max-w-4xl px-4 py-6 md:py-8">
           <H sub={lp.useSub}>{lp.useTitle || 'Where to use it'}</H>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {lp.useCases.map((x, i) => <div key={i} className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-4"><span className="text-3xl">{x.icon}</span><span className="font-bold leading-snug">{x.title}</span></div>)}
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {lp.useCases.map((x, i) => <div key={i} className="rounded-xl border border-gray-200 bg-white px-3 py-3 text-center font-bold leading-snug">{x.title}</div>)}
           </div>
         </section>
       )}
 
       {/* gift */}
       {lp.gift && (
-        <section className="px-4 py-12" style={{ background: `linear-gradient(135deg, ${th.d}, ${th.c})` }}>
+        <section className="px-4 py-6 md:py-8" style={{ background: `linear-gradient(135deg, ${th.d}, ${th.c})` }}>
           <div className="mx-auto grid max-w-4xl items-center gap-6 text-white md:grid-cols-[1.1fr_1fr]">
             <div><p className="text-sm font-bold uppercase tracking-wider opacity-80">{lp.gift.kicker}</p><h2 className="mt-1 text-2xl font-extrabold sm:text-3xl">{lp.gift.title}</h2><p className="mt-3 leading-relaxed opacity-90">{lp.gift.text}</p>
-              <button onClick={toForm} className="mt-5 rounded-full bg-white px-7 py-3 font-extrabold shadow-lg" style={{ color: th.d }}>🎁 {lp.gift.cta || 'Order as a gift'}</button></div>
+              <button onClick={toForm} className="mt-5 rounded-full bg-white px-7 py-3 font-extrabold shadow-lg" style={{ color: th.d }}>{lp.gift.cta || 'Order as a gift'}</button></div>
             {lp.gift.image && <Img src={lp.gift.image} alt="" className="mx-auto max-h-72 rounded-2xl object-cover shadow-2xl" />}
           </div>
         </section>
@@ -279,7 +278,7 @@ export default function LandingPage() {
 
       {/* offer box */}
       {lp.offerBox && (
-        <section className="mx-auto max-w-2xl px-4 py-12">
+        <section className="mx-auto max-w-2xl px-4 py-6 md:py-8">
           <div className="rounded-3xl border-2 border-dashed p-6 text-center shadow-lg" style={{ borderColor: th.c, background: th.soft }}>
             <p className="text-sm font-extrabold uppercase tracking-widest" style={{ color: th.c }}>{lp.offerBox.kicker || 'Special offer'}</p>
             {lp.offerBox.title && <h3 className="mt-2 text-xl font-extrabold text-gray-900">{lp.offerBox.title}</h3>}
@@ -295,7 +294,7 @@ export default function LandingPage() {
 
       {/* benefits */}
       {lp.bullets?.length > 0 && (
-        <section className="mx-auto max-w-3xl px-4 py-12">
+        <section className="mx-auto max-w-3xl px-4 py-6 md:py-8">
           <H>{u('benefitsTitle', 'Why you will love it')}</H>
           <ul className="grid gap-3 sm:grid-cols-2">
             {lp.bullets.map((b, i) => (
@@ -305,13 +304,13 @@ export default function LandingPage() {
               </li>
             ))}
           </ul>
-          <div className="mt-8 text-center"><Cta /></div>
+          <div className="mt-5 text-center"><Cta /></div>
         </section>
       )}
 
       {/* video */}
       {video && (
-        <section className="bg-gray-50 px-4 py-12">
+        <section className="bg-gray-50 px-4 py-6 md:py-8">
           <div className="mx-auto max-w-3xl"><H>{u('videoTitle', 'Watch the video')}</H>
             <div className="aspect-video overflow-hidden rounded-2xl shadow-lg"><iframe src={video} title="Video" className="h-full w-full" loading="lazy" allowFullScreen /></div>
           </div>
@@ -320,7 +319,7 @@ export default function LandingPage() {
 
       {/* specs */}
       {lp.showSpecs && specs.length > 0 && (
-        <section className="mx-auto max-w-3xl px-4 py-12">
+        <section className="mx-auto max-w-3xl px-4 py-6 md:py-8">
           <div className="rounded-2xl border border-gray-200 p-5">
             <h3 className="mb-3 text-lg font-extrabold">{u('specsTitle', 'Specifications')}</h3>
             <dl className="divide-y divide-gray-100 text-sm">{specs.map(([k, x]) => <div key={k} className="flex justify-between gap-4 py-2"><dt className="text-gray-500">{k}</dt><dd className="text-right font-semibold">{x}</dd></div>)}</dl>
@@ -330,7 +329,7 @@ export default function LandingPage() {
 
       {/* testimonials */}
       {lp.testimonials?.length > 0 && (
-        <section className="px-4 py-12" style={{ background: th.soft }}>
+        <section className="px-4 py-6 md:py-8" style={{ background: th.soft }}>
           <div className="mx-auto max-w-5xl"><H>{u('reviewsTitle', 'What customers say')}</H>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {lp.testimonials.map((t, i) => (
@@ -346,7 +345,7 @@ export default function LandingPage() {
       )}
 
       {/* order form */}
-      <section id="order" ref={formRef} className="px-4 py-12" style={{ background: `linear-gradient(180deg, #fff, ${th.soft})` }}>
+      <section id="order" ref={formRef} className="px-4 py-6 md:py-8" style={{ background: `linear-gradient(180deg, #fff, ${th.soft})` }}>
         <div className="mx-auto max-w-4xl"><H sub={available ? u('formSub', 'Fill in the form — we will call you to confirm the order') : undefined}>{lp.formTitle}</H>
           {!available ? <p className="rounded-xl bg-red-50 p-6 text-center font-semibold text-red-600">{u('soldOut', 'Sorry, this is out of stock right now. Call us for details:')} {settings.phone}</p> : (
             <form onSubmit={submit} noValidate className="grid gap-6 rounded-2xl border-2 bg-white p-5 shadow-2xl md:grid-cols-[1.2fr_1fr] md:p-8" style={{ borderColor: th.c }}>
@@ -400,7 +399,7 @@ export default function LandingPage() {
       </section>
 
       {/* FAQ */}
-      {lp.faq?.length > 0 && <section className="mx-auto max-w-3xl px-4 py-12"><H>{u('faqTitle', 'Frequently asked questions')}</H><Faq items={lp.faq} /></section>}
+      {lp.faq?.length > 0 && <section className="mx-auto max-w-3xl px-4 py-6 md:py-8"><H>{u('faqTitle', 'Frequently asked questions')}</H><Faq items={lp.faq} /></section>}
 
       <footer className="px-4 pb-24 pt-8 text-center text-sm text-white md:pb-8" style={{ background: th.d }}>
         <p className="font-bold">{settings.siteName}</p>
