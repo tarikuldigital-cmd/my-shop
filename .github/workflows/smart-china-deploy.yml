@@ -33,7 +33,7 @@ jobs:
           server: ${{ secrets.SMART_FTP_SERVER }}
           username: ${{ secrets.SMART_FTP_USERNAME }}
           password: ${{ secrets.SMART_FTP_PASSWORD }}
-          protocol: ftp
+          protocol: ${{ secrets.SMART_FTP_PROTOCOL || 'ftps' }}
           local-dir: ./smart-china/deploy/
           server-dir: ${{ secrets.SMART_FTP_DIR || './' }}
           state-name: .ftp-deploy-sync-state.json
