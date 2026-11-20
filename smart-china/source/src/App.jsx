@@ -2,8 +2,6 @@ import { Routes, Route } from 'react-router-dom'
 import Layout from './components/layout/Layout'
 import RequireAuth from './components/common/RequireAuth'
 import Home from './pages/Home'
-import BlogHome from './pages/blog/BlogHome'
-import BlogPost from './pages/blog/BlogPost'
 import ProductList from './pages/ProductList'
 import ProductDetail from './pages/ProductDetail'
 import Checkout from './pages/Checkout'
@@ -40,9 +38,6 @@ export default function App() {
       <Route path="c/:ref" element={<Suspense fallback={<Spinner className="py-24" />}><ComplainTrack key="short" /></Suspense>} />
       <Route element={<Layout />}>
         <Route index element={<Home />} />
-        <Route path="blog" element={<BlogHome />} />
-        <Route path="blog/category/:cat" element={<BlogHome />} />
-        <Route path="blog/:slug" element={<BlogPost />} />
         <Route path="category/:slug" element={<ProductList mode="category" />} />
         <Route path="subcategory/:slug" element={<ProductList mode="subcategory" />} />
         <Route path="search" element={<ProductList mode="search" />} />

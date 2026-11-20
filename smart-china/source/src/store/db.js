@@ -118,7 +118,6 @@ function seed() {
     coupons: [{ code: 'WELCOME10', type: 'percent', value: 10, min: 1000, active: true, used: 0, expires: '' }, { code: 'SAVE200', type: 'flat', value: 200, min: 2500, active: true, used: 0, expires: '' }],
     reviews: [],
     landings: [],
-    posts: [],
     chats: [],
     messages: [],
     nextInvoice: 100101,
@@ -144,7 +143,6 @@ function load() {
       raw.team ||= demoTeam()
       raw.settings.complaints = { ...d.complaints, ...raw.settings.complaints, events: { ...d.complaints.events, ...raw.settings.complaints?.events }, templates: { ...d.complaints.templates, ...raw.settings.complaints?.templates }, routing: { ...d.complaints.routing, ...raw.settings.complaints?.routing } }
       raw.landings ||= []
-      raw.posts ||= []
       raw.chats ||= []
       raw.orders.forEach((o) => { o.courierLog ||= [] })
       return raw

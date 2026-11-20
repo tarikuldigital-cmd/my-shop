@@ -5,16 +5,16 @@
  *  - admin       : everything except the team page
  *  - order_manager, support, content : limited sections (see ADMIN_ROLES)
  * Permission names match the admin menu: dashboard, orders, incomplete, customers, chat, sms, messages, reviews,
- * products, categories, landings, homepage, coupons, pages, blog, settings, team, complaints.
+ * products, categories, landings, homepage, coupons, pages, settings, team, complaints.
  */
 declare(strict_types=1);
 
 const ADMIN_ROLES = [
   'super_admin'   => ['*'],
-  'admin'         => ['dashboard', 'orders', 'incomplete', 'customers', 'complaints', 'chat', 'sms', 'messages', 'reviews', 'products', 'categories', 'landings', 'homepage', 'coupons', 'pages', 'blog', 'settings'],
+  'admin'         => ['dashboard', 'orders', 'incomplete', 'customers', 'complaints', 'chat', 'sms', 'messages', 'reviews', 'products', 'categories', 'landings', 'homepage', 'coupons', 'pages', 'settings'],
   'order_manager' => ['dashboard', 'orders', 'incomplete', 'customers', 'complaints', 'chat', 'sms', 'messages'],
   'support'       => ['orders', 'incomplete', 'customers', 'complaints', 'chat', 'messages', 'reviews'],
-  'content'       => ['products', 'categories', 'landings', 'homepage', 'coupons', 'pages', 'blog', 'reviews'],
+  'content'       => ['products', 'categories', 'landings', 'homepage', 'coupons', 'pages', 'reviews'],
 ];
 /** which permission is needed to write each synced collection / key-value block */
 const COLL_PERM = ['products' => 'products', 'categories' => 'categories', 'coupons' => 'coupons', 'reviews' => 'reviews', 'landings' => 'landings', 'chats' => 'chat', 'messages' => 'messages', 'incomplete' => 'incomplete', 'orders' => 'orders', 'smsLog' => 'sms', 'complaints' => 'complaints'];
