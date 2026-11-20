@@ -1,5 +1,5 @@
 {
- "version": 2,
+ "version": 3,
  "products": [
   {
    "id": 90001,
@@ -33,11 +33,7 @@
    "options": [],
    "variants": [],
    "images": [
-    "/heater/heater-glow.jpg",
-    "/heater/heater-pink.jpg",
-    "/heater/heater-closeup.jpg",
-    "/heater/heater-warm.jpg",
-    "/heater/heater-box.jpg"
+    "/heater/heater-pink.jpg"
    ],
    "categories": [
     "home-appliances"
@@ -124,38 +120,32 @@
     {
      "icon": "🔇",
      "title": "Silent Operation",
-     "text": "কম শব্দে চলে, তাই কাজ, পড়া বা ঘুমের সময় বিরক্ত করে না।",
-     "image": "/heater/heater-closeup.jpg"
+     "text": "কম শব্দে চলে, তাই কাজ, পড়া বা ঘুমের সময় বিরক্ত করে না।"
     },
     {
      "icon": "💨",
      "title": "Speed Wind Force",
-     "text": "শক্তিশালী বাতাস প্রবাহে দ্রুত উষ্ণতা ছড়িয়ে দেয়।",
-     "image": "/heater/heater-pink.jpg"
+     "text": "শক্তিশালী বাতাস প্রবাহে দ্রুত উষ্ণতা ছড়িয়ে দেয়।"
     },
     {
      "icon": "🔥",
      "title": "Instant Heat",
-     "text": "অন করার সঙ্গে সঙ্গে গরম বাতাসের অনুভূতি।",
-     "image": "/heater/heater-glow.jpg"
+     "text": "অন করার সঙ্গে সঙ্গে গরম বাতাসের অনুভূতি।"
     },
     {
      "icon": "🛡️",
      "title": "Automatic Power Off",
-     "text": "অতিরিক্ত গরম হলে নিরাপত্তার জন্য সুরক্ষা ব্যবস্থা।",
-     "image": "/heater/heater-warm.jpg"
+     "text": "অতিরিক্ত গরম হলে নিরাপত্তার জন্য সুরক্ষা ব্যবস্থা।"
     },
     {
      "icon": "🏠",
      "title": "Multiple Scenarios",
-     "text": "অফিস, বাসা, পড়ার টেবিল — বিভিন্ন জায়গায় সহজে ব্যবহার করা যায়।",
-     "image": "/heater/heater-pink.jpg"
+     "text": "অফিস, বাসা, পড়ার টেবিল — বিভিন্ন জায়গায় সহজে ব্যবহার করা যায়।"
     },
     {
      "icon": "🌬️",
      "title": "Air Outlet Surface",
-     "text": "হানিকম্ব গ্রিলের বড় আউটলেট দিয়ে সমানভাবে গরম বাতাস বের হয়।",
-     "image": "/heater/heater-box.jpg"
+     "text": "হানিকম্ব গ্রিলের বড় আউটলেট দিয়ে সমানভাবে গরম বাতাস বের হয়।"
     }
    ],
    "useTitle": "ব্যবহার করতে পারবেন বিভিন্ন জায়গায়",
@@ -190,8 +180,7 @@
     "kicker": "🎁 উপহার হিসেবে সেরা",
     "title": "প্রিয় বাবা-মায়ের জন্য হোক একটু বাড়তি যত্ন!",
     "text": "শীতের সকালে বাবা-মায়ের জন্য একটু উষ্ণতা — ছোট্ট এই হিটিং ফ্যান প্রতিদিন কাজে লাগবে। প্রবাসে থাকলেও অর্ডার করুন, আমরা আপনার পরিবারের কাছে পৌঁছে দেব।",
-    "cta": "অর্ডার করতে চাই →",
-    "image": "/heater/heater-warm.jpg"
+    "cta": "অর্ডার করতে চাই →"
    },
    "offerBox": {
     "kicker": "🔥 বিশেষ শীতকালীন অফার 🔥",
@@ -271,7 +260,27 @@
      "done": "লোকেশন যোগ হয়েছে ✓ · আবার আপডেট",
      "optional": "(ঐচ্ছিক)"
     }
-   }
+   },
+   "galleryTitle": "আপনার শীতের সঙ্গী",
+   "gallerySub": "🔥 ছোট্ট Desktop Heating Fan, গরম বাতাসের সুবিধা হাতের কাছেই!",
+   "gallery": [
+    {
+     "image": "/heater/scene-1-parents.webp",
+     "caption": "প্রিয় বাবা-মায়ের জন্য হোক একটু বাড়তি যত্ন!"
+    },
+    {
+     "image": "/heater/scene-2-family.webp",
+     "caption": "শীতেও থাকুন উষ্ণতার আঁচলে — পুরো পরিবারের জন্য"
+    },
+    {
+     "image": "/heater/scene-3-office.webp",
+     "caption": "অফিসে কাজের সময় ঠান্ডা নয়, থাকুন আরামে"
+    },
+    {
+     "image": "/heater/scene-4-offer.webp",
+     "caption": "বাসা, অফিস ও পড়ার টেবিল — সবখানেই মানানসই"
+    }
+   ]
   }
  ]
 }

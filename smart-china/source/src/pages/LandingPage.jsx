@@ -223,6 +223,22 @@ export default function LandingPage() {
         </section>
       )}
 
+      {/* photo story, in order */}
+      {lp.gallery?.length > 0 && (
+        <section className="mx-auto max-w-3xl px-4 py-12">
+          <H sub={lp.gallerySub}>{lp.galleryTitle}</H>
+          <div className="space-y-8">
+            {lp.gallery.map((g, i) => (
+              <figure key={i} className="overflow-hidden rounded-3xl bg-white shadow-xl ring-1 ring-black/5">
+                <Img src={g.image} alt={g.caption || ''} className="w-full" />
+                {g.caption && <figcaption className="p-4 text-center text-lg font-bold leading-snug text-gray-900">{g.caption}</figcaption>}
+              </figure>
+            ))}
+          </div>
+          <div className="mt-8 text-center"><Cta /></div>
+        </section>
+      )}
+
       {/* feature cards with photos */}
       {lp.featureCards?.length > 0 && (
         <section className="px-4 py-12" style={{ background: th.soft }}>
@@ -333,11 +349,11 @@ export default function LandingPage() {
       <section id="order" ref={formRef} className="px-4 py-12" style={{ background: `linear-gradient(180deg, #fff, ${th.soft})` }}>
         <div className="mx-auto max-w-4xl"><H sub={available ? u('formSub', 'Fill in the form — we will call you to confirm the order') : undefined}>{lp.formTitle}</H>
           {!available ? <p className="rounded-xl bg-red-50 p-6 text-center font-semibold text-red-600">{u('soldOut', 'Sorry, this is out of stock right now. Call us for details:')} {settings.phone}</p> : (
-            <form onSubmit={submit} noValidate className="grid gap-6 rounded-2xl bg-white p-5 shadow-xl md:grid-cols-[1.2fr_1fr] md:p-8">
+            <form onSubmit={submit} noValidate className="grid gap-6 rounded-2xl border-2 bg-white p-5 shadow-2xl md:grid-cols-[1.2fr_1fr] md:p-8" style={{ borderColor: th.c }}>
               <div className="space-y-4">
-                <label className="block"><span className="mb-1 block text-sm font-semibold">{u('lName', 'Your name *')}</span><input className="field" value={form.name} onChange={set('name')} autoComplete="name" placeholder={u("phName", "Full name")} />{err('name')}</label>
-                <label className="block"><span className="mb-1 block text-sm font-semibold">{u('lPhone', 'Mobile number *')}</span><input className="field" inputMode="tel" value={form.phone} onChange={set('phone')} autoComplete="tel" placeholder="01XXXXXXXXX" />{err('phone')}</label>
-                <label className="block"><span className="mb-1 block text-sm font-semibold">{u('lAddress', 'Full address *')}</span><textarea rows={3} className="field" value={form.address} onChange={set('address')} autoComplete="street-address" placeholder={u("phAddress", "House / road, area, thana, district")} />{err('address')}</label>
+                <label className="block"><span className="mb-1.5 flex items-center gap-1.5 text-sm font-extrabold text-gray-900"><i className="h-4 w-1 rounded" style={{ background: th.c }} />{u('lName', 'Your name *')}</span><input className="field" value={form.name} onChange={set('name')} autoComplete="name" placeholder={u("phName", "Full name")} />{err('name')}</label>
+                <label className="block"><span className="mb-1.5 flex items-center gap-1.5 text-sm font-extrabold text-gray-900"><i className="h-4 w-1 rounded" style={{ background: th.c }} />{u('lPhone', 'Mobile number *')}</span><input className="field" inputMode="tel" value={form.phone} onChange={set('phone')} autoComplete="tel" placeholder="01XXXXXXXXX" />{err('phone')}</label>
+                <label className="block"><span className="mb-1.5 flex items-center gap-1.5 text-sm font-extrabold text-gray-900"><i className="h-4 w-1 rounded" style={{ background: th.c }} />{u('lAddress', 'Full address *')}</span><textarea rows={3} className="field" value={form.address} onChange={set('address')} autoComplete="street-address" placeholder={u("phAddress", "House / road, area, thana, district")} />{err('address')}</label>
                 <LocationButton onPick={onLocation} labels={lp.ui?.loc} />
                 <div className={`rounded-lg border-2 p-3 ${form.abroad ? 'bg-[var(--lp-soft)]' : 'border-dashed border-gray-300'}`} style={form.abroad ? { borderColor: th.c } : undefined}>
                   <label className="flex cursor-pointer items-start gap-2 text-sm"><input type="checkbox" className="mt-1 h-4 w-4" checked={form.abroad} onChange={(e) => setForm((f) => ({ ...f, abroad: e.target.checked }))} />
